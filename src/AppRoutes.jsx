@@ -1,18 +1,23 @@
 import { Routes, Route, Link } from "react-router-dom";
-import Login from "./Student/Login/Login";
-import Register from "./Student/Register/Register";
-import TeacherLogin from "./Teacher/Login/TeacherLogin";
-import TeacherRegister from "./Teacher/Register/TeacherRegister";
+import Login from "./Student/UserManagment/Login";
+import Register from "./Student/UserManagment/Register";
+import TeacherLogin from "./Teacher/UserManagement/TeacherLogin";
+import TeacherRegister from "./Teacher/UserManagement/TeacherRegister";
 import AdminLogin from "./Admin/Login/AdminLogin";
 import StudentDashboard from "./Student/Home/StudentDashboard";
 import TeamFormation from "./Student/TeamFormation/TeamFormation";
 import Settings from "./Student/Settings/Settings";
-import LogOut from "./Student/LogOut/LogOut";
-import ClassPage from "./Student/Home/ClassPage";
+import LogOut from "./Student/UserManagment/LogOut";
+import ClassPage from "./Student/Home/Classes/ClassPage";
 import ProjectProposal from "./Student/TeamFormation/ProjectProposal/ProjectProposal";
 import TeamsApplication from "./Student/TeamFormation/TeamsApplication/TeamsApplication";
 import SelectAdviser from "./Student/TeamFormation/ProjectProposal/SelectAdviser";
 import ProjectSummary from "./Student/TeamFormation/ProjectProposal/ProjectSummary";
+import EvaluatePeers from "./Student/Home/Classes/EvaluatePeers/EvaluatePeers";
+import TeacherDashboard from "./Teacher/Home/TeacherDashboard";
+import TeacherSettings from "./Teacher/Settings/TeacherSettings";
+import ProjectProposals from "./Teacher/ProjectProposals/ProjectProposals";
+import CreateClass from "./Teacher/Home/Classes/CreateClass";
 
 export default function AppRoutes() {
   return (
@@ -30,6 +35,11 @@ export default function AppRoutes() {
       <Route path="/settings" element={<Settings />} />
       <Route path="/log-out" element={<LogOut />} />
       <Route path="/class/:courseCode" element={<ClassPage />} />
+      <Route
+        path="/class/:courseCode/evaluate-peers"
+        element={<EvaluatePeers />}
+      />
+
       <Route
         path="/team-formation/project-proposal"
         element={<ProjectProposal />}
@@ -50,6 +60,10 @@ export default function AppRoutes() {
       {/* Teacher Authentication Routes */}
       <Route path="/teacher/login" element={<TeacherLogin />} />
       <Route path="/teacher/register" element={<TeacherRegister />} />
+      <Route path="/teacher/home" element={<TeacherDashboard />} />
+      <Route path="/teacher/settings" element={<TeacherSettings />} />
+      <Route path="/teacher/project-proposals" element={<ProjectProposals />} />
+      <Route path="/teacher/create-class" element={<CreateClass />} />
 
       {/* Admin Authentication Routes */}
       <Route path="/admin/login" element={<AdminLogin />} />

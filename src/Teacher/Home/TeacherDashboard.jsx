@@ -1,27 +1,22 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../Navbar/Navbar";
-import cardContent from "../../card-content";
+//import cardContent from "../../card-content";
 import Header from "../Header/Header";
-import JoinClass from "./Classes/JoinClass";
-import ClassCard from "./Classes/ClassCard";
+import CreateClass from "./Classes/CreateClass";
+//import ClassCard from "./Classes/ClassCard";
+import Navbar from "../Navbar/Navbar";
 
 const StudentDashboard = () => {
-  const [isModalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleJoinClassClick = () => {
-    setModalOpen(true); // Open modal on button click
+  const handleCreateClassClick = () => {
+    navigate(`/teacher/create-class`);
   };
 
-  const handleCloseModal = () => {
-    setModalOpen(false); // Close modal
-  };
-
-  const handleCardClick = (courseCode) => {
-    console.log(`Navigating to class with course code: ${courseCode}`);
-    navigate(`/class/${courseCode}`);
-  };
+  // const handleCardClick = (courseCode) => {
+  //   console.log(`Navigating to class with course code: ${courseCode}`);
+  //   navigate(`/class/${courseCode}`);
+  // };
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
@@ -32,7 +27,7 @@ const StudentDashboard = () => {
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         {/* Header Section */}
         <div className="header flex justify-between items-center mb-6">
-          <h1 className="text-lg font-semibold">Welcome, student</h1>
+          <h1 className="text-lg font-semibold">Welcome, teacher</h1>
           <Header />
         </div>
 
@@ -40,14 +35,13 @@ const StudentDashboard = () => {
         <div className="content flex flex-col bg-gray-200 rounded-2xl p-8 min-h-[calc(100vh-8rem)]">
           {/* Join Class Button */}
           <button
-            onClick={handleJoinClassClick}
+            onClick={handleCreateClassClick}
             className="joinclass-btn ml-auto w-1/6 h-1/4 bg-teal text-white rounded-lg p-4 text-sm hover:bg-peach"
           >
-            Join Class
+            Create Class
           </button>
 
-          {/* Cards Grid */}
-          <div className="classes grid grid-cols-3 gap-12 mt-8">
+          {/* <div className="classes grid grid-cols-3 gap-12 mt-8">
             {cardContent.map((course, index) => (
               <ClassCard
                 key={index}
@@ -57,7 +51,7 @@ const StudentDashboard = () => {
                 onClick={() => handleCardClick(course.courseCode)}
               />
             ))}
-          </div>
+          </div> */}
 
           {/* Pagination Buttons */}
           <div className="pagination flex mt-14">
@@ -71,9 +65,6 @@ const StudentDashboard = () => {
           </div>
         </div>
       </div>
-
-      {/* Join Class Modal */}
-      <JoinClass isOpen={isModalOpen} onClose={handleCloseModal} />
     </div>
   );
 };

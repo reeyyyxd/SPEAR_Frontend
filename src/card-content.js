@@ -5,6 +5,7 @@ const cardContent = [
     bgColor: "bg-brown",
     classCode: "CAP-322",
     isCapstone: "true",
+    group: "Group 1", // Associated with Group 1
   },
   {
     courseCode: "CSIT340",
@@ -12,6 +13,7 @@ const cardContent = [
     bgColor: "bg-blue",
     classCode: "ABC-123",
     isCapstone: "false",
+    group: "Group 2", // Associated with Group 2
   },
   {
     courseCode: "CSIT284",
@@ -19,6 +21,7 @@ const cardContent = [
     bgColor: "bg-maroon",
     classCode: "BCD-234",
     isCapstone: "false",
+    group: "Group 3", // Associated with Group 3
   },
   {
     courseCode: "CSIT321",
@@ -26,6 +29,7 @@ const cardContent = [
     bgColor: "bg-peach",
     classCode: "CDE-345",
     isCapstone: "false",
+    group: "Group 4", // Associated with Group 4
   },
   {
     courseCode: "CSIT341",
@@ -33,6 +37,7 @@ const cardContent = [
     bgColor: "bg-teal",
     classCode: "DEF-456",
     isCapstone: "false",
+    group: "Group 5", // Associated with Group 5
   },
   {
     courseCode: "CSIT342",

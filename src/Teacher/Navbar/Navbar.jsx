@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logo from "./imgs/logo.png";
 import homeIcon from "./imgs/home-icon.svg";
-import teamIcon from "./imgs/team-icon.svg";
+import proposalsIcon from "./imgs/proposals-icon.svg";
 import settingsIcon from "./imgs/settings-icon.svg";
 import logOutIcon from "./imgs/log-out-icon.svg";
-import LogOut from "../UserManagment/LogOut";
+import LogOut from "../../Student/UserManagment/LogOut";
 
 const Navbar = () => {
   const location = useLocation();
@@ -14,9 +14,8 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
-    // Implement your logout logic here, like clearing tokens or redirecting
     console.log("User logged out");
-    setLogOutOpen(false); // Close the modal after logout
+    setLogOutOpen(false);
   };
 
   return (
@@ -32,7 +31,7 @@ const Navbar = () => {
         <ul className="flex flex-col mt-10 space-y-10">
           <li
             className={`flex items-center p-3 rounded-md text-base transition-all duration-300 ${
-              isActive("/home")
+              isActive("/teacher/home")
                 ? "bg-peach text-white"
                 : "hover:bg-peach hover:text-white"
             }`}
@@ -41,34 +40,36 @@ const Navbar = () => {
               src={homeIcon}
               alt="Home Icon"
               className={`w-5 h-5 mr-3 transition-colors duration-300 ${
-                isActive("/home") ? "text-white" : "text-teal"
+                isActive("/teacher/home") ? "text-white" : "text-teal"
               }`}
             />
-            <Link to="/home" className="flex-1">
+            <Link to="/teacher/home" className="flex-1">
               Home
             </Link>
           </li>
           <li
             className={`flex items-center p-3 rounded-md text-base transition-all duration-300 ${
-              isActive("/team-formation")
+              isActive("/teacher/project-proposals")
                 ? "bg-peach text-white"
                 : "hover:bg-peach hover:text-white"
             }`}
           >
             <img
-              src={teamIcon}
+              src={proposalsIcon}
               alt="Team Formation Icon"
               className={`w-5 h-5 mr-3 transition-colors duration-300 ${
-                isActive("/team-formation") ? "text-white" : "text-teal"
+                isActive("/teacher/project-proposals")
+                  ? "text-white"
+                  : "text-teal"
               }`}
             />
-            <Link to="/team-formation" className="flex-1">
-              Team Formation
+            <Link to="/teacher/project-proposals" className="flex-1">
+              Project Proposals
             </Link>
           </li>
           <li
             className={`flex items-center p-3 rounded-md text-base transition-all duration-300 ${
-              isActive("/settings")
+              isActive("/teacher/settings")
                 ? "bg-peach text-white"
                 : "hover:bg-peach hover:text-white"
             }`}
@@ -77,10 +78,10 @@ const Navbar = () => {
               src={settingsIcon}
               alt="Settings Icon"
               className={`w-5 h-5 mr-3 transition-colors duration-300 ${
-                isActive("/settings") ? "text-white" : "text-teal"
+                isActive("/teacher/settings") ? "text-white" : "text-teal"
               }`}
             />
-            <Link to="/settings" className="flex-1">
+            <Link to="/teacher/settings" className="flex-1">
               Settings
             </Link>
           </li>
