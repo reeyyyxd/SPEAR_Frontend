@@ -12,12 +12,13 @@ import ClassPage from "./Student/Home/Classes/ClassPage";
 import ProjectProposal from "./Student/TeamFormation/ProjectProposal/ProjectProposal";
 import TeamsApplication from "./Student/TeamFormation/TeamsApplication/TeamsApplication";
 import SelectAdviser from "./Student/TeamFormation/ProjectProposal/SelectAdviser";
-import ProjectSummary from "./Student/TeamFormation/ProjectProposal/ProjectSummary";
+import ProposalSummary from "./Student/TeamFormation/ProjectProposal/ProposalSummary";
 import EvaluatePeers from "./Student/Home/Classes/EvaluatePeers/EvaluatePeers";
 import TeacherDashboard from "./Teacher/Home/TeacherDashboard";
 import TeacherSettings from "./Teacher/Settings/TeacherSettings";
 import ProjectProposals from "./Teacher/ProjectProposals/ProjectProposals";
 import CreateClass from "./Teacher/Home/Classes/CreateClass";
+import ProjectSummary from "./Student/TeamFormation/TeamsApplication/ProjectSummary";
 
 export default function AppRoutes() {
   return (
@@ -54,6 +55,10 @@ export default function AppRoutes() {
       />
       <Route
         path="/team-formation/project-proposal/proposal-summary"
+        element={<ProposalSummary />}
+      />
+      <Route
+        path="/team-application/project-summary"
         element={<ProjectSummary />}
       />
 

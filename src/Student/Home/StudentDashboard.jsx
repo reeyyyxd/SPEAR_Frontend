@@ -19,7 +19,6 @@ const StudentDashboard = () => {
   };
 
   const handleCardClick = (courseCode) => {
-    console.log(`Navigating to class with course code: ${courseCode}`);
     navigate(`/class/${courseCode}`);
   };
 

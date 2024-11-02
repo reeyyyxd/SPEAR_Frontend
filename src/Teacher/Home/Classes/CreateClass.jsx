@@ -3,28 +3,46 @@ import Navbar from "../../Navbar/Navbar";
 import Header from "../../Header/Header";
 import Select from "react-select";
 
-const options = [
-  { value: "cybersecurity", label: "Cybersecurity" },
-  { value: "ux_ui", label: "UX / UI" },
-  { value: "ai", label: "AI" },
-  { value: "data_analytics", label: "Data Analytics" },
+const semesterOptions = [
+  { value: "First", label: "First" },
+  { value: "Second", label: "Second" },
+  { value: "Mid-Year", label: "Mid-Year" },
 ];
 
-const MAX_SELECTION_LIMIT = 1; // Set the maximum number of selections
+const schoolYearOptions = [
+  { value: "2023_2024", label: "2023-2024" },
+  { value: "2024_2025", label: "2024-2025" },
+  { value: "2025_2026", label: "2025-2026" },
+  { value: "2026_2027", label: "2026-2027" },
+];
 
 const JoinClass = () => {
-  const [selectedOptions, setSelectedOptions] = useState([]);
+  const [selectedType, setSelectedType] = useState(null); // State for Capstone/Non-Capstone selection
+  const [courseCode, setCourseCode] = useState("");
+  const [section, setSection] = useState("");
+  const [selectedSchoolYear, setSelectedSchoolYear] = useState(null); // State for selected school year
+  const [selectedSemester, setSelectedSemester] = useState(null); // State for selected semester
   const [projectOverview, setProjectOverview] = useState("");
 
-  const handleSelectChange = (selected) => {
-    // Check if the new selection exceeds the limit
-    if (selected.length <= MAX_SELECTION_LIMIT) {
-      setSelectedOptions(selected);
+  const handleSelectChange = (selected, setter) => {
+    if (selected) {
+      setter(selected); // Since we are using single selection, just set the selected value
     } else {
-      alert(
-        `You can only select up to ${MAX_SELECTION_LIMIT} fields of interest.`
-      );
+      setter(null); // If nothing is selected, reset the state
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle form submission logic
+    console.log({
+      selectedType,
+      courseCode,
+      section,
+      schoolYear: selectedSchoolYear,
+      semester: selectedSemester,
+      projectOverview,
+    });
   };
 
   return (
@@ -37,98 +55,101 @@ const JoinClass = () => {
           <Header />
         </div>
 
-        <form className="grid grid-cols-2 gap-8">
-          {/* University Email */}
-          <div>
-            <label className="block text-sm mb-1" htmlFor="email">
+        <form className="grid grid-cols-2 gap-8" onSubmit={handleSubmit}>
+          {/* Capstone / Non-Capstone Buttons */}
+          <div className="flex items-center mb-4 col-span-2 gap-8">
+            <button
+              type="button"
+              className={`flex-1 p-2 rounded-md border ${
+                selectedType === "capstone"
+                  ? "bg-peach text-white"
+                  : "border-gray-300 hover:bg-peach hover:text-white"
+              }`}
+              onClick={() => setSelectedType("capstone")}
+            >
               Capstone
-            </label>
-            <input
-              type="email"
-              id="email"
-              className="w-full p-2 rounded-md border border-gray-300"
-              required
-            />
-          </div>
-
-          {/* First Name */}
-          <div>
-            <label className="block text-sm mb-1" htmlFor="firstName">
+            </button>
+            <button
+              type="button"
+              className={`flex-1 p-2 rounded-md border ${
+                selectedType === "non-capstone"
+                  ? "bg-peach text-white"
+                  : "border-gray-300 hover:bg-peach hover:text-white"
+              }`}
+              onClick={() => setSelectedType("non-capstone")}
+            >
               Non-Capstone
-            </label>
-            <input
-              type="text"
-              id="firstName"
-              className="w-full p-2 rounded-md border border-gray-300"
-              required
-            />
+            </button>
           </div>
 
           {/* Course Code */}
           <div>
             <label
               className="block text-sm mb-1 font-medium"
-              htmlFor="lastName"
+              htmlFor="courseCode"
             >
               Course Code
             </label>
             <input
               type="text"
-              id="lastName"
+              id="courseCode"
               className="w-full p-2 rounded-md border border-gray-300"
+              value={courseCode}
+              onChange={(e) => setCourseCode(e.target.value)}
               required
             />
           </div>
 
           {/* Section */}
           <div>
-            <label
-              className="block text-sm font-medium mb-1"
-              htmlFor="lastName"
-            >
+            <label className="block text-sm font-medium mb-1" htmlFor="section">
               Section
             </label>
             <input
               type="text"
-              id="lastName"
+              id="section"
               className="w-full p-2 rounded-md border border-gray-300"
+              value={section}
+              onChange={(e) => setSection(e.target.value)}
               required
             />
           </div>
 
           {/* School Year */}
           <div>
-            <label className="block text-sm  mb-1">School Year</label>
+            <label className="block text-sm mb-1">School Year</label>
             <Select
-              isMulti
-              options={options}
-              onChange={handleSelectChange}
-              value={selectedOptions}
+              options={schoolYearOptions}
+              onChange={(selected) =>
+                handleSelectChange(selected, setSelectedSchoolYear)
+              }
+              value={selectedSchoolYear}
               className="text-black"
-              placeholder="Select your fields of interest"
+              placeholder="Select school year"
             />
           </div>
 
           {/* Semester */}
           <div>
-            <label className="block text-md font-medium  mb-1">Semester</label>
+            <label className="block text-md font-medium mb-1">Semester</label>
             <Select
-              isMulti
-              options={options}
-              onChange={handleSelectChange}
-              value={selectedOptions}
+              options={semesterOptions}
+              onChange={(selected) =>
+                handleSelectChange(selected, setSelectedSemester)
+              }
+              value={selectedSemester}
               className="text-black"
-              placeholder="Select your fields of interest"
+              placeholder="Select semester"
             />
           </div>
 
-          {/* Project Overview */}
-          <div className="form-group">
+          {/* Course Description */}
+          <div className="form-group col-span-2 mb-8">
             <label
               htmlFor="project-overview"
               className="block text-base font-medium text-teal"
             >
-              Project Overview
+              Course Description
             </label>
             <textarea
               id="project-overview"
@@ -140,12 +161,14 @@ const JoinClass = () => {
             />
           </div>
         </form>
+
         {/* Submit Button */}
         <button
           type="submit"
           className="flex ml-auto bg-teal text-white px-6 py-3 rounded-md hover:bg-peach transition text-md"
+          onClick={handleSubmit}
         >
-          Submit Proposal
+          Create Class
         </button>
       </div>
     </div>
