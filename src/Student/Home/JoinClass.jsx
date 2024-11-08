@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import cardContent from "../../card-content"; // Make sure this path is correct
+import cardContent from "../../card-content"; 
 
 const JoinClass = ({ isOpen, onClose }) => {
   const [classCode, setClassCode] = useState(""); // State to store the class code

@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../Navbar/Navbar";
-import cardContent from "../../card-content"; // Import cardContent to access course data
+import cardContent from "../../card-content";
 import { Card, Typography } from "@material-tailwind/react";
 
 const TABLE_HEAD = ["Name", "Role", "Added", ""];
