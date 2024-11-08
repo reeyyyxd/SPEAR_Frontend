@@ -1,4 +1,3 @@
-// NotificationModal.js
 import React from "react";
 
 const NotificationModal = ({ isOpen, onClose, notifications }) => {
