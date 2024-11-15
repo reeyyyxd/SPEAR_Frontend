@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import logo from "../imgs/logo.png";
 import { Link } from "react-router-dom";
 import UserService from "../../../Service/UserService";
-import LandingPage from "../../../LandingPage"; // Import the LandingPage component
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -39,9 +38,6 @@ const Login = () => {
 
   return (
     <div>
-      {/* Include LandingPage at the top */}
-      <LandingPage />
-
       {/* Login Form Section */}
       <div className="flex items-center justify-center min-h-screen">
         <div className="main-content grid grid-cols-2 gap-0 bg-teal w-[928px] h-[696px] rounded-lg items-center">

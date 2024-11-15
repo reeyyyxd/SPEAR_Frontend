@@ -1,13 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import logo from "../imgs/logo.png";
-import LandingPage from "../../../LandingPage"; // Import LandingPage component
 
 const Register = () => {
   return (
     <div>
-      {/* Include LandingPage at the top */}
-      <LandingPage />
 
       <div className="flex items-center justify-center min-h-screen">
         <div className="main-content grid grid-cols-1 bg-teal w-[928px] h-[696px] rounded-lg items-center">
