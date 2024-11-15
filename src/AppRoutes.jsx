@@ -11,10 +11,10 @@ import TeamsApplication from "./Student/Pages/TeamFormation/TeamsApplication/Tea
 import SelectAdviser from "./Student/Pages/TeamFormation/ProjectProposal/SelectAdviser";
 import ProposalSummary from "./Student/Pages/TeamFormation/ProjectProposal/ProposalSummary";
 import EvaluatePeers from "./Student/Pages/Home/Classes/EvaluatePeers/EvaluatePeers";
-import TeacherDashboard from "./Teacher/Home/TeacherDashboard";
-import TeacherSettings from "./Teacher/Settings/TeacherSettings";
-import ProjectProposals from "./Teacher/ProjectProposals/ProjectProposals";
-import CreateClass from "./Teacher/Home/Classes/CreateClass";
+import TeacherDashboard from "./Teacher/Pages/Home/TeacherDashboard";
+import TeacherSettings from "./Teacher/Pages/Settings/TeacherSettings";
+import ProjectProposals from "./Teacher/Pages/ProjectProposals/ProjectProposals";
+import CreateClass from "./Teacher/Pages/Home/Classes/CreateClass";
 import ProjectSummary from "./Student/Pages/TeamFormation/TeamsApplication/ProjectSummary";
 
 export default function AppRoutes() {

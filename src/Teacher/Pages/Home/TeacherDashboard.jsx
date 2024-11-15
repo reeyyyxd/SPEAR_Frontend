@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-//import cardContent from "../../card-content";
-import Header from "../Header/Header";
 import CreateClass from "./Classes/CreateClass";
-//import ClassCard from "./Classes/ClassCard";
-import Navbar from "../Navbar/Navbar";
+import Navbar from "../../Components/Navbar/Navbar";
+import Header from "../../Components/Header/Header";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();

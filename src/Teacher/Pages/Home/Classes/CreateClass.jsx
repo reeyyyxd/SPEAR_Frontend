@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import Navbar from "../../Navbar/Navbar";
-import Header from "../../Header/Header";
 import Select from "react-select";
+import Navbar from "../../../Components/Navbar/Navbar";
+import Header from "../../../Components/Header/Header";
 
 const semesterOptions = [
   { value: "First", label: "First" },

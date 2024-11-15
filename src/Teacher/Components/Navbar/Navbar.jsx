@@ -5,7 +5,7 @@ import homeIcon from "./imgs/home-icon.svg";
 import proposalsIcon from "./imgs/proposals-icon.svg";
 import settingsIcon from "./imgs/settings-icon.svg";
 import logOutIcon from "./imgs/log-out-icon.svg";
-import LogOut from "../../Student/Pages/UserManagment/LogOut";
+import LogOut from "../../../Student/Pages/UserManagment/LogOut";
 
 const Navbar = () => {
   const location = useLocation();

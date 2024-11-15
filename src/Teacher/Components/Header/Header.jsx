@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import notifBell from "./imgs/notification-icon.png";
 import userProfile from "./imgs/osaka.jpg";
-import notificationContent from "../../notification-content"; // Import notifications
+import notificationContent from "../../../notification-content"; // Import notifications
 import NotificationModal from "./NotificationModal"; // Import the modal
 
 const Header = () => {

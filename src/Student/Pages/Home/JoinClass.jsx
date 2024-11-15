@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import cardContent from "../../card-content"; 
+import cardContent from "../../card-content";
 
 const JoinClass = ({ isOpen, onClose }) => {
   const [classCode, setClassCode] = useState(""); // State to store the class code
@@ -21,7 +21,6 @@ const JoinClass = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white rounded-lg w-full max-w-3xl relative p-8">
         {" "}
-        {/* Increased width */}
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -31,7 +30,10 @@ const JoinClass = ({ isOpen, onClose }) => {
         </button>
         {/* Modal Content */}
         <h2 className="text-xl font-semibold mb-4">Join Class</h2>
-        <p>Please fill in the details to join the class.</p>
+        <p>
+          Please enter the class code provided by the teacher and click on the
+          join class button.
+        </p>
         <form className="mt-4">
           <input
             type="text"
