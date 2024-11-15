@@ -16,12 +16,13 @@ import TeacherSettings from "./Teacher/Pages/Settings/TeacherSettings";
 import ProjectProposals from "./Teacher/Pages/ProjectProposals/ProjectProposals";
 import CreateClass from "./Teacher/Pages/Home/Classes/CreateClass";
 import ProjectSummary from "./Student/Pages/TeamFormation/TeamsApplication/ProjectSummary";
+import LandingPage from "./LandingPage";
 
 export default function AppRoutes() {
   return (
     <Routes>
       {/* Home route can guide users to choose between student/teacher login */}
-      <Route path="/" element={<Link to="/login">Go to Login</Link>} />
+      <Route path="/" element={<LandingPage />} />
 
       {/* Student Authentication Routes */}
       <Route path="/login" element={<Login />} />

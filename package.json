@@ -11,8 +11,8 @@
     "api": "json-server --watch db/db.json --port 3001"
   },
   "dependencies": {
-    "@heroicons/react": "^2.1.5",
     "@material-tailwind/react": "^2.1.10",
+    "axios": "^1.7.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.27.0",

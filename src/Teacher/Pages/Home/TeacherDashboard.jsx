@@ -4,7 +4,7 @@ import CreateClass from "./Classes/CreateClass";
 import Navbar from "../../Components/Navbar/Navbar";
 import Header from "../../Components/Header/Header";
 
-const StudentDashboard = () => {
+const TeacherDashboard = () => {
   const navigate = useNavigate();
 
   const handleCreateClassClick = () => {
@@ -67,4 +67,4 @@ const StudentDashboard = () => {
   );
 };
 
-export default StudentDashboard;
+export default TeacherDashboard;
