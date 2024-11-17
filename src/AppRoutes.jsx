@@ -1,6 +1,7 @@
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
+import PrivateRoute from "./services/PrivateRoute";
 
-//Student user imports
+// Student user imports
 import Login from "./pages/Student/UserManagment/Login";
 import Register from "./pages/Student/UserManagment/Register";
 import StudentDashboard from "./pages/Student/Home/StudentDashboard";
@@ -15,13 +16,18 @@ import ProposalSummary from "./pages/Student/TeamFormation/ProjectProposal/Propo
 import EvaluatePeers from "./pages/Student/Home/Classes/EvaluatePeers/EvaluatePeers";
 import ProjectSummary from "./pages/Student/TeamFormation/TeamsApplication/ProjectSummary";
 
-//Teacher user imports
+// Teacher user imports
 import TeacherDashboard from "./pages/Teacher/Home/TeacherDashboard";
 import TeacherSettings from "./pages/Teacher/Settings/TeacherSettings";
 import ProjectProposals from "./pages/Teacher/ProjectProposals/ProjectProposals";
 import CreateClass from "./pages/Teacher/Home/Classes/CreateClass";
-import LandingPage from "./components/LandingPage/LandingPage";
 import TeacherRegister from "./pages/Admin/Register/TeacherRegister";
+
+// Admin user imports
+import TeacherRegisterAdmin from "./pages/Admin/Register/TeacherRegister"; // For registering teachers as admin
+
+// Landing Page Component
+import LandingPage from "./components/LandingPage/LandingPage";
 
 export default function AppRoutes() {
   return (
@@ -29,50 +35,141 @@ export default function AppRoutes() {
       {/* Home route can guide users to choose between student/teacher login */}
       <Route path="/" element={<LandingPage />} />
 
-      {/* Student Authentication Routes */}
+      {/* Public routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Student Dashboard with nested routes */}
-      <Route path="/home" element={<StudentDashboard />} />
-      <Route path="/team-formation" element={<TeamFormation />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/log-out" element={<LogOut />} />
-      <Route path="/class/:courseCode" element={<ClassPage />} />
+      {/* Protected Student Routes */}
       <Route
-        path="/class/:courseCode/evaluate-peers"
-        element={<EvaluatePeers />}
+        path="/home"
+        element={
+          <PrivateRoute requiredRoles={["STUDENT"]}>
+            <StudentDashboard />
+          </PrivateRoute>
+        }
       />
-
+      <Route
+        path="/team-formation"
+        element={
+          <PrivateRoute requiredRoles={["STUDENT"]}>
+            <TeamFormation />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <PrivateRoute requiredRoles={["STUDENT"]}>
+            <Settings />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/log-out"
+        element={
+          <PrivateRoute requiredRoles={["STUDENT"]}>
+            <LogOut />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/class/:courseCode"
+        element={
+          <PrivateRoute requiredRoles={["STUDENT"]}>
+            <ClassPage />
+          </PrivateRoute>
+        }
+      />
       <Route
         path="/team-formation/project-proposal"
-        element={<ProjectProposal />}
+        element={
+          <PrivateRoute requiredRoles={["STUDENT"]}>
+            <ProjectProposal />
+          </PrivateRoute>
+        }
       />
       <Route
         path="/team-formation/teams-application"
-        element={<TeamsApplication />}
+        element={
+          <PrivateRoute requiredRoles={["STUDENT"]}>
+            <TeamsApplication />
+          </PrivateRoute>
+        }
       />
       <Route
         path="/team-formation/project-proposal/select-adviser"
-        element={<SelectAdviser />}
+        element={
+          <PrivateRoute requiredRoles={["STUDENT"]}>
+            <SelectAdviser />
+          </PrivateRoute>
+        }
       />
       <Route
         path="/team-formation/project-proposal/proposal-summary"
-        element={<ProposalSummary />}
+        element={
+          <PrivateRoute requiredRoles={["STUDENT"]}>
+            <ProposalSummary />
+          </PrivateRoute>
+        }
       />
       <Route
         path="/team-application/project-summary"
-        element={<ProjectSummary />}
+        element={
+          <PrivateRoute requiredRoles={["STUDENT"]}>
+            <ProjectSummary />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/class/:courseCode/evaluate-peers"
+        element={
+          <PrivateRoute requiredRoles={["STUDENT"]}>
+            <EvaluatePeers />
+          </PrivateRoute>
+        }
       />
 
-      {/* Teacher Authentication Routes */}
-      <Route path="/teacher/home" element={<TeacherDashboard />} />
-      <Route path="/teacher/settings" element={<TeacherSettings />} />
-      <Route path="/teacher/project-proposals" element={<ProjectProposals />} />
-      <Route path="/teacher/create-class" element={<CreateClass />} />
-      <Route path="/teacher/register" element={<TeacherRegister />} />
-
-      {/* Admin Authentication Routes */}
+      {/* Protected Teacher Routes */}
+      <Route
+        path="/teacher/home"
+        element={
+          <PrivateRoute requiredRoles={["TEACHER"]}>
+            <TeacherDashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/teacher/settings"
+        element={
+          <PrivateRoute requiredRoles={["TEACHER"]}>
+            <TeacherSettings />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/teacher/project-proposals"
+        element={
+          <PrivateRoute requiredRoles={["TEACHER"]}>
+            <ProjectProposals />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/teacher/create-class"
+        element={
+          <PrivateRoute requiredRoles={["TEACHER"]}>
+            <CreateClass />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/teacher/register"
+        element={
+          <PrivateRoute requiredRoles={["ADMIN"]}>
+            <TeacherRegister />
+          </PrivateRoute>
+        }
+      />
 
       {/* Catch-all route for undefined URLs */}
       <Route path="*" element={<h1>Nothing Here..</h1>} />

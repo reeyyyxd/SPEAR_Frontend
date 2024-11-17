@@ -12,12 +12,9 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Clear any previous error
 
     try {
       const data = await UserService.login(email, password);
-
-      // Store the token and role in localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
 

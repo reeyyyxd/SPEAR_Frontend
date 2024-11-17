@@ -1,30 +1,39 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for redirection
+import LogOut from "./LogOut"; // Import the LogOut component
+import UserService from "../../../services/UserService"; // Import UserService to call the logout method
 
-const LogOut = ({ isOpen, onClose, onConfirm }) => {
-  if (!isOpen) return null; 
+const LogoutPage = () => {
+  const navigate = useNavigate(); // Hook for redirecting
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+
+  // Handle logout function
+  const handleLogout = () => {
+    // Call the logout method from UserService
+    UserService.logout();
+
+    // After logout, redirect to the landing page (or home page)
+    navigate("/"); // Replace "/" with your desired landing page route
+  };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white text-teal rounded-lg p-6 shadow-lg">
-        <h2 className="text-lg font-semibold mb-4">Confirm Logout</h2>
-        <p>Are you sure you want to log out?</p>
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={onClose}
-            className="mr-2 bg-gray-300 text-black rounded-md px-4 py-2 hover:bg-peach hover:text-white"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="bg-teal text-white rounded-md px-4 py-2 hover:bg-peach"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
+    <div>
+      {/* Logout Button */}
+      <button
+        onClick={() => setIsModalOpen(true)} // Open the logout modal
+        className="bg-teal text-white py-2 px-4 rounded-md hover:bg-peach"
+      >
+        Logout
+      </button>
+
+      {/* LogOut Modal Component */}
+      <LogOut
+        isOpen={isModalOpen} // Modal visibility state
+        onClose={() => setIsModalOpen(false)} // Close modal if cancelled
+        onConfirm={handleLogout} // Perform logout and redirect
+      />
     </div>
   );
 };
 
-export default LogOut;
+export default LogoutPage;
