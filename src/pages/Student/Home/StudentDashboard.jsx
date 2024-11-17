@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import cardContent from "../../../statics/card-content";
-import JoinClass from "./Classes/JoinClass";
+import JoinClassModal from "../../../components/Modals/JoinClassModal";
 import ClassCard from "./Classes/ClassCard";
 import Navbar from "../../../components/Navbar/Navbar";
 import Header from "../../../components/Header/Header";
@@ -72,7 +72,7 @@ const StudentDashboard = () => {
       </div>
 
       {/* Join Class Modal */}
-      <JoinClass isOpen={isModalOpen} onClose={handleCloseModal} />
+      <JoinClassModal isOpen={isModalOpen} onClose={handleCloseModal} />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import "./App.css";
+import "./styles/index.css";
 import AppRoutes from "./AppRoutes";
 function App() {
   return (

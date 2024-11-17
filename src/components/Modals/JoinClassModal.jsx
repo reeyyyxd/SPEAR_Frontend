@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import cardContent from "../../../../statics/card-content"; 
+import cardContent from "../../statics/card-content";
 
-const JoinClass = ({ isOpen, onClose }) => {
+const JoinClassModal = ({ isOpen, onClose }) => {
   const [classCode, setClassCode] = useState(""); // State to store the class code
   const [filteredCourse, setFilteredCourse] = useState(null); // State to store the filtered course
 
@@ -60,4 +60,4 @@ const JoinClass = ({ isOpen, onClose }) => {
   );
 };
 
-export default JoinClass;
+export default JoinClassModal;

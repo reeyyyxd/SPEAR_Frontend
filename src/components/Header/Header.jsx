@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import notifBell from "../../assets/icons/notification-icon.svg";
 import userProfile from "../../assets/imgs/osaka.jpg";
 import notificationContent from "../../statics/notification-content";
-import NotificationModal from "./NotificationModal";
+import NotificationModal from "../Modals/NotificationModal";
 
 const Header = () => {
   const [isModalOpen, setModalOpen] = useState(false); // State to control modal visibility
