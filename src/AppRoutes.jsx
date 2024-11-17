@@ -1,22 +1,27 @@
 import { Routes, Route, Link } from "react-router-dom";
-import Login from "./Student/Pages/UserManagment/Login";
-import Register from "./Student/Pages/UserManagment/Register";
-import StudentDashboard from "./Student/Pages/Home/StudentDashboard";
-import TeamFormation from "./Student/Pages/TeamFormation/TeamFormation";
-import Settings from "./Student/Pages/Settings/Settings";
-import LogOut from "./Student/Pages/UserManagment/LogOut";
-import ClassPage from "./Student/Pages/Home/Classes/ClassPage";
-import ProjectProposal from "./Student/Pages/TeamFormation/ProjectProposal/ProjectProposal";
-import TeamsApplication from "./Student/Pages/TeamFormation/TeamsApplication/TeamsApplication";
-import SelectAdviser from "./Student/Pages/TeamFormation/ProjectProposal/SelectAdviser";
-import ProposalSummary from "./Student/Pages/TeamFormation/ProjectProposal/ProposalSummary";
-import EvaluatePeers from "./Student/Pages/Home/Classes/EvaluatePeers/EvaluatePeers";
-import TeacherDashboard from "./Teacher/Pages/Home/TeacherDashboard";
-import TeacherSettings from "./Teacher/Pages/Settings/TeacherSettings";
-import ProjectProposals from "./Teacher/Pages/ProjectProposals/ProjectProposals";
-import CreateClass from "./Teacher/Pages/Home/Classes/CreateClass";
-import ProjectSummary from "./Student/Pages/TeamFormation/TeamsApplication/ProjectSummary";
-import LandingPage from "./LandingPage";
+
+//Student user imports
+import Login from "./pages/Student/UserManagment/Login";
+import Register from "./pages/Student/UserManagment/Register";
+import StudentDashboard from "./pages/Student/Home/StudentDashboard";
+import TeamFormation from "./pages/Student/TeamFormation/TeamFormation";
+import Settings from "./pages/Student/Settings/Settings";
+import LogOut from "./pages/Student/UserManagment/LogOut";
+import ClassPage from "./pages/Student/Home/ClassPage";
+import ProjectProposal from "./pages/Student/TeamFormation/ProjectProposal/ProjectProposal";
+import TeamsApplication from "./pages/Student/TeamFormation/TeamsApplication/TeamsApplication";
+import SelectAdviser from "./pages/Student/TeamFormation/ProjectProposal/SelectAdviser";
+import ProposalSummary from "./pages/Student/TeamFormation/ProjectProposal/ProposalSummary";
+import EvaluatePeers from "./pages/Student/Home/Classes/EvaluatePeers/EvaluatePeers";
+import ProjectSummary from "./pages/Student/TeamFormation/TeamsApplication/ProjectSummary";
+
+//Teacher user imports
+import TeacherDashboard from "./pages/Teacher/Home/TeacherDashboard";
+import TeacherSettings from "./pages/Teacher/Settings/TeacherSettings";
+import ProjectProposals from "./pages/Teacher/ProjectProposals/ProjectProposals";
+import CreateClass from "./pages/Teacher/Home/Classes/CreateClass";
+import LandingPage from "./components/LandingPage/LandingPage";
+import TeacherRegister from "./pages/Admin/Register/TeacherRegister";
 
 export default function AppRoutes() {
   return (
@@ -65,6 +70,7 @@ export default function AppRoutes() {
       <Route path="/teacher/settings" element={<TeacherSettings />} />
       <Route path="/teacher/project-proposals" element={<ProjectProposals />} />
       <Route path="/teacher/create-class" element={<CreateClass />} />
+      <Route path="/teacher/register" element={<TeacherRegister />} />
 
       {/* Admin Authentication Routes */}
 
