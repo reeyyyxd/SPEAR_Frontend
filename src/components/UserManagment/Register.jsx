@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../../../assets/imgs/logo-dark.png";
-import UserService from "../../../services/UserService";
+import logo from "../../assets/imgs/logo-dark.png";
+import UserService from "../../services/UserService";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -12,6 +12,7 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -24,27 +25,35 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate password match
     if (password !== confirmPassword) {
       setError("Passwords do not match!");
       return;
     }
+
+    setError(null); // Reset any existing error
+    setIsLoading(true); // Start loading state
 
     const userData = {
       email,
       firstname: firstName,
       lastname: lastName,
       password,
-      role: "STUDENT",
+      role: "STUDENT", // Hardcoded role as STUDENT
     };
 
     try {
-      const token = localStorage.getItem("token");
-      await UserService.register(userData, token);
-      alert("User created successfully");
-      navigate("/login");
+      // Call register function without token
+      await UserService.register(userData);
+
+      alert("User created successfully"); // Alert on success
+      navigate("/login"); // Redirect to login page
     } catch (err) {
       console.error(err);
-      setError("Registration failed. Please try again.");
+      setError("Registration failed. Please try again."); // Handle any error during registration
+    } finally {
+      setIsLoading(false); // Stop loading state
     }
   };
 
@@ -99,7 +108,7 @@ const Register = () => {
                 </label>
                 <input
                   type="text"
-                  id="firstname" // Ensure the field name matches the backend
+                  id="firstname"
                   className="w-full p-2 rounded-md border border-gray-300"
                   value={firstName}
                   onChange={handleInputChange}
@@ -117,7 +126,7 @@ const Register = () => {
                 </label>
                 <input
                   type="text"
-                  id="lastname" // Ensure the field name matches the backend
+                  id="lastname"
                   className="w-full p-2 rounded-md border border-gray-300"
                   value={lastName}
                   onChange={handleInputChange}
@@ -165,9 +174,14 @@ const Register = () => {
               <div className="col-span-2">
                 <button
                   type="submit"
-                  className="mt-4 bg-peach text-white font-semibold py-2 rounded-md hover:bg-white hover:text-teal w-full"
+                  className={`mt-4 ${
+                    isLoading
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-peach text-white font-semibold py-2 rounded-md hover:bg-white hover:text-teal"
+                  } w-full`}
+                  disabled={isLoading}
                 >
-                  Register
+                  {isLoading ? "Registering..." : "Register"}
                 </button>
               </div>
             </form>

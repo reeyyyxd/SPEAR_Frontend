@@ -4,19 +4,15 @@ const PrivateRoute = ({ children, requiredRoles }) => {
   const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("role");
 
-  console.log("Token:", token);
-  console.log("User Role:", userRole);
-  console.log("Required Roles:", requiredRoles);
-
   if (!token) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" />; // Redirect to login if no token is found
   }
 
   if (!requiredRoles.includes(userRole)) {
-    return <Navigate to="/notAuthorized" />;
+    return <Navigate to="/notAuthorized" />; // Redirect if the role is not authorized
   }
 
-  return children;
+  return children; // Render children if authenticated and authorized
 };
 
 export default PrivateRoute;

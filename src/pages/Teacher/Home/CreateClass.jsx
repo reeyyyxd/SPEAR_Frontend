@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Select from "react-select";
-import Navbar from "../../../../components/Navbar/Navbar";
-import Header from "../../../../components/Header/Header";
+import Navbar from "../../../components/Navbar/Navbar";
+import Header from "../../../components/Header/Header";
 
 const semesterOptions = [
   { value: "First", label: "First" },
@@ -16,7 +16,7 @@ const schoolYearOptions = [
   { value: "2026_2027", label: "2026-2027" },
 ];
 
-const JoinClass = () => {
+const CreateClass = () => {
   const [selectedType, setSelectedType] = useState(null); // State for Capstone/Non-Capstone selection
   const [courseCode, setCourseCode] = useState("");
   const [section, setSection] = useState("");
@@ -175,4 +175,4 @@ const JoinClass = () => {
   );
 };
 
-export default JoinClass;
+export default CreateClass;

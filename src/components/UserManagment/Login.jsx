@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../../../assets/imgs/logo-dark.png";
+import logo from "../../assets/imgs/logo-dark.png";
 import { Link } from "react-router-dom";
-import UserService from "../../../services/UserService";
+import UserService from "../../services/UserService";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -13,22 +13,27 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    try {
-      const data = await UserService.login(email, password);
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.role);
+    // Clear any previous errors
+    setError("");
 
-      // Redirect user based on role
-      if (UserService.isAdmin()) {
+    try {
+      // Call the login service to authenticate the user
+      const response = await UserService.login(email, password);
+
+      // Store the token and role in localStorage
+      localStorage.setItem("token", response.token); // Assuming the response contains token
+      localStorage.setItem("role", response.role); // Assuming the response contains role
+
+      // Redirect the user to their respective dashboard based on their role
+      if (response.role === "STUDENT") {
+        navigate("/student-dashboard");
+      } else if (response.role === "TEACHER") {
+        navigate("/teacher-dashboard");
+      } else if (response.role === "ADMIN") {
         navigate("/admin-dashboard");
-      } else if (UserService.isStudent()) {
-        navigate("/home");
-      } else if (UserService.isTeacher()) {
-        navigate("/teacher/home");
-      } else {
-        setError("Unexpected role. Please contact support.");
       }
     } catch (err) {
+      // Handle errors and display an error message
       setError("Invalid email or password. Please try again.");
     }
   };

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../../../components/Navbar/Navbar";
+import Navbar from "../../components/Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
 
-const StudentDashboard = () => {
+const AdminDashboard = () => {
   const [userRole, setUserRole] = useState(null);
   const navigate = useNavigate();
 
@@ -22,9 +22,9 @@ const StudentDashboard = () => {
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={userRole} />
-      <div className="p-4">Student Dashboard Content</div>
+      AdminDashboard
     </div>
   );
 };
 
-export default StudentDashboard;
+export default AdminDashboard;
