@@ -1,14 +1,17 @@
+import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
+import AuthContext from "./AuthContext"; 
 
 const PrivateRoute = ({ children, requiredRoles }) => {
-  const token = localStorage.getItem("token");
-  const userRole = localStorage.getItem("role");
+  const { authState, isAuthenticated, isAdmin, isTeacher, isStudent } =
+    useContext(AuthContext);
 
-  if (!token) {
+  if (!authState.isAuthenticated) {
     return <Navigate to="/login" />; // Redirect to login if no token is found
   }
 
-  if (!requiredRoles.includes(userRole)) {
+  // Check if the user's role is authorized to access the route
+  if (requiredRoles && !requiredRoles.includes(authState.role)) {
     return <Navigate to="/notAuthorized" />; // Redirect if the role is not authorized
   }
 

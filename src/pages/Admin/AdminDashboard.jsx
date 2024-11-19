@@ -1,28 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext } from "react";
 import Navbar from "../../components/Navbar/Navbar";
+import AuthContext from "../../services/AuthContext"; // Adjust path
 import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
-  const [userRole, setUserRole] = useState(null);
+  const { authState } = useContext(AuthContext); // Get the auth state from context
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const role = localStorage.getItem("role");
-    if (!role) {
-      navigate("/login"); // Redirect to login if no role found
-    } else {
-      setUserRole(role);
-    }
-  }, [navigate]);
-
-  if (!userRole) {
-    return <div>Loading...</div>; // Or a loading spinner
+  if (!authState.isAuthenticated) {
+    // Redirect to login if not authenticated
+    navigate("/login");
   }
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
-      <Navbar userRole={userRole} />
-      AdminDashboard
+      <Navbar userRole={authState.role} />
+      <div className="p-4">Admin Dashboard Content</div>
     </div>
   );
 };

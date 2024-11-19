@@ -1,13 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { AuthProvider } from "./services/AuthContext";
 import "./styles/index.css";
 
 // Import components
 import LandingPage from "./pages/Common/LandingPage";
 import Login from "./components/UserManagment/Login";
 import Register from "./components/UserManagment/Register";
-import LogOut from "./components/UserManagment/LogOut";
 import Settings from "./components/UserManagment/Settings";
 import StudentDashboard from "./pages/Student/Home/StudentDashboard";
 import ProjectProposals from "./pages/Teacher/ProjectProposals/ProjectProposals";
@@ -43,14 +43,6 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["STUDENT", "TEACHER"]}>
         <Settings />
-      </PrivateRoute>
-    ),
-  },
-  {
-    path: "/log-out",
-    element: (
-      <PrivateRoute requiredRoles={["STUDENT"]}>
-        <LogOut />
       </PrivateRoute>
     ),
   },
@@ -98,6 +90,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>
 );

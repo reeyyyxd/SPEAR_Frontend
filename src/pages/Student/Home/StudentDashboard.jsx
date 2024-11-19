@@ -1,27 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext } from "react";
 import Navbar from "../../../components/Navbar/Navbar";
-import { useNavigate } from "react-router-dom";
+import AuthContext from "../../../services/AuthContext"; // Adjust path
 
 const StudentDashboard = () => {
-  const [userRole, setUserRole] = useState(null);
-  const navigate = useNavigate();
+  const { authState } = useContext(AuthContext); // Get the auth state from context
 
-  useEffect(() => {
-    const role = localStorage.getItem("role");
-    if (!role) {
-      navigate("/login"); // Redirect to login if no role found
-    } else {
-      setUserRole(role);
-    }
-  }, [navigate]);
-
-  if (!userRole) {
-    return <div>Loading...</div>; // Or a loading spinner
+  if (!authState.isAuthenticated) {
+    // Optionally handle the case where the user is not authenticated (e.g., redirect to login)
+    return <div>Loading...</div>; // Or redirect to login if needed
   }
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
-      <Navbar userRole={userRole} />
+      <Navbar userRole={authState.role} />
       <div className="p-4">Student Dashboard Content</div>
     </div>
   );

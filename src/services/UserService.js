@@ -1,131 +1,81 @@
 import axios from "axios";
 
+// Create an Axios instance with a base URL and headers
+const apiClient = axios.create({
+  baseURL: "http://localhost:8080",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Add a request interceptor to include the Authorization header
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Utility function for handling API requests
+const handleRequest = async (request) => {
+  try {
+    const response = await request();
+    return response.data;
+  } catch (err) {
+    // You can extend this to return a more specific error message
+    console.error(err); // Optional: Log the error for debugging
+    throw err;
+  }
+};
+
 class UserService {
-  static BASE_URL = "http://localhost:8080";
-
-  static async login(email, password) {
-    try {
-      const response = await axios.post(`${UserService.BASE_URL}/login`, {
-        email,
-        password,
-      });
-      return response.data;
-    } catch (err) {
-      throw err;
-    }
+  // Login method
+  static login(email, password) {
+    return handleRequest(() => apiClient.post("/login", { email, password }));
   }
 
-  static async register(userData) {
-    try {
-      const response = await axios.post(
-        `${UserService.BASE_URL}/register`,
-        userData
-      );
-      return response.data;
-    } catch (err) {
-      throw err;
-    }
+  // Register method
+  static register(userData) {
+    return handleRequest(() => apiClient.post("/register", userData));
   }
 
-  static async getAllUsers(token) {
-    try {
-      const response = await axios.get(
-        `${UserService.BASE_URL}/admin/get-all-users`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      return response.data;
-    } catch (err) {
-      throw err;
-    }
+  // Get all users (for admins)
+  static getAllUsers() {
+    return handleRequest(() => apiClient.get("/admin/get-all-users"));
   }
 
-  static async getYourProfile(token) {
-    try {
-      const response = await axios.get(
-        `${UserService.BASE_URL}/adminuser/get-profile`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      return response.data;
-    } catch (err) {
-      throw err;
-    }
+  // Get your profile (admin user)
+  static getYourProfile() {
+    return handleRequest(() => apiClient.get("/adminuser/get-profile"));
   }
 
-  static async getUserById(userId, token) {
-    try {
-      const response = await axios.get(
-        `${UserService.BASE_URL}/admin/get-users/${userId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      return response.data;
-    } catch (err) {
-      throw err;
-    }
+  // Get user by ID
+  static getUserById(userId) {
+    return handleRequest(() => apiClient.get(`/admin/get-users/${userId}`));
   }
 
-  static async deleteUser(userId, token) {
-    try {
-      const response = await axios.delete(
-        `${UserService.BASE_URL}/admin/delete/${userId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      return response.data;
-    } catch (err) {
-      throw err;
-    }
+  // Delete user
+  static deleteUser(userId) {
+    return handleRequest(() => apiClient.delete(`/admin/delete/${userId}`));
   }
 
-  static async updateUser(userId, userData, token) {
-    try {
-      const response = await axios.put(
-        `${UserService.BASE_URL}/admin/update/${userId}`,
-        userData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      return response.data;
-    } catch (err) {
-      throw err;
-    }
+  // Update user
+  static updateUser(userId, userData) {
+    return handleRequest(() =>
+      apiClient.put(`/admin/update/${userId}`, userData)
+    );
   }
 
-  /**AUTHENTICATION CHECKER */
+  // Logout: Remove token and role from localStorage
   static logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
-  }
-
-  static isAuthenticated() {
-    const token = localStorage.getItem("token");
-    return !!token;
-  }
-
-  static isAdmin() {
-    const role = localStorage.getItem("role");
-    return role === "ADMIN";
-  }
-
-  static isStudent() {
-    const role = localStorage.getItem("role");
-    return role === "STUDENT";
-  }
-
-  static isTeacher() {
-    const role = localStorage.getItem("role");
-    return role === "TEACHER";
-  }
-
-  static adminOnly() {
-    return this.isAuthenticated() && this.isAdmin();
   }
 }
 

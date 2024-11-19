@@ -3,26 +3,26 @@ import { useNavigate } from "react-router-dom";
 import logo from "../../assets/imgs/logo-dark.png";
 import { Link } from "react-router-dom";
 import UserService from "../../services/UserService";
+import AuthContext from "../../services/AuthContext";
+import { useContext } from "react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
-    // Clear any previous errors
     setError("");
 
     try {
-      // Call the login service to authenticate the user
+      // the login service to authenticate the user
       const response = await UserService.login(email, password);
 
-      // Store the token and role in localStorage
-      localStorage.setItem("token", response.token); // Assuming the response contains token
-      localStorage.setItem("role", response.role); // Assuming the response contains role
+      // Update the context with the received token and role
+      login(response.token, response.role);
 
       // Redirect the user to their respective dashboard based on their role
       if (response.role === "STUDENT") {

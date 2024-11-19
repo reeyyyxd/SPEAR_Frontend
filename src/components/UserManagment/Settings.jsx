@@ -1,106 +1,82 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../Navbar/Navbar";
 import Header from "../Header/Header";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    password: "",
-    profilePicture: null, // For storing the file input
-  });
+  const [userRole, setUserRole] = useState(null);
+  const navigate = useNavigate();
 
-  // Handle input change
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    if (!role) {
+      navigate("/login"); // Redirect to login if no role found
+    } else {
+      setUserRole(role);
+    }
+  }, [navigate]);
 
-  // Handle file input change
-  const handleFileChange = (e) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      profilePicture: e.target.files[0],
-    }));
-  };
-
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission logic here
-    console.log("Form submitted:", formData);
-  };
+  if (!userRole) {
+    return <div>Loading...</div>; // Or a loading spinner
+  }
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
-      <Navbar />
+      <Navbar userRole={userRole} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         <div className="header flex justify-between items-center mb-6">
           <h1 className="text-lg font-semibold">Profile Overview</h1>
           <Header />
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
-        >
+        <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex flex-col">
-            <label className="block mb-2 font-medium">First Name</label>
+            <label htmlFor="firstname" className="block mb-2 font-medium">
+              First Name
+            </label>
             <input
               type="text"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              className="border border-gray-300 rounded-md p-2"
+              id="firstname"
+              name="firstname"
+              className="border rounded-md p-2 border-gray-300"
               placeholder="Enter your first name"
-              required
+              disabled
             />
           </div>
 
           <div className="flex flex-col">
-            <label className="block mb-2 font-medium">Last Name</label>
+            <label htmlFor="lastname" className="block mb-2 font-medium">
+              Last Name
+            </label>
             <input
               type="text"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              className="border border-gray-300 rounded-md p-2"
+              id="lastname"
+              name="lastname"
+              className="border rounded-md p-2 border-gray-300"
               placeholder="Enter your last name"
-              required
+              disabled
             />
           </div>
 
           <div className="flex flex-col md:col-span-2">
-            <label className="block mb-2 font-medium">Change Password</label>
+            <label htmlFor="password" className="block mb-2 font-medium">
+              Change Password
+            </label>
             <input
               type="password"
+              id="password"
               name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="border border-gray-300 rounded-md p-2"
+              className="border rounded-md p-2 border-gray-300"
               placeholder="Enter a new password"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col md:col-span-2">
-            <label className="block mb-2 font-medium">Profile Picture</label>
-            <input
-              type="file"
-              name="profilePicture"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="border border-gray-300 rounded-md p-2"
+              disabled
             />
           </div>
 
           <div className="md:col-span-2">
             <button
-              type="submit"
-              className="bg-teal text-white font-semibold rounded-md px-4 py-2 transition duration-300 hover:bg-peach"
+              type="button"
+              className="bg-teal text-white font-semibold rounded-md px-4 py-2 transition duration-300 hover:bg-gray-300 cursor-not-allowed"
+              disabled
             >
               Save Changes
             </button>
