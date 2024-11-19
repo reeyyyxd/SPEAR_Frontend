@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/imgs/logo-dark.png";
+import Home from "./Home";
 
 const LandingPage = () => {
   const [openNav, setOpenNav] = useState(false);
@@ -29,12 +30,7 @@ const LandingPage = () => {
           <div className="hidden lg:flex ml-auto space-x-4">
             <Link to="/login">
               <button className="bg-teal text-white px-4 py-2 rounded hover:bg-teal-700 transition-colors">
-                Log In
-              </button>
-            </Link>
-            <Link to="/register">
-              <button className="bg-gradient-to-r from-blue-500 to-purple-500 text-teal px-4 py-2 rounded hover:from-blue-600 hover:to-purple-600 transition-all">
-                Register
+                Go to App
               </button>
             </Link>
           </div>

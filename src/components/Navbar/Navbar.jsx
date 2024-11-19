@@ -45,6 +45,7 @@ const Navbar = ({ userRole }) => {
   const handleLogOut = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("refreshToken");
     navigate("/login");
   };
 

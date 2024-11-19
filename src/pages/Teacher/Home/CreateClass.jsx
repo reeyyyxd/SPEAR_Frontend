@@ -3,6 +3,7 @@ import Select from "react-select";
 import Navbar from "../../../components/Navbar/Navbar";
 import Header from "../../../components/Header/Header";
 import AuthContext from "../../../services/AuthContext";
+import { useContext } from "react";
 
 const semesterOptions = [
   { value: "First", label: "First" },
@@ -11,15 +12,15 @@ const semesterOptions = [
 ];
 
 const schoolYearOptions = [
-  { value: "2023_2024", label: "2023-2024" },
-  { value: "2024_2025", label: "2024-2025" },
-  { value: "2025_2026", label: "2025-2026" },
-  { value: "2026_2027", label: "2026-2027" },
+  { value: "2023-2024", label: "2023-2024" },
+  { value: "2024-2025", label: "2024-2025" },
+  { value: "2025-2026", label: "2025-2026" },
+  { value: "2026-2027", label: "2026-2027" },
 ];
 
 const courseType = [
   { value: 1, label: "Capstone" },
-  { value: 2, label: "Non-Capstone" },
+  { value: 0, label: "Non-Capstone" },
 ];
 
 const CreateClass = () => {
@@ -65,7 +66,6 @@ const CreateClass = () => {
               id="courseCode"
               className="w-full border border-gray-300 rounded-md p-2"
               placeholder="Enter course code"
-              disabled
             />
           </div>
 
@@ -117,7 +117,6 @@ const CreateClass = () => {
               rows="4"
               className="w-full border border-gray-300 rounded-md p-2"
               placeholder="Provide an overview of the project"
-              disabled
             />
           </div>
         </form>

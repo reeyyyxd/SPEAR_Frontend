@@ -5,7 +5,7 @@ import { AuthProvider } from "./services/AuthContext";
 import "./styles/index.css";
 
 // Import components
-import LandingPage from "./pages/Common/LandingPage";
+import LandingPage from "./pages/LandinPage/LandingPage";
 import Login from "./components/UserManagment/Login";
 import Register from "./components/UserManagment/Register";
 import Settings from "./components/UserManagment/Settings";
