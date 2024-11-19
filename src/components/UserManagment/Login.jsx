@@ -18,13 +18,13 @@ const Login = () => {
     setError("");
 
     try {
-      // the login service to authenticate the user
+      // Authenticate the user
       const response = await UserService.login(email, password);
 
-      // Update the context with the received token and role
-      login(response.token, response.role);
+      // Pass all necessary data to login, including refreshToken
+      login(response.token, response.role, response.refreshToken);
 
-      // Redirect the user to their respective dashboard based on their role
+      // Redirect based on role
       if (response.role === "STUDENT") {
         navigate("/student-dashboard");
       } else if (response.role === "TEACHER") {
@@ -33,7 +33,6 @@ const Login = () => {
         navigate("/admin-dashboard");
       }
     } catch (err) {
-      // Handle errors and display an error message
       setError("Invalid email or password. Please try again.");
     }
   };

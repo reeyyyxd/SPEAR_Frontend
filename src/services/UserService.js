@@ -28,8 +28,7 @@ const handleRequest = async (request) => {
     const response = await request();
     return response.data;
   } catch (err) {
-    // You can extend this to return a more specific error message
-    console.error(err); // Optional: Log the error for debugging
+    console.error(err);
     throw err;
   }
 };

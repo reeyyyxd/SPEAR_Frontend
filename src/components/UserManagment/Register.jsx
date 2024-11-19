@@ -6,45 +6,49 @@ import UserService from "../../services/UserService";
 const Register = () => {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  // Form state object
+  const [formData, setFormData] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Handle form field changes
   const handleInputChange = (e) => {
     const { id, value } = e.target;
-    if (id === "email") setEmail(value);
-    if (id === "firstname") setFirstName(value);
-    if (id === "lastname") setLastName(value);
-    if (id === "password") setPassword(value);
-    if (id === "confirmPassword") setConfirmPassword(value);
+    setFormData((prevState) => ({
+      ...prevState,
+      [id]: value,
+    }));
   };
 
+  // Validate form and handle submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate password match
-    if (password !== confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match!");
       return;
     }
 
-    setError(null); // Reset any existing error
-    setIsLoading(true); // Start loading state
+    setError(null); 
+    setIsLoading(true); 
 
     const userData = {
-      email,
-      firstname: firstName,
-      lastname: lastName,
-      password,
-      role: "STUDENT", // Hardcoded role as STUDENT
+      email: formData.email,
+      firstname: formData.firstName,
+      lastname: formData.lastName,
+      password: formData.password,
+      role: "STUDENT", 
     };
 
     try {
-      // Call register function without token
+      // Register the user
       await UserService.register(userData);
 
       alert("User created successfully"); // Alert on success
@@ -92,7 +96,7 @@ const Register = () => {
                   type="email"
                   id="email"
                   className="w-full p-2 rounded-md border border-gray-300"
-                  value={email}
+                  value={formData.email}
                   onChange={handleInputChange}
                   required
                 />
@@ -102,15 +106,15 @@ const Register = () => {
               <div>
                 <label
                   className="block text-sm text-white mb-1"
-                  htmlFor="firstname"
+                  htmlFor="firstName"
                 >
                   First Name
                 </label>
                 <input
                   type="text"
-                  id="firstname"
+                  id="firstName"
                   className="w-full p-2 rounded-md border border-gray-300"
-                  value={firstName}
+                  value={formData.firstName}
                   onChange={handleInputChange}
                   required
                 />
@@ -120,15 +124,15 @@ const Register = () => {
               <div>
                 <label
                   className="block text-sm text-white mb-1"
-                  htmlFor="lastname"
+                  htmlFor="lastName"
                 >
                   Last Name
                 </label>
                 <input
                   type="text"
-                  id="lastname"
+                  id="lastName"
                   className="w-full p-2 rounded-md border border-gray-300"
-                  value={lastName}
+                  value={formData.lastName}
                   onChange={handleInputChange}
                   required
                 />
@@ -146,7 +150,7 @@ const Register = () => {
                   type="password"
                   id="password"
                   className="w-full p-2 rounded-md border border-gray-300"
-                  value={password}
+                  value={formData.password}
                   onChange={handleInputChange}
                   required
                 />
@@ -164,7 +168,7 @@ const Register = () => {
                   type="password"
                   id="confirmPassword"
                   className="w-full p-2 rounded-md"
-                  value={confirmPassword}
+                  value={formData.confirmPassword}
                   onChange={handleInputChange}
                   required
                 />

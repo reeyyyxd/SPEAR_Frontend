@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
+import axios from "axios";
 
 const AuthContext = createContext();
 
@@ -11,46 +12,75 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const refreshToken = localStorage.getItem("refreshToken");
     const role = localStorage.getItem("role");
 
-    if (token && role) {
+    if (token && isTokenExpired(token)) {
+      console.log("Token is expired, attempting to refresh...");
+      if (refreshToken) {
+        refreshAccessToken(refreshToken); // Refresh the token
+      } else {
+        console.log("No refresh token available, logging out...");
+        logout(); // No refresh token available
+      }
+    } else if (token && role) {
       setAuthState({
         token,
         role,
         isAuthenticated: true,
       });
+    } else {
+      console.log("No token or role found, logging out...");
+      logout(); // No token or role found
     }
   }, []);
 
-  // login and update the context
-  const login = (token, role) => {
+  const isTokenExpired = (token) => {
+    try {
+      const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decode JWT payload
+      const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+      return decodedToken.exp < currentTime; // Compare expiry time
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return true; // Treat as expired if decoding fails
+    }
+  };
+
+  const refreshAccessToken = async (refreshToken) => {
+    try {
+      const response = await axios.post("http://localhost:8080/refresh-token", {
+        token: refreshToken,
+      });
+
+      const { token, refreshToken: newRefreshToken } = response.data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("refreshToken", newRefreshToken);
+
+      setAuthState({
+        token,
+        role: localStorage.getItem("role"),
+        isAuthenticated: true,
+      });
+      console.log("Token refreshed successfully.");
+    } catch (error) {
+      console.error("Failed to refresh token:", error);
+      logout(); // Logout if token refresh fails
+    }
+  };
+
+  const login = (token, role, refreshToken) => {
     localStorage.setItem("token", token);
+    localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("role", role);
     setAuthState({ token, role, isAuthenticated: true });
   };
 
-  // logout and clear the context
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("refreshToken");
     setAuthState({ token: null, role: null, isAuthenticated: false });
-  };
-
-  // check user roles
-  const isAuthenticated = () => {
-    return authState.isAuthenticated;
-  };
-
-  const isAdmin = () => {
-    return authState.role === "ADMIN";
-  };
-
-  const isTeacher = () => {
-    return authState.role === "TEACHER";
-  };
-
-  const isStudent = () => {
-    return authState.role === "STUDENT";
   };
 
   return (
@@ -59,10 +89,10 @@ export const AuthProvider = ({ children }) => {
         authState,
         login,
         logout,
-        isAuthenticated,
-        isAdmin,
-        isTeacher,
-        isStudent,
+        isAuthenticated: authState.isAuthenticated,
+        isAdmin: authState.role === "ADMIN",
+        isTeacher: authState.role === "TEACHER",
+        isStudent: authState.role === "STUDENT",
       }}
     >
       {children}
