@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import Navbar from "../../../components/Navbar/Navbar";
 import Header from "../../../components/Header/Header";
 import AuthContext from "../../../services/AuthContext";
-import { useContext } from "react";
+import ClassService from "../../../services/ClassService"; // Import your ClassService
 
 const semesterOptions = [
   { value: "First", label: "First" },
@@ -24,12 +25,67 @@ const courseType = [
 ];
 
 const CreateClass = () => {
+  const navigate = useNavigate(); // Hook for navigation
   const { authState } = useContext(AuthContext); // Get the auth state from context
 
+  // Redirect to login if not authenticated
   if (!authState.isAuthenticated) {
-    // Redirect to login if not authenticated
     navigate("/login");
   }
+
+  // State for form inputs
+  const [courseTypeValue, setCourseTypeValue] = useState(null);
+  const [courseCode, setCourseCode] = useState("");
+  const [section, setSection] = useState("");
+  const [schoolYear, setSchoolYear] = useState(null);
+  const [semester, setSemester] = useState(null);
+  const [courseDescription, setCourseDescription] = useState("");
+
+  // State for feedback messages
+  const [message, setMessage] = useState(null);
+  const [error, setError] = useState(null);
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validate form fields
+    if (
+      !courseTypeValue ||
+      !courseCode ||
+      !section ||
+      !schoolYear ||
+      !semester ||
+      !courseDescription
+    ) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    const classData = {
+      courseType: courseTypeValue.label,
+      courseCode,
+      section,
+      schoolYear: schoolYear.label,
+      semester: semester.label,
+      courseDescription,
+    };
+
+    try {
+      // Pass the auth token from the context to the createClass function
+      const response = await ClassService.createClass(
+        classData,
+        authState.token
+      );
+      setMessage("Class created successfully!");
+      setError(null); // Clear any previous errors
+      alert("Class created successfully");
+      navigate("/teacher-dashboard"); // Redirect to the teacher dashboard or classes page after success
+    } catch (err) {
+      setError("Failed to create class. Please try again.");
+      setMessage(null); // Clear any previous success messages
+    }
+  };
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
@@ -40,7 +96,8 @@ const CreateClass = () => {
           <Header />
         </div>
 
-        <form className="grid grid-cols-2 gap-8">
+        {/* Form */}
+        <form className="grid grid-cols-2 gap-8" onSubmit={handleSubmit}>
           {/* Course Type */}
           <div>
             <label className="block text-sm font-medium mb-1">
@@ -48,6 +105,8 @@ const CreateClass = () => {
             </label>
             <Select
               options={courseType}
+              value={courseTypeValue}
+              onChange={setCourseTypeValue}
               className="text-black bg-peach hover:bg-peach"
               placeholder="Select Course Type"
             />
@@ -66,6 +125,8 @@ const CreateClass = () => {
               id="courseCode"
               className="w-full border border-gray-300 rounded-md p-2"
               placeholder="Enter course code"
+              value={courseCode}
+              onChange={(e) => setCourseCode(e.target.value)}
             />
           </div>
 
@@ -79,6 +140,8 @@ const CreateClass = () => {
               id="section"
               className="w-full border border-gray-300 rounded-md p-2"
               placeholder="Enter section"
+              value={section}
+              onChange={(e) => setSection(e.target.value)}
             />
           </div>
 
@@ -89,6 +152,8 @@ const CreateClass = () => {
             </label>
             <Select
               options={schoolYearOptions}
+              value={schoolYear}
+              onChange={setSchoolYear}
               className="text-black"
               placeholder="Select school year"
             />
@@ -99,6 +164,8 @@ const CreateClass = () => {
             <label className="block text-sm font-medium mb-1">Semester</label>
             <Select
               options={semesterOptions}
+              value={semester}
+              onChange={setSemester}
               className="text-black"
               placeholder="Select semester"
             />
@@ -117,17 +184,23 @@ const CreateClass = () => {
               rows="4"
               className="w-full border border-gray-300 rounded-md p-2"
               placeholder="Provide an overview of the project"
+              value={courseDescription}
+              onChange={(e) => setCourseDescription(e.target.value)}
             />
           </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="ml-auto mt-4 bg-teal text-white px-6 py-3 rounded-md"
+          >
+            Create Class
+          </button>
         </form>
 
-        {/* Submit Button */}
-        <button
-          type="button"
-          className="ml-auto mt-4 bg-teal text-white px-6 py-3 rounded-md"
-        >
-          Create Class
-        </button>
+        {/* Feedback Messages */}
+        {message && <div className="mt-4 text-green-500">{message}</div>}
+        {error && <div className="mt-4 text-red-500">{error}</div>}
       </div>
     </div>
   );

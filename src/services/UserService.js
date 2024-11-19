@@ -1,12 +1,4 @@
-import axios from "axios";
-
-// Create an Axios instance with a base URL and headers
-const apiClient = axios.create({
-  baseURL: "http://localhost:8080",
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+import apiClient from "./apiClient";
 
 // Add a request interceptor to include the Authorization header
 apiClient.interceptors.request.use(
