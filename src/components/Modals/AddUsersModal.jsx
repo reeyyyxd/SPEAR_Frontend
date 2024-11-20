@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify"; // Importing toast
 import UserService from "../../services/UserService";
 
 const AddUsersModal = ({ isOpen, onClose }) => {
@@ -37,7 +38,11 @@ const AddUsersModal = ({ isOpen, onClose }) => {
     try {
       // Add new user
       const newUser = await UserService.register(userData);
-      alert("User added successfully");
+
+      // Show success toast
+      toast.success("User added successfully!");
+
+      // Close the modal after successful submission
       onClose();
     } catch (err) {
       console.error(err);

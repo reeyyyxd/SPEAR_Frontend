@@ -17,6 +17,8 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import PrivateRoute from "./services/PrivateRoute";
 import NotAuthorized from "./pages/Common/UnAuthorizedPage";
 import ManageUsers from "./components/UserManagment/ManageUsers";
+import { ToastContainer } from "react-toastify"; // Import ToastContainer
+import "react-toastify/dist/ReactToastify.css"; // Import toast CSS
 
 const router = createBrowserRouter([
   {
@@ -102,6 +104,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>
       <RouterProvider router={router} />
+      <ToastContainer position="top-right" autoClose={3000} /> {/* Add ToastContainer here */}
     </AuthProvider>
   </React.StrictMode>
 );

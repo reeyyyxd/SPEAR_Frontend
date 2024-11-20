@@ -1,6 +1,8 @@
 import React from "react";
 import { useFetchUsers } from "../../components/CustomHooks/useFetchUsers";
 import { usePagination } from "../../components/CustomHooks/usePagination";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import deleteIcon from "../../assets/icons/delete-icon.svg";
 import UserService from "../../services/UserService";
 
@@ -17,17 +19,25 @@ const UsersTable = () => {
   } = usePagination(users, usersPerPage);
 
   const handleDelete = async (userId) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      try {
-        await UserService.deleteUser(userId);
-        mutate(
-          users.filter((user) => user.uid !== userId),
-          false
-        );
-        alert("User deleted successfully.");
-      } catch (err) {
-        alert("Failed to delete the user.");
-      }
+    const userToDelete = users.find((user) => user.uid === userId);
+    const confirmationMessage = `Are you sure you want to delete ${userToDelete?.firstname} ${userToDelete?.lastname}?`;
+
+    const confirmDeletion = window.confirm(confirmationMessage);
+
+    if (!confirmDeletion) {
+      toast.info("Deletion cancelled.");
+      return;
+    }
+
+    try {
+      await UserService.deleteUser(userId);
+      mutate(
+        users.filter((user) => user.uid !== userId),
+        false
+      );
+      toast.success("User deleted successfully.");
+    } catch (err) {
+      toast.error("Failed to delete the user.");
     }
   };
 
