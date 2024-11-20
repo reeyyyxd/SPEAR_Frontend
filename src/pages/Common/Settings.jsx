@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../Navbar/Navbar";
-import Header from "../Header/Header";
+import Navbar from "../../components/Navbar/Navbar";
+import Header from "../../components/Header/Header";
 import { useNavigate } from "react-router-dom";
 
 const Settings = () => {

@@ -6,6 +6,7 @@ import teamIcon from "../../assets/icons/team-icon.svg";
 import settingsIcon from "../../assets/icons/settings-icon.svg";
 import logOutIcon from "../../assets/icons/log-out-icon.svg";
 import projectProposalsIcon from "../../assets/icons/proposals-icon.svg";
+import userIcon from "../../assets/icons/user-icon.svg";
 
 const Navbar = ({ userRole }) => {
   const location = useLocation();
@@ -32,6 +33,7 @@ const Navbar = ({ userRole }) => {
     ],
     ADMIN: [
       { label: "Dashboard", path: "/admin-dashboard", icon: dashboardIcon },
+      { label: "Manage Users", path: "/manage-users", icon: userIcon },
       {
         label: "Project Proposals",
         path: "/project-proposals",

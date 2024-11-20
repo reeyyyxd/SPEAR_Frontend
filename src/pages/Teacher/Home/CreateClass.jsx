@@ -190,17 +190,19 @@ const CreateClass = () => {
           </div>
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            className="ml-auto mt-4 bg-teal text-white px-6 py-3 rounded-md"
-          >
-            Create Class
-          </button>
+          <div className="col-span-2 flex justify-end mt-4">
+            <button
+              type="submit"
+              className="bg-teal text-white px-6 py-3 rounded-md"
+            >
+              Create Class
+            </button>
+          </div>
         </form>
 
         {/* Feedback Messages */}
-        {message && <div className="mt-4 text-green-500">{message}</div>}
-        {error && <div className="mt-4 text-red-500">{error}</div>}
+        {message && <div className="mt-2 text-green-500">{message}</div>}
+        {error && <div className="mt-2 text-red-500">{error}</div>}
       </div>
     </div>
   );

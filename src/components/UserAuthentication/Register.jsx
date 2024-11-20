@@ -36,15 +36,15 @@ const Register = () => {
       return;
     }
 
-    setError(null); 
-    setIsLoading(true); 
+    setError(null);
+    setIsLoading(true);
 
     const userData = {
       email: formData.email,
       firstname: formData.firstName,
       lastname: formData.lastName,
       password: formData.password,
-      role: "STUDENT", 
+      role: "STUDENT",
     };
 
     try {

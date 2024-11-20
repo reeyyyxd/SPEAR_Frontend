@@ -6,9 +6,9 @@ import "./styles/index.css";
 
 // Import components
 import LandingPage from "./pages/LandinPage/LandingPage";
-import Login from "./components/UserManagment/Login";
-import Register from "./components/UserManagment/Register";
-import Settings from "./components/UserManagment/Settings";
+import Login from "./components/UserAuthentication/Login";
+import Register from "./components/UserAuthentication/Register";
+import Settings from "./pages/Common/Settings";
 import StudentDashboard from "./pages/Student/Home/StudentDashboard";
 import ProjectProposals from "./pages/Teacher/ProjectProposals/ProjectProposals";
 import TeacherDashboard from "./pages/Teacher/Home/TeacherDashboard";
@@ -16,6 +16,7 @@ import CreateClass from "./pages/Teacher/Home/CreateClass";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import PrivateRoute from "./services/PrivateRoute";
 import NotAuthorized from "./pages/Common/UnAuthorizedPage";
+import ManageUsers from "./components/UserManagment/ManageUsers";
 
 const router = createBrowserRouter([
   {
@@ -78,6 +79,15 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
+  {
+    path: "/manage-users",
+    element: (
+      <PrivateRoute requiredRoles={["ADMIN"]}>
+        <ManageUsers />
+      </PrivateRoute>
+    ),
+  },
+
   {
     path: "/notAuthorized",
     element: <NotAuthorized />,
