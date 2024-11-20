@@ -3,6 +3,8 @@ import UserService from "../../services/UserService";
 
 const AddUsersModal = ({ isOpen, onClose }) => {
   const hardcodedPassword = "password"; // Hardcoded password
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -10,8 +12,6 @@ const AddUsersModal = ({ isOpen, onClose }) => {
     lastName: "",
     role: "",
   });
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -23,7 +23,6 @@ const AddUsersModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setError(null);
     setIsLoading(true);
 
@@ -36,11 +35,10 @@ const AddUsersModal = ({ isOpen, onClose }) => {
     };
 
     try {
-      // Register the user
+      // Add new user
       const newUser = await UserService.register(userData);
-
       alert("User added successfully");
-      onClose(); // Close the modal
+      onClose();
     } catch (err) {
       console.error(err);
       setError("Failed to add user. Please try again.");
