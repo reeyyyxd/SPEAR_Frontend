@@ -21,8 +21,8 @@ const Login = () => {
       // Authenticate the user
       const response = await UserService.login(email, password);
 
-      // Pass all necessary data to login, including refreshToken
-      login(response.token, response.role, response.refreshToken);
+      // Pass all necessary data to login, including uid and refreshToken
+      login(response.token, response.role, response.refreshToken, response.uid);
 
       // Redirect based on role
       if (response.role === "STUDENT") {

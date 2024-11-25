@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import Navbar from "../../../components/Navbar/Navbar";
@@ -25,31 +25,27 @@ const courseType = [
 ];
 
 const CreateClass = () => {
-  const navigate = useNavigate(); // Hook for navigation
-  const { authState } = useContext(AuthContext); // Get the auth state from context
+  const navigate = useNavigate();
+  const { authState } = useContext(AuthContext);
 
-  // Redirect to login if not authenticated
-  if (!authState.isAuthenticated) {
-    navigate("/login");
-  }
+  useEffect(() => {
+    if (!authState.isAuthenticated) {
+      navigate("/login");
+    }
+  }, [authState.isAuthenticated, navigate]);
 
-  // State for form inputs
   const [courseTypeValue, setCourseTypeValue] = useState(null);
   const [courseCode, setCourseCode] = useState("");
   const [section, setSection] = useState("");
   const [schoolYear, setSchoolYear] = useState(null);
   const [semester, setSemester] = useState(null);
   const [courseDescription, setCourseDescription] = useState("");
-
-  // State for feedback messages
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate form fields
     if (
       !courseTypeValue ||
       !courseCode ||
@@ -69,21 +65,22 @@ const CreateClass = () => {
       schoolYear: schoolYear.label,
       semester: semester.label,
       courseDescription,
+      createdBy: { uid: authState.uid }, // Ensure uid is correctly passed
     };
 
+    console.log("Prepared class data:", JSON.stringify(classData, null, 2));
+
     try {
-      // Pass the auth token from the context to the createClass function
       const response = await ClassService.createClass(
         classData,
         authState.token
       );
-      setMessage("Class created successfully!");
-      setError(null); // Clear any previous errors
-      alert("Class created successfully");
-      navigate("/teacher-dashboard"); // Redirect to the teacher dashboard or classes page after success
+      setMessage(`Class created successfully! Class Key: ${response.classKey}`);
+      setError(null);
+      navigate("/teacher-dashboard");
     } catch (err) {
-      setError("Failed to create class. Please try again.");
-      setMessage(null); // Clear any previous success messages
+      setError(err.message || "Failed to create class. Please try again.");
+      setMessage(null);
     }
   };
 

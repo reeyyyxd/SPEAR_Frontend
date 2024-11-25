@@ -1,29 +1,5 @@
-import apiClient from "./apiClient";
-
-// Add a request interceptor to include the Authorization header
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Utility function for handling API requests
-const handleRequest = async (request) => {
-  try {
-    const response = await request();
-    return response.data;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
-};
+import handleRequest from './handleRequest';
+import apiClient from './apiClient';
 
 class UserService {
   // Login method
@@ -41,11 +17,6 @@ class UserService {
     return handleRequest(() => apiClient.get("/admin/get-all-users"));
   }
 
-  // Get your profile (admin user)
-  static getYourProfile() {
-    return handleRequest(() => apiClient.get("/adminuser/get-profile"));
-  }
-
   // Get user by ID
   static getUserById(userId) {
     return handleRequest(() => apiClient.get(`/admin/get-users/${userId}`));
@@ -58,15 +29,7 @@ class UserService {
 
   // Update user
   static updateUser(userId, userData) {
-    return handleRequest(() =>
-      apiClient.put(`/admin/update/${userId}`, userData)
-    );
-  }
-
-  // Logout: Remove token and role from localStorage
-  static logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
+    return handleRequest(() => apiClient.put(`/admin/update/${userId}`, userData));
   }
 }
 

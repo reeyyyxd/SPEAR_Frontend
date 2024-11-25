@@ -1,16 +1,43 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Navbar from "../../../components/Navbar/Navbar";
 import Header from "../../../components/Header/Header";
 import { useNavigate } from "react-router-dom";
-import AuthContext from "../../../services/AuthContext"; 
+import AuthContext from "../../../services/AuthContext";
+import ClassCard from "./ClassCard";
+import ClassService from "../../../services/ClassService"; // Import ClassService
+import bgColors from "../../../statics/bg-colors";
 
 const TeacherDashboard = () => {
   const { authState } = useContext(AuthContext); // Get the auth state from context
   const navigate = useNavigate();
 
-  if (!authState.isAuthenticated) {
-    navigate("/login"); // Redirect to login if not authenticated
-  }
+  const [classes, setClasses] = useState([]); // Initialize as an empty array
+  const [loading, setLoading] = useState(true); // Loading state
+  const [currentPage, setCurrentPage] = useState(1); // State for the current page
+  const [classesPerPage] = useState(6); // Number of classes to display per page
+
+  useEffect(() => {
+    if (!authState.isAuthenticated) {
+      navigate("/login"); // Redirect to login if not authenticated
+    }
+
+    const fetchClasses = async () => {
+      try {
+        const response = await ClassService.getClassesCreatedByUser(
+          authState.uid
+        );
+        console.log("API Response:", response); // Log the response
+        setClasses(response || []); // Set the classes from the response
+        setLoading(false); // Set loading to false once data is fetched
+      } catch (error) {
+        console.error("Error fetching classes:", error);
+        setClasses([]); // In case of an error, set to empty array
+        setLoading(false);
+      }
+    };
+
+    fetchClasses(); // Fetch classes when the component mounts
+  }, [authState, navigate]);
 
   const handleCreateClassClick = () => {
     navigate(`/teacher/create-class`);
@@ -19,6 +46,30 @@ const TeacherDashboard = () => {
   const handleCardClick = (courseCode) => {
     console.log(`Navigating to class with course code: ${courseCode}`);
     navigate(`/class/${courseCode}`);
+  };
+
+  // Helper function to get a random background color from the bgColors array
+  const getRandomBgColor = () => {
+    const randomIndex = Math.floor(Math.random() * bgColors.length);
+    return bgColors[randomIndex].bgColor; // Return the bgColor class
+  };
+
+  // Get the classes to display for the current page
+  const indexOfLastClass = currentPage * classesPerPage;
+  const indexOfFirstClass = indexOfLastClass - classesPerPage;
+  const currentClasses = classes.slice(indexOfFirstClass, indexOfLastClass);
+
+  // Change page
+  const nextPage = () => {
+    if (currentPage < Math.ceil(classes.length / classesPerPage)) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
   };
 
   return (
@@ -42,13 +93,41 @@ const TeacherDashboard = () => {
             Create Class
           </button>
 
+          <div className="classes grid grid-cols-3 gap-12 mt-8">
+            {loading ? (
+              <p>Loading...</p> // Show loading text while fetching classes
+            ) : Array.isArray(currentClasses) && currentClasses.length > 0 ? (
+              currentClasses.map((classData) => (
+                <ClassCard
+                  key={classData.courseCode} // Use courseCode as the key
+                  courseCode={classData.courseCode} // Pass courseCode
+                  courseDescription={classData.courseDescription} // Pass courseDescription
+                  onClick={() => handleCardClick(classData.courseCode)} // Click handler
+                  bgColor={getRandomBgColor()} // Pass a random background color from bgColors
+                />
+              ))
+            ) : (
+              <p>No classes found</p> // Show message if no classes are available
+            )}
+          </div>
+
           {/* Pagination Buttons */}
           <div className="pagination flex mt-14">
-            <button className="w-1/6 h-1/4 bg-slate-100 text-gray-400 rounded-lg p-4 text-sm">
+            <button
+              onClick={prevPage}
+              className="w-1/6 h-1/4 bg-slate-100 text-gray-400 rounded-lg p-4 text-sm"
+              disabled={currentPage === 1} // Disable prev button on the first page
+            >
               Prev
             </button>
 
-            <button className="ml-auto w-1/6 h-1/4 bg-slate-100 text-gray-400 rounded-lg p-4 text-sm">
+            <button
+              onClick={nextPage}
+              className="ml-auto w-1/6 h-1/4 bg-slate-100 text-gray-400 rounded-lg p-4 text-sm"
+              disabled={
+                currentPage === Math.ceil(classes.length / classesPerPage)
+              } // Disable next button on last page
+            >
               Next
             </button>
           </div>

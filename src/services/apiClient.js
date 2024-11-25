@@ -22,4 +22,4 @@ apiClient.interceptors.request.use(
   }
 );
 
-export default apiClient; 
+export default apiClient;

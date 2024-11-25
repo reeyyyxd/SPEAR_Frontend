@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [authState, setAuthState] = useState({
     token: null,
     role: null,
+    uid: null,
     isAuthenticated: false,
   });
 
@@ -14,6 +15,7 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     const refreshToken = localStorage.getItem("refreshToken");
     const role = localStorage.getItem("role");
+    const uid = localStorage.getItem("uid");
 
     if (token && isTokenExpired(token)) {
       console.log("Token is expired, attempting to refresh...");
@@ -23,15 +25,16 @@ export const AuthProvider = ({ children }) => {
         console.log("No refresh token available, logging out...");
         logout(); // No refresh token available
       }
-    } else if (token && role) {
+    } else if (token && role && uid) {
       setAuthState({
         token,
         role,
+        uid,
         isAuthenticated: true,
       });
     } else {
-      console.log("No token or role found, logging out...");
-      logout(); // No token or role found
+      console.log("No token, role, or uid found, logging out...");
+      logout(); // No token, role, or uid found
     }
   }, []);
 
@@ -54,12 +57,14 @@ export const AuthProvider = ({ children }) => {
 
       const { token, refreshToken: newRefreshToken } = response.data;
 
+      // Store the new token and refresh token
       localStorage.setItem("token", token);
       localStorage.setItem("refreshToken", newRefreshToken);
 
       setAuthState({
         token,
         role: localStorage.getItem("role"),
+        uid: localStorage.getItem("uid"),
         isAuthenticated: true,
       });
       console.log("Token refreshed successfully.");
@@ -69,18 +74,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = (token, role, refreshToken) => {
+  const login = (token, role, refreshToken, uid) => {
+    // Store the token, role, refreshToken, and uid in localStorage and state
     localStorage.setItem("token", token);
     localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("role", role);
-    setAuthState({ token, role, isAuthenticated: true });
+    localStorage.setItem("uid", uid);
+
+    setAuthState({
+      token,
+      role,
+      uid,
+      isAuthenticated: true,
+    });
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("refreshToken");
-    setAuthState({ token: null, role: null, isAuthenticated: false });
+    localStorage.removeItem("uid"); // Remove uid from localStorage
+    setAuthState({
+      token: null,
+      role: null,
+      uid: null,
+      isAuthenticated: false,
+    });
   };
 
   return (
@@ -93,6 +112,7 @@ export const AuthProvider = ({ children }) => {
         isAdmin: authState.role === "ADMIN",
         isTeacher: authState.role === "TEACHER",
         isStudent: authState.role === "STUDENT",
+        uid: authState.uid, // Expose uid if needed
       }}
     >
       {children}
