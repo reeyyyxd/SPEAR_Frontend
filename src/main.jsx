@@ -3,8 +3,9 @@ import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./services/AuthContext";
 import "./styles/index.css";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-// Import components
 import LandingPage from "./pages/LandinPage/LandingPage";
 import Login from "./components/UserAuthentication/Login";
 import Register from "./components/UserAuthentication/Register";
@@ -17,8 +18,7 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import PrivateRoute from "./services/PrivateRoute";
 import NotAuthorized from "./pages/Common/UnAuthorizedPage";
 import ManageUsers from "./components/UserManagment/ManageUsers";
-import { ToastContainer } from "react-toastify"; // Import ToastContainer
-import "react-toastify/dist/ReactToastify.css"; // Import toast CSS
+import ClassPage from "./pages/Teacher/Home/ClassPage";
 
 const router = createBrowserRouter([
   {
@@ -74,6 +74,14 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/class/:courseCode",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <ClassPage />
+      </PrivateRoute>
+    ),
+  },
+  {
     path: "/admin-dashboard",
     element: (
       <PrivateRoute requiredRoles={["ADMIN"]}>
@@ -104,7 +112,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>
       <RouterProvider router={router} />
-      <ToastContainer position="top-right" autoClose={3000} /> {/* Add ToastContainer here */}
+      <ToastContainer position="top-right" autoClose={3000} />{" "}
+      {/* Add ToastContainer here */}
     </AuthProvider>
   </React.StrictMode>
 );

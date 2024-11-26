@@ -26,7 +26,7 @@ const Navbar = ({ userRole }) => {
       { label: "Dashboard", path: "/teacher-dashboard", icon: dashboardIcon },
       {
         label: "Project Proposals",
-        path: "/project-proposals",
+        path: "/teacher/project-proposals",
         icon: projectProposalsIcon,
       },
       { label: "Settings", path: "/settings", icon: settingsIcon },
