@@ -1,17 +1,18 @@
-import React, { useEffect, useState ,useRef} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import logo from "../../assets/imgs/logo-dark.png";
-import Home from "./Home";
-import AboutUs from "./AboutUs"; 
 import Facebook from '../../assets/icons/Facebook.svg';
 import Instagram from '../../assets/icons/Instagram.svg';
 import Tiktok from '../../assets/icons/Tiktok.svg';
 import Youtube from '../../assets/icons/Youtube.svg';
+import logo from "../../assets/imgs/logo-dark.png";
+import AboutUs from "./AboutUs";
+import Services from "./Services";
 
 
 const LandingPage = () => {
   const [openNav, setOpenNav] = useState(false);
   const aboutUsRef = useRef(null);
+  const servicesRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -23,6 +24,10 @@ const LandingPage = () => {
 
   const scrollToAboutUs = () => {
     aboutUsRef.current.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const scrollToServices = () => {
+    servicesRef.current.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -39,6 +44,12 @@ const LandingPage = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex ml-auto space-x-6">
+          <button
+              className="text-blue-gray-900 px-4 py-2 rounded hover:text-teal-700 transition duration-300"
+              onClick={scrollToServices}
+          >
+              Services
+          </button>
           <button
               className="text-blue-gray-900 px-4 py-2 rounded hover:text-teal-700 transition duration-300"
               onClick={scrollToAboutUs}
@@ -107,6 +118,11 @@ const LandingPage = () => {
           </div>
         )}
       </nav>
+
+      {/* Services Section */}
+      <div className="min-h-screen flex items-center justify-center" ref={servicesRef}>
+        <Services />
+      </div>
 
       {/* About Us Section */}
       <div className="min-h-screen flex items-center justify-center" ref={aboutUsRef}>
