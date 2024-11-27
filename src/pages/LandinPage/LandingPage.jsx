@@ -6,11 +6,13 @@ import Tiktok from '../../assets/icons/Tiktok.svg';
 import Youtube from '../../assets/icons/Youtube.svg';
 import logo from "../../assets/imgs/logo-dark.png";
 import AboutUs from "./AboutUs";
+import Home from "./Home";
 import Services from "./Services";
 
 
 const LandingPage = () => {
   const [openNav, setOpenNav] = useState(false);
+  const homeRef = useRef(null);
   const aboutUsRef = useRef(null);
   const servicesRef = useRef(null);
 
@@ -21,6 +23,10 @@ const LandingPage = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const scrollToHome = () => {
+    homeRef.current.scrollIntoView({ behavior: "smooth" });
+  };
 
   const scrollToAboutUs = () => {
     aboutUsRef.current.scrollIntoView({ behavior: "smooth" });
@@ -45,6 +51,12 @@ const LandingPage = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex ml-auto space-x-6">
           <button
+              className="text-blue-gray-900 px-4 py-2 rounded hover:text-teal-700 transition duration-300"
+              onClick={scrollToHome}
+            >
+              Home
+            </button>
+            <button
               className="text-blue-gray-900 px-4 py-2 rounded hover:text-teal-700 transition duration-300"
               onClick={scrollToServices}
           >
@@ -119,6 +131,11 @@ const LandingPage = () => {
         )}
       </nav>
 
+      {/* Home Section */}
+      <div className="min-h-screen flex items-center justify-center bg-gray-100" ref={homeRef}>
+        <Home />
+      </div>
+      
       {/* Services Section */}
       <div className="min-h-screen flex items-center justify-center" ref={servicesRef}>
         <Services />
@@ -156,7 +173,6 @@ const LandingPage = () => {
       </div>
     </div>
   </div>
-
   {/* Bottom Section */}
   <div className="text-center mt-4 text-sm text-gray-500">
     <p>© 2024 Cebu Institute of Technology University. All rights reserved.</p>
