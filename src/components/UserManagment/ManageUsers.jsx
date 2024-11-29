@@ -7,17 +7,17 @@ import AddUsersModal from "../Modals/AddUsersModal";
 import UserService from "../../services/UserService";
 
 const ManageUsers = () => {
-  const { authState } = useContext(AuthContext); // Get the auth state from context
+  const { authState } = useContext(AuthContext);
   const [isModalOpen, setModalOpen] = useState(false);
   const [users, setUsers] = useState([]);
 
-  // Function to fetch users from the server (or local storage)
+  // Function to fetch active users from the server
   const fetchUsers = async () => {
     try {
-      const fetchedUsers = await UserService.getAllUsers(); // Assuming UserService has a function to fetch users
-      setUsers(fetchedUsers);
+      const fetchedUsers = await UserService.getAllActiveUsers(); // Updated to use the new endpoint
+      setUsers(fetchedUsers); // Update the state with the fetched data
     } catch (error) {
-      console.error("Failed to fetch users", error);
+      console.error("Failed to fetch active users", error);
     }
   };
 
@@ -33,12 +33,10 @@ const ManageUsers = () => {
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
-        {/* Header Section */}
         <div className="header flex justify-between items-center mb-6">
           <h1 className="text-lg font-semibold">Welcome, admin</h1>
           <Header />
         </div>
-        {/* Add Users Button */}
         <div className="flex justify-end mt-4">
           <button
             onClick={() => setModalOpen(true)}
@@ -47,13 +45,11 @@ const ManageUsers = () => {
             Add Users
           </button>
         </div>
-        <UsersTable users={users} />{" "}
-        {/* Pass users as a prop to the UsersTable */}
-        {/* Add Users Modal */}
+        <UsersTable users={users} /> {/* Pass users to UsersTable */}
         <AddUsersModal
           isOpen={isModalOpen}
           onClose={() => setModalOpen(false)}
-          onUserAdded={handleUserAdded} // Pass the handler to the modal
+          onUserAdded={handleUserAdded}
         />
       </div>
     </div>
