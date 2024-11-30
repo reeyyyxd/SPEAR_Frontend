@@ -18,11 +18,11 @@ class ClassService {
     );
   }
 
-  // Get a class by its course code (specific class details)
-  static getClassByCode(courseCode, token) {
+  // Delete a class
+  static deleteClass(classId, token) {
     return handleRequest(
-      () => apiClient.get(`/class/${courseCode}`), // Assuming endpoint to fetch class by courseCode
-      token // Pass token for authentication
+      () => apiClient.delete(`/teacher/deleteClass/${classId}`),
+      token
     );
   }
 
@@ -30,22 +30,6 @@ class ClassService {
   static getClassKeyByCourseCodeAndSection(courseCode, section, token) {
     return handleRequest(
       () => apiClient.get(`/teacher/getclassKey/${courseCode}/${section}`),
-      token
-    );
-  }
-
-  // Enroll student by class key
-  static enrollStudentByClassKey(classKey, token) {
-    return handleRequest(
-      () => apiClient.post("/student/enroll", { classKey }),
-      token
-    );
-  }
-
-  // Get total users in class
-  static getTotalUsersInClass(classId, token) {
-    return handleRequest(
-      () => apiClient.get(`/class/${classId}/total-users`),
       token
     );
   }
@@ -58,10 +42,42 @@ class ClassService {
     );
   }
 
+  // Enroll student in a class by class key
+  static enrollStudentByClassKey(classKey, token) {
+    return handleRequest(
+      () => apiClient.post("/student/enroll", { classKey }),
+      token
+    );
+  }
+
+  // Get classes for a specific student
+  static getClassesForStudent(studentId, token) {
+    return handleRequest(
+      () => apiClient.get(`/student/${studentId}/enrolled-classes`),
+      token
+    );
+  }
+
+  // Get total users in a class
+  static getTotalUsersInClass(classId, token) {
+    return handleRequest(
+      () => apiClient.get(`/class/${classId}/total-users`),
+      token
+    );
+  }
+
   // Get students in a class
   static getStudentsInClass(classKey, token) {
     return handleRequest(
       () => apiClient.get(`/class/${classKey}/students`),
+      token
+    );
+  }
+
+  // Remove a student from a class
+  static removeStudentFromClass(classKey, email, token) {
+    return handleRequest(
+      () => apiClient.post("/teacher/remove-student", { classKey, email }),
       token
     );
   }

@@ -1,13 +1,11 @@
 import React from "react";
-import { useFetchUsers } from "../../components/CustomHooks/useFetchUsers";
 import { usePagination } from "../../components/CustomHooks/usePagination";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import deleteIcon from "../../assets/icons/delete-icon.svg";
 import UserService from "../../services/UserService";
 
-const UsersTable = () => {
-  const { users, error, isLoading, mutate } = useFetchUsers();
+const UsersTable = ({ users }) => {
   const usersPerPage = 10;
 
   const {
@@ -19,7 +17,7 @@ const UsersTable = () => {
   } = usePagination(users, usersPerPage);
 
   const handleDelete = async (userId) => {
-    const userToDelete = users.find((user) => user.uid === userId);
+    const userToDelete = users.find((user) => user.email === userId); // Assuming email is unique for identifying users
     const confirmationMessage = `Are you sure you want to delete ${userToDelete?.firstname} ${userToDelete?.lastname}?`;
 
     const confirmDeletion = window.confirm(confirmationMessage);
@@ -31,23 +29,11 @@ const UsersTable = () => {
 
     try {
       await UserService.deleteUser(userId);
-      mutate(
-        users.filter((user) => user.uid !== userId),
-        false
-      );
       toast.success("User deleted successfully.");
     } catch (err) {
       toast.error("Failed to delete the user.");
     }
   };
-
-  if (isLoading) {
-    return <p>Loading users...</p>;
-  }
-
-  if (error) {
-    return <p className="text-red-500">{error.message}</p>;
-  }
 
   return (
     <div className="flex flex-col">
@@ -70,7 +56,7 @@ const UsersTable = () => {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {currentUsers.map((user) => (
-                  <tr key={user.uid} className="hover:bg-gray-100">
+                  <tr key={user.email} className="hover:bg-gray-100">
                     <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-teal-800">
                       {`${user.firstname} ${user.lastname}`}
                     </td>
@@ -83,7 +69,7 @@ const UsersTable = () => {
                     <td className="px-6 py-2 whitespace-nowrap text-start text-sm font-medium">
                       <button
                         type="button"
-                        onClick={() => handleDelete(user.uid)}
+                        onClick={() => handleDelete(user.email)}
                         className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 focus:outline-none focus:text-blue-800 disabled:opacity-50 disabled:pointer-events-none"
                       >
                         <img src={deleteIcon} alt="delete-icon" />
@@ -100,7 +86,6 @@ const UsersTable = () => {
         </div>
       </div>
 
-      {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="flex justify-end mt-2 mr-2">
           <button
@@ -110,7 +95,6 @@ const UsersTable = () => {
           >
             Previous
           </button>
-
           {visiblePageNumbers.map((number) => (
             <button
               key={number}
@@ -124,7 +108,6 @@ const UsersTable = () => {
               {number}
             </button>
           ))}
-
           <button
             onClick={() =>
               setCurrentPage((prev) => Math.min(prev + 1, totalPages))
