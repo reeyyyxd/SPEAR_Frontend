@@ -22,7 +22,6 @@ export const AuthProvider = ({ children }) => {
       if (refreshToken) {
         refreshAccessToken(refreshToken); // Refresh the token
       } else {
-        console.log("No refresh token available, logging out...");
         logout(); // No refresh token available
       }
     } else if (token && role && uid) {
@@ -33,7 +32,6 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: true,
       });
     } else {
-      console.log("No token, role, or uid found, logging out...");
       logout(); // No token, role, or uid found
     }
   }, []);
