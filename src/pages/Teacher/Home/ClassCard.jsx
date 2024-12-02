@@ -1,12 +1,12 @@
 import React from "react";
 
-const ClassCard = ({ courseCode, courseDescription, onClick, bgColor }) => {
+const ClassCard = ({ courseCode, courseDescription, onClick }) => {
   return (
     <div
       className="card rounded-lg overflow-hidden shadow-lg bg-white cursor-pointer"
       onClick={onClick}
     >
-      <div className={`h-32 flex items-center justify-center ${bgColor}`}>
+      <div className={`h-32 flex items-center justify-center bg-teal`}>
         {/* Display course code */}
         <h2 className="text-2xl font-bold text-white">{courseCode}</h2>
       </div>
