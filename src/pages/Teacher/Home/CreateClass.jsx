@@ -68,8 +68,6 @@ const CreateClass = () => {
       createdBy: { uid: authState.uid }, // Ensure uid is correctly passed
     };
 
-    console.log("Prepared class data:", JSON.stringify(classData, null, 2));
-
     try {
       const response = await ClassService.createClass(
         classData,

@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import AuthContext from "../../../services/AuthContext";
 import ClassCard from "./ClassCard";
 import ClassService from "../../../services/ClassService"; // Import ClassService
-import bgColors from "../../../statics/bg-colors";
 
 const TeacherDashboard = () => {
   const { authState } = useContext(AuthContext); // Get the auth state from context
@@ -26,7 +25,6 @@ const TeacherDashboard = () => {
         const response = await ClassService.getClassesCreatedByUser(
           authState.uid
         );
-        console.log("API Response:", response); // Log the response
         setClasses(response || []); // Set the classes from the response
         setLoading(false); // Set loading to false once data is fetched
       } catch (error) {
@@ -36,7 +34,7 @@ const TeacherDashboard = () => {
       }
     };
 
-    fetchClasses(); // Fetch classes when the component mounts
+    fetchClasses();
   }, [authState, navigate]);
 
   const handleCreateClassClick = () => {
@@ -44,14 +42,7 @@ const TeacherDashboard = () => {
   };
 
   const handleCardClick = (courseCode) => {
-    console.log(`Navigating to class with course code: ${courseCode}`);
     navigate(`/class/${courseCode}`);
-  };
-
-  // Helper function to get a random background color from the bgColors array
-  const getRandomBgColor = () => {
-    const randomIndex = Math.floor(Math.random() * bgColors.length);
-    return bgColors[randomIndex].bgColor; // Return the bgColor class
   };
 
   // Get the classes to display for the current page
@@ -101,9 +92,9 @@ const TeacherDashboard = () => {
                 <ClassCard
                   key={classData.courseCode} // Use courseCode as the key
                   courseCode={classData.courseCode} // Pass courseCode
+                  section={classData.section}
                   courseDescription={classData.courseDescription} // Pass courseDescription
                   onClick={() => handleCardClick(classData.courseCode)} // Click handler
-                  bgColor={getRandomBgColor()} // Pass a random background color from bgColors
                 />
               ))
             ) : (

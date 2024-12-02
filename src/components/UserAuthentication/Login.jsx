@@ -21,6 +21,11 @@ const Login = () => {
       // Authenticate the user
       const response = await UserService.login(email, password);
 
+      // Validate the response structure
+      if (!response || !response.token || !response.role) {
+        throw new Error("Unexpected response from the server.");
+      }
+
       // Pass all necessary data to login, including uid and refreshToken
       login(response.token, response.role, response.refreshToken, response.uid);
 
@@ -31,9 +36,21 @@ const Login = () => {
         navigate("/teacher-dashboard");
       } else if (response.role === "ADMIN") {
         navigate("/admin-dashboard");
+      } else {
+        throw new Error("Invalid user role.");
       }
     } catch (err) {
-      setError("Invalid email or password. Please try again.");
+      if (err.response && err.response.status === 401) {
+        setError("Invalid email or password. Please try again.");
+      } else if (err.response && err.response.status === 500) {
+        setError("Server error. Please try again later.");
+      } else if (err.message === "Network Error") {
+        setError("Network error. Please check your internet connection.");
+      } else {
+        setError(
+          err.message || "An unexpected error occurred. Please try again."
+        );
+      }
     }
   };
 
