@@ -83,7 +83,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/class/:courseCode",
+    path: "/teacher/class/:courseCode",
     element: (
       <PrivateRoute requiredRoles={["TEACHER"]}>
         <ClassPage />
