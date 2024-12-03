@@ -106,7 +106,6 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
-
   {
     path: "/notAuthorized",
     element: <NotAuthorized />,

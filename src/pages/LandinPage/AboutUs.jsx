@@ -30,6 +30,8 @@ const DeveloperCard = ({ name, image }) => {
   );
 };
 
+//for the love of God, please change ky wala na bagay
+//says the person nga dile kamao mo design haha
 const AboutUs = () => {
   return (
     <div className="w-full py-10">

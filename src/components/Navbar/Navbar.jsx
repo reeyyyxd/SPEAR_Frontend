@@ -34,11 +34,6 @@ const Navbar = ({ userRole }) => {
     ADMIN: [
       { label: "Dashboard", path: "/admin-dashboard", icon: dashboardIcon },
       { label: "Manage Users", path: "/manage-users", icon: userIcon },
-      {
-        label: "Project Proposals",
-        path: "/project-proposals",
-        icon: projectProposalsIcon,
-      },
     ],
   };
 
