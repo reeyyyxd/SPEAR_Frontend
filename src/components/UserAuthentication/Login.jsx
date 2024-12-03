@@ -23,7 +23,7 @@ const Login = () => {
 
       // Validate the response structure
       if (!response || !response.token || !response.role) {
-        throw new Error("Unexpected response from the server.");
+        throw new Error("Invalid Credentials.");
       }
 
       // Pass all necessary data to login, including uid and refreshToken

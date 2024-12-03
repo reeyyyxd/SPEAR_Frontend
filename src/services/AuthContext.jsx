@@ -1,8 +1,10 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
+import CryptoJS from "crypto-js";
 
 const AuthContext = createContext();
 
+const SECRET_KEY = "secret123hahalolxd";
 export const AuthProvider = ({ children }) => {
   const [authState, setAuthState] = useState({
     token: null,
@@ -15,7 +17,7 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     const refreshToken = localStorage.getItem("refreshToken");
     const role = localStorage.getItem("role");
-    const uid = localStorage.getItem("uid");
+    const encryptedUid = localStorage.getItem("uid");
 
     if (token && isTokenExpired(token)) {
       console.log("Token is expired, attempting to refresh...");
@@ -24,7 +26,8 @@ export const AuthProvider = ({ children }) => {
       } else {
         logout(); // No refresh token available
       }
-    } else if (token && role && uid) {
+    } else if (token && role && encryptedUid) {
+      const uid = decrypt(encryptedUid); // Decrypt the UID
       setAuthState({
         token,
         role,
@@ -36,16 +39,44 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Helper function to encrypt a value
+  const encrypt = (value) => {
+    if (!value) {
+      console.error("Cannot encrypt invalid value:", value);
+      return null;
+    }
+    return CryptoJS.AES.encrypt(value, SECRET_KEY).toString();
+  };
+  
+  const decrypt = (encryptedValue) => {
+    if (!encryptedValue) {
+      console.error("Cannot decrypt invalid value:", encryptedValue);
+      return null;
+    }
+    try {
+      const bytes = CryptoJS.AES.decrypt(encryptedValue, SECRET_KEY);
+      return bytes.toString(CryptoJS.enc.Utf8);
+    } catch (error) {
+      console.error("Error decrypting value:", error.message || error);
+      return null;
+    }
+  };
+  
+
   const isTokenExpired = (token) => {
     try {
       const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decode JWT payload
+      if (!decodedToken || !decodedToken.exp) {
+        throw new Error("Invalid token format");
+      }
       const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
       return decodedToken.exp < currentTime; // Compare expiry time
     } catch (error) {
-      console.error("Error decoding token:", error);
+      console.error("Error decoding token:", error.message || error);
       return true; // Treat as expired if decoding fails
     }
   };
+  
 
   const refreshAccessToken = async (refreshToken) => {
     try {
@@ -62,7 +93,7 @@ export const AuthProvider = ({ children }) => {
       setAuthState({
         token,
         role: localStorage.getItem("role"),
-        uid: localStorage.getItem("uid"),
+        uid: decrypt(localStorage.getItem("uid")), // Decrypt UID before setting state
         isAuthenticated: true,
       });
       console.log("Token refreshed successfully.");
@@ -73,12 +104,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = (token, role, refreshToken, uid) => {
-    // Store the token, role, refreshToken, and uid in localStorage and state
+    if (!uid) {
+      console.error("UID is missing or invalid");
+      return;
+    }
+  
+    const encryptedUid = encrypt(uid.toString()); // Ensure UID is converted to a string
+  
+    // Store the token, role, refreshToken, and encrypted UID
     localStorage.setItem("token", token);
     localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("role", role);
-    localStorage.setItem("uid", uid);
-
+    localStorage.setItem("uid", encryptedUid);
+  
     setAuthState({
       token,
       role,
@@ -86,18 +124,32 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated: true,
     });
   };
+  
 
   const logout = () => {
+    // Remove all IDs from localStorage
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("refreshToken");
-    localStorage.removeItem("uid"); // Remove uid from localStorage
+    localStorage.removeItem("uid"); // Remove encrypted UID
     setAuthState({
       token: null,
       role: null,
       uid: null,
       isAuthenticated: false,
     });
+  };
+
+  // Store and encrypt additional IDs (cid, pid, fid, tid, etc.)
+  const storeEncryptedId = (key, id) => {
+    const encryptedId = encrypt(id.toString());
+    localStorage.setItem(key, encryptedId);
+  };
+
+  // Retrieve and decrypt additional IDs
+  const getDecryptedId = (key) => {
+    const encryptedId = localStorage.getItem(key);
+    return encryptedId ? decrypt(encryptedId) : null;
   };
 
   return (
@@ -110,7 +162,9 @@ export const AuthProvider = ({ children }) => {
         isAdmin: authState.role === "ADMIN",
         isTeacher: authState.role === "TEACHER",
         isStudent: authState.role === "STUDENT",
-        uid: authState.uid, // Expose uid if needed
+        uid: authState.uid, // Expose decrypted UID if needed
+        storeEncryptedId, // Utility for storing encrypted IDs
+        getDecryptedId,   // Utility for retrieving decrypted IDs
       }}
     >
       {children}

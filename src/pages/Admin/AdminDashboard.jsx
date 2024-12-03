@@ -68,7 +68,6 @@ const ProposalsTable = ({ proposals }) => {
       <table className="min-w-full border-collapse border border-gray-200">
         <thead className="bg-gray-100">
           <tr>
-            <th className="border border-gray-300 px-4 py-2 text-left">ID</th>
             <th className="border border-gray-300 px-4 py-2 text-left">Project Name</th>
             <th className="border border-gray-300 px-4 py-2 text-left">Description</th>
             <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
@@ -80,7 +79,6 @@ const ProposalsTable = ({ proposals }) => {
           {proposals.length > 0 ? (
             proposals.map((proposal) => (
               <tr key={proposal.pid}>
-                <td className="border border-gray-300 px-4 py-2">{proposal.pid}</td>
                 <td className="border border-gray-300 px-4 py-2">
                   {proposal.projectName || "N/A"}
                 </td>
