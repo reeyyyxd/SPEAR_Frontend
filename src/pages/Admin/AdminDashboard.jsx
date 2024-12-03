@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import ProjectProposalService from "../../services/ProjectProposalService";
 import { toast } from "react-toastify";
+import Header from "../../components/Header/Header";
 
 const AdminDashboard = () => {
   const [proposals, setProposals] = useState([]);
@@ -31,92 +32,108 @@ const AdminDashboard = () => {
   }, [status]);
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen">
-      <Navbar userRole={"ADMIN"} />
-      <div className="p-4">
-        <h1 className="text-lg font-semibold mb-4">Admin Dashboard</h1>
-        <div className="flex justify-between items-center mb-4">
-          <label htmlFor="statusFilter" className="font-medium text-gray-700">
-            Filter by Status:
-          </label>
-          <select
-            id="statusFilter"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="border border-gray-300 rounded-md px-4 py-2"
-          >
-            <option value="open">Open</option>
-            <option value="approved">Approved</option>
-            <option value="denied">Denied</option>
-          </select>
-        </div>
-        {isLoading ? (
-          <p className="text-center text-gray-500">Loading proposals...</p>
-        ) : error ? (
-          <p className="text-center text-red-500">{error}</p>
-        ) : (
-          <ProposalsTable proposals={proposals} />
-        )}
-      </div>
+<div className="grid grid-cols-[256px_1fr] min-h-screen">
+  <Navbar userRole={"ADMIN"} />
+  <div className="main-content bg-white text-teal p-11">
+    {/* Header Section */}
+    <div className="header flex justify-between items-center mb-6">
+      <h1 className="text-lg font-semibold">Welcome, admin</h1>
+      <Header />
     </div>
+
+    {/* Filter by Status Section */}
+    <div className="flex justify-between items-center mb-4">
+      <label htmlFor="statusFilter" className="font-medium text-gray-700">
+        Filter by Status:
+      </label>
+      <select
+        id="statusFilter"
+        value={status}
+        onChange={(e) => setStatus(e.target.value)}
+        className="border border-gray-300 rounded-md px-4 py-2 bg-white"
+      >
+        <option value="open">Open</option>
+        <option value="approved">Approved</option>
+        <option value="denied">Denied</option>
+      </select>
+    </div>
+
+    {/* Conditional Content (Loading, Error, Proposals) */}
+    {isLoading ? (
+      <p className="text-center text-gray-500">Loading proposals...</p>
+    ) : error ? (
+      <p className="text-center text-red-500">{error}</p>
+    ) : (
+      <ProposalsTable proposals={proposals} />
+    )}
+  </div>
+</div>
+
   );
 };
 
 const ProposalsTable = ({ proposals }) => {
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full border-collapse border border-gray-200">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="border border-gray-300 px-4 py-2 text-left">Project Name</th>
-            <th className="border border-gray-300 px-4 py-2 text-left">Description</th>
-            <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
-            <th className="border border-gray-300 px-4 py-2 text-left">Reason</th>
-            <th className="border border-gray-300 px-4 py-2 text-left">Features</th>
-          </tr>
-        </thead>
-        <tbody>
-          {proposals.length > 0 ? (
-            proposals.map((proposal) => (
-              <tr key={proposal.pid}>
-                <td className="border border-gray-300 px-4 py-2">
-                  {proposal.projectName || "N/A"}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {proposal.description || "N/A"}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {proposal.status || "N/A"}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {proposal.reason || (proposal.status === "DENIED" ? "No reason provided" : "N/A")}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {proposal.features.length > 0 ? (
-                    <ul className="list-disc ml-4">
-                      {proposal.features.map((feature, index) => (
-                        <li key={index}>
-                          <strong>{feature.featureTitle}:</strong> {feature.featureDescription}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    "No features"
-                  )}
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="6" className="text-center text-gray-500 py-4">
-                No proposals available.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+    <div className="flex flex-col">
+      <div className="overflow-x-auto">
+        <div className="p-2 min-w-full inline-block align-middle">
+          <div className="overflow-hidden rounded-lg border border-gray-300">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr className="bg-teal font-medium text-white">
+                  <th className="px-6 py-2 text-start text-md font-medium">Project Name</th>
+                  <th className="px-6 py-2 text-start text-md font-medium">Description</th>
+                  <th className="px-6 py-2 text-start text-md font-medium">Status</th>
+                  <th className="px-6 py-2 text-start text-md font-medium">Reason</th>
+                  <th className="px-6 py-2 text-start text-md font-medium">Features</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {proposals.length > 0 ? (
+                  proposals.map((proposal) => (
+                    <tr key={proposal.pid} className="hover:bg-gray-100">
+                      <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-teal-800">
+                        {proposal.projectName || "N/A"}
+                      </td>
+                      <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                        {proposal.description || "N/A"}
+                      </td>
+                      <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                        {proposal.status || "N/A"}
+                      </td>
+                      <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                        {proposal.reason || (proposal.status === "DENIED" ? "No reason provided" : "N/A")}
+                      </td>
+                      <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                        {proposal.features.length > 0 ? (
+                          <ul className="list-disc ml-4">
+                            {proposal.features.map((feature, index) => (
+                              <li key={index}>
+                                <strong>{feature.featureTitle}:</strong> {feature.featureDescription}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          "No features"
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="text-center text-gray-500 py-4">
+                      No proposals available.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
+
 
 export default AdminDashboard;
