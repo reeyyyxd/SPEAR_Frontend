@@ -74,6 +74,14 @@ class ClassService {
     );
   }
 
+  // Get class details by course code
+  static getClassByCourseCode(courseCode, token) {
+    return handleRequest(
+      () => apiClient.get(`/teacher/class/${courseCode}`),
+      token
+    );
+  }
+
   // Remove a student from a class
   static removeStudentFromClass(classKey, email, token) {
     return handleRequest(

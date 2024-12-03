@@ -4,20 +4,20 @@ import Header from "../../../components/Header/Header";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../../services/AuthContext";
 import ClassCard from "./ClassCard";
-import ClassService from "../../../services/ClassService"; // Import ClassService
+import ClassService from "../../../services/ClassService";
 
 const TeacherDashboard = () => {
-  const { authState } = useContext(AuthContext); // Get the auth state from context
+  const { authState } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const [classes, setClasses] = useState([]); // Initialize as an empty array
-  const [loading, setLoading] = useState(true); // Loading state
-  const [currentPage, setCurrentPage] = useState(1); // State for the current page
+  const [classes, setClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const [classesPerPage] = useState(6); // Number of classes to display per page
 
   useEffect(() => {
     if (!authState.isAuthenticated) {
-      navigate("/login"); // Redirect to login if not authenticated
+      navigate("/login");
     }
 
     const fetchClasses = async () => {
@@ -42,7 +42,7 @@ const TeacherDashboard = () => {
   };
 
   const handleCardClick = (courseCode) => {
-    navigate(`/class/${courseCode}`);
+    navigate(`/teacher/class/${courseCode}`);
   };
 
   // Get the classes to display for the current page
@@ -90,11 +90,11 @@ const TeacherDashboard = () => {
             ) : Array.isArray(currentClasses) && currentClasses.length > 0 ? (
               currentClasses.map((classData) => (
                 <ClassCard
-                  key={classData.courseCode} // Use courseCode as the key
-                  courseCode={classData.courseCode} // Pass courseCode
+                  key={classData.courseCode}
+                  courseCode={classData.courseCode}
                   section={classData.section}
-                  courseDescription={classData.courseDescription} // Pass courseDescription
-                  onClick={() => handleCardClick(classData.courseCode)} // Click handler
+                  courseDescription={classData.courseDescription}
+                  onClick={() => handleCardClick(classData.courseCode)}
                 />
               ))
             ) : (
