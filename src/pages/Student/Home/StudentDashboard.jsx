@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import JoinClassModal from "../../../components/Modals/JoinClassModal";
 import AuthContext from "../../../services/AuthContext";
@@ -9,6 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const StudentDashboard = () => {
   const { authState } = useContext(AuthContext);
+  const navigate = useNavigate(); // Initialize useNavigate hook
   const [enrolledClasses, setEnrolledClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -100,9 +102,7 @@ const StudentDashboard = () => {
                   section={classData.section}
                   courseDescription={classData.courseDescription}
                   teacherName={`${classData.firstname} ${classData.lastname}`} // Combine first and last name
-                  onClick={() =>
-                    console.log(`Navigating to class: ${classData.courseCode}`)
-                  } // Add navigation or other logic for class cards
+                  onClick={() => navigate(`/class/${classData.courseCode}`)} // Navigate to ClassPage
                 />
               ))
             ) : (

@@ -20,6 +20,7 @@ import NotAuthorized from "./pages/Common/UnAuthorizedPage";
 import ManageUsers from "./components/UserManagment/ManageUsers";
 import ClassPage from "./pages/Teacher/Home/ClassPage";
 import TeamFormation from "./pages/Student/Home/TeamFormation";
+import StudentClassPage from "./pages/Student/Home/StudentClassPage";
 
 const router = createBrowserRouter([
   {
@@ -47,6 +48,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["STUDENT"]}>
         <TeamFormation />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/class/:courseCode",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <StudentClassPage />
       </PrivateRoute>
     ),
   },
