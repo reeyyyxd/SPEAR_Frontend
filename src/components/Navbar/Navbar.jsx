@@ -18,7 +18,7 @@ const Navbar = ({ userRole }) => {
 
   const navItemsByRole = {
     STUDENT: [
-      { label: "Dashboard", path: "/student-dashboard", icon: dashboardIcon },
+      { label: "Classes", path: "/student-dashboard", icon: dashboardIcon },
       { label: "Team Formation", path: "/team-formation", icon: teamIcon },
       { label: "Settings", path: "/settings", icon: settingsIcon },
     ],
