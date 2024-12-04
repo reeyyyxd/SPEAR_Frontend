@@ -2,9 +2,11 @@ import React, { useContext } from "react";
 import Navbar from "../../../components/Navbar/Navbar";
 import Header from "../../../components/Header/Header";
 import AuthContext from "../../../services/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const TeamFormation = () => {
   const { authState } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
@@ -38,13 +40,13 @@ const TeamFormation = () => {
         <div className="flex gap-6 mb-8 justify-start">
           <button
             className="w-1/6 h-1/4 bg-peach text-white rounded-lg p-4 text-sm hover:bg-orange-500"
-            onClick={() => console.log("Project Proposal clicked")}
+            onClick={() => navigate(`/team-formation/project-proposal`)}
           >
             Project Proposal
           </button>
           <button
             className="w-1/6 h-1/4 bg-gray-800 text-white rounded-lg p-4 text-sm hover:bg-gray-600"
-            onClick={() => console.log("Apply Team clicked")}
+            onClick={() => navigate(`/team-formation/apply-to-teams`)}
           >
             Apply Team
           </button>
