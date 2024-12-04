@@ -1,20 +1,36 @@
 import React, { useState } from "react";
-import cardContent from "../../statics/card-content";
+import { toast } from "react-toastify";
 
-const JoinClassModal = ({ isOpen, onClose }) => {
+const JoinClassModal = ({ isOpen, onClose, onEnroll }) => {
   const [classCode, setClassCode] = useState(""); // State to store the class code
-  const [filteredCourse, setFilteredCourse] = useState(null); // State to store the filtered course
+  const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null; // Don't render the modal if it's not open
 
   // Handle the input change
   const handleInputChange = (event) => {
-    const { value } = event.target;
-    setClassCode(value);
+    setClassCode(event.target.value);
+  };
 
-    // Filter the course based on the class code
-    const course = cardContent.find((course) => course.classCode === value);
-    setFilteredCourse(course || null); // Update the filtered course
+  // Handle enrollment
+  const handleEnrollClick = async (e) => {
+    e.preventDefault();
+    if (!classCode) {
+      toast.error("Please enter a valid class key.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await onEnroll(classCode); // Call the enroll function passed as a prop
+      setClassCode(""); // Clear input after successful enrollment
+      onClose(); // Close modal after enrollment
+    } catch (error) {
+      console.error("Enrollment error:", error);
+      toast.error("Failed to enroll in the class. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -24,37 +40,28 @@ const JoinClassModal = ({ isOpen, onClose }) => {
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
         >
-          &times; {/* You can replace this with an icon if preferred */}
+          &times;
         </button>
-        {/* Modal Content */}
         <h2 className="text-xl font-semibold mb-4">Join Class</h2>
         <p>Please fill in the details to join the class.</p>
-        <form className="mt-4">
+        <form className="mt-4" onSubmit={handleEnrollClick}>
           <input
             type="text"
-            placeholder="Class Code"
+            placeholder="Enter Class Code"
             value={classCode}
-            onChange={handleInputChange} // Add the onChange handler
+            onChange={handleInputChange}
             className="border rounded-lg p-2 w-full mb-4"
           />
           <button
+            type="submit"
             className={`bg-teal text-white rounded-lg p-2 w-full ${
-              !filteredCourse ? "opacity-50 cursor-not-allowed" : ""
+              loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
-            disabled={!filteredCourse} // Disable button if no course is selected
+            disabled={loading}
           >
-            Join
+            {loading ? "Joining..." : "Join"}
           </button>
         </form>
-        {/* Display filtered course if available */}
-        {filteredCourse && (
-          <div
-            className={`mt-4 bg-gray-100 p-4 rounded-lg ${filteredCourse.bgColor}`}
-          >
-            <h3 className="font-semibold">{filteredCourse.courseCode}</h3>
-            <p>{filteredCourse.courseDescription}</p>
-          </div>
-        )}
       </div>
     </div>
   );

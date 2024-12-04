@@ -4,7 +4,7 @@ import Header from "../../../components/Header/Header";
 import AuthContext from "../../../services/AuthContext";
 
 const TeamFormation = () => {
-  const { authState } = useContext(AuthContext); 
+  const { authState } = useContext(AuthContext);
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
@@ -13,7 +13,9 @@ const TeamFormation = () => {
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         {/* Header Section */}
         <div className="header flex justify-between items-center mb-6">
-          <h1 className="text-lg font-semibold">Welcome to SPEAR'S team formation</h1>
+          <h1 className="text-lg font-semibold">
+            Welcome to SPEAR'S team formation
+          </h1>
           <Header />
         </div>
 
@@ -21,10 +23,14 @@ const TeamFormation = () => {
         <div className="guidelines mb-8">
           <h2 className="text-lg font-semibold mb-4">Guidelines:</h2>
           <p className="text-gray-700 mb-2">
-            Select <span className="text-peach font-semibold">Project Proposal</span> if you wish to propose a project and form your own team.
+            Select{" "}
+            <span className="text-peach font-semibold">Project Proposal</span>{" "}
+            if you wish to propose a project and form your own team.
           </p>
           <p className="text-gray-700">
-            Select <span className="text-peach font-semibold">Apply Team</span> if you wish to apply to join a team with an existing approved project proposal.
+            Select <span className="text-peach font-semibold">Apply Team</span>{" "}
+            if you wish to apply to join a team with an existing approved
+            project proposal.
           </p>
         </div>
 
