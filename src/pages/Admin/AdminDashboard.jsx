@@ -37,7 +37,7 @@ const AdminDashboard = () => {
   <div className="main-content bg-white text-teal p-11">
     {/* Header Section */}
     <div className="header flex justify-between items-center mb-6">
-      <h1 className="text-lg font-semibold">Welcome, admin</h1>
+      <h1 className="text-lg font-semibold">Welcome, Admin</h1>
       <Header />
     </div>
 

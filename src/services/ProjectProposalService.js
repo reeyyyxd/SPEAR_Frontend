@@ -2,7 +2,6 @@ import handleRequest from "./handleRequest";
 import apiClient from "./apiClient";
 
 class ProjectProposalService {
-  // Attach the Authorization header automatically for all requests
   static attachHeaders(token) {
     return {
       headers: {
@@ -11,7 +10,6 @@ class ProjectProposalService {
     };
   }
 
-  // Create Proposal with Features
   static createProposal(proposalData, token) {
     return handleRequest(() =>
       apiClient.post(
@@ -22,7 +20,6 @@ class ProjectProposalService {
     );
   }
 
-  // Update Proposal and Features
   static updateProposal(proposalId, proposalData, token) {
     return handleRequest(() =>
       apiClient.put(
@@ -33,7 +30,6 @@ class ProjectProposalService {
     );
   }
 
-  // Update Adviser for Capstone
   static updateAdviser(proposalId, adviserId, token) {
     return handleRequest(() =>
       apiClient.put(
@@ -44,7 +40,6 @@ class ProjectProposalService {
     );
   }
 
-  // Delete Proposal
   static deleteProposal(proposalId, token) {
     return handleRequest(() =>
       apiClient.delete(
@@ -54,17 +49,16 @@ class ProjectProposalService {
     );
   }
 
-  // Retrieve Proposals by Class with Features
-  static getProposalsByClassWithFeatures(classId, token) {
+  static getProposalsByClassWithFeatures(classId = "", token) {
     return handleRequest(() =>
       apiClient.get(
-        `/proposals/class/with-features/${classId}`,
+        `/proposals/class/with-features/${classId}`, // If cid is optional, handle it in your backend
         this.attachHeaders(token)
       )
     );
   }
+  
 
-  // Update Proposal Status (Teacher Action)
   static updateProposalStatus(proposalId, statusData, token) {
     return handleRequest(() =>
       apiClient.put(
@@ -75,14 +69,12 @@ class ProjectProposalService {
     );
   }
 
-  // Retrieve Proposals by Status
   static getProposalsByStatus(status, token) {
     return handleRequest(() =>
       apiClient.get(`/proposals/status/${status}`, this.attachHeaders(token))
     );
   }
 
-  // Retrieve Proposals by Class and Student
   static getProposalsByClassAndStudent(classId, studentId, token) {
     return handleRequest(() =>
       apiClient.get(
@@ -92,7 +84,6 @@ class ProjectProposalService {
     );
   }
 
-  // Retrieve Proposals by Adviser
   static getProposalsByAdviser(adviserId, token) {
     return handleRequest(() =>
       apiClient.get(
@@ -102,7 +93,6 @@ class ProjectProposalService {
     );
   }
 
-  // Retrieve Approved Proposals by Class
   static getApprovedProposalsByClass(classId, token) {
     return handleRequest(() =>
       apiClient.get(
@@ -112,7 +102,6 @@ class ProjectProposalService {
     );
   }
 
-  // Retrieve Denied Proposals by Class
   static getDeniedProposalsByClass(classId, token) {
     return handleRequest(() =>
       apiClient.get(
@@ -122,7 +111,6 @@ class ProjectProposalService {
     );
   }
 
-  // Retrieve Pending Proposals by Class
   static getPendingProposalsByClass(classId, token) {
     return handleRequest(() =>
       apiClient.get(
@@ -132,7 +120,6 @@ class ProjectProposalService {
     );
   }
 
-  // Retrieve Open Projects by Class
   static getOpenProjectsByClass(classId, token) {
     return handleRequest(() =>
       apiClient.get(
@@ -142,14 +129,12 @@ class ProjectProposalService {
     );
   }
 
-  // Retrieve Abandoned Proposals
   static getAbandonedProposals(token) {
     return handleRequest(() =>
       apiClient.get("/proposals/abandoned", this.attachHeaders(token))
     );
   }
 
-  // Update Denied Proposal to Pending
   static updateDeniedToPending(proposalId, token) {
     return handleRequest(() =>
       apiClient.put(
@@ -160,7 +145,6 @@ class ProjectProposalService {
     );
   }
 
-  // Update Approved Proposal to Open Project
   static updateApprovedToOpenProject(proposalId, token) {
     return handleRequest(() =>
       apiClient.put(
@@ -171,18 +155,16 @@ class ProjectProposalService {
     );
   }
 
-  // Assign Student to Open Project
   static assignStudentToOpenProject(proposalId, studentId, token) {
     return handleRequest(() =>
       apiClient.post(
-        `/student/get-project/${proposalId}`,
-        { studentId },
+        `/student/get-project/${proposalId}?studentId=${studentId}`,
+        null,
         this.attachHeaders(token)
       )
     );
   }
 
-  // Retrieve Proposals by Class and Status
   static getProposalsByClassAndStatus(classId, status, token) {
     return handleRequest(() =>
       apiClient.get(

@@ -2,92 +2,48 @@ import handleRequest from "./handleRequest";
 import apiClient from "./apiClient";
 
 class ClassService {
-  // Create a new class
-  static createClass(classData, token) {
-    return handleRequest(
-      () => apiClient.post("/teacher/create-class", classData),
-      token // Add token for authentication
-    );
+  static createClass(classData) {
+    return handleRequest(() => apiClient.post("/teacher/create-class", classData));
   }
 
-  // Update a class
-  static updateClass(classId, classData, token) {
-    return handleRequest(
-      () => apiClient.put(`/teacher/updateClass/${classId}`, classData),
-      token
-    );
+  static updateClass(classId, classData) {
+    return handleRequest(() => apiClient.put(`/teacher/updateClass/${classId}`, classData));
   }
 
-  // Delete a class
-  static deleteClass(classId, token) {
-    return handleRequest(
-      () => apiClient.delete(`/teacher/deleteClass/${classId}`),
-      token
-    );
+  static deleteClass(classId) {
+    return handleRequest(() => apiClient.delete(`/teacher/deleteClass/${classId}`));
   }
 
-  // Get a class key by course code and section
-  static getClassKeyByCourseCodeAndSection(courseCode, section, token) {
-    return handleRequest(
-      () => apiClient.get(`/teacher/getclassKey/${courseCode}/${section}`),
-      token
-    );
+  static getClassKeyByCourseCodeAndSection(courseCode, section) {
+    return handleRequest(() => apiClient.get(`/teacher/getclassKey/${courseCode}/${section}`));
   }
 
-  // Get classes created by the teacher
-  static getClassesCreatedByUser(userId, token) {
-    return handleRequest(
-      () => apiClient.get(`/teacher/classes-created/${userId}`),
-      token
-    );
+  static getClassesCreatedByUser(userId) {
+    return handleRequest(() => apiClient.get(`/teacher/classes-created/${userId}`));
   }
 
-  // Enroll student in a class by class key
-  static enrollStudentByClassKey(classKey, token) {
-    return handleRequest(
-      () => apiClient.post("/student/enroll", { classKey }),
-      token
-    );
+  static enrollStudentByClassKey(classKey) {
+    return handleRequest(() => apiClient.post("/student/enroll", { classKey }));
   }
 
-  // Get classes for a specific student
-  static getClassesForStudent(studentId, token) {
-    return handleRequest(
-      () => apiClient.get(`/student/${studentId}/enrolled-classes`),
-      token
-    );
+  static getClassesForStudent(studentId) {
+    return handleRequest(() => apiClient.get(`/student/${studentId}/enrolled-classes`));
   }
 
-  // Get total users in a class
-  static getTotalUsersInClass(classId, token) {
-    return handleRequest(
-      () => apiClient.get(`/class/${classId}/total-users`),
-      token
-    );
+  static getTotalUsersInClass(classId) {
+    return handleRequest(() => apiClient.get(`/class/${classId}/total-users`));
   }
 
-  // Get students in a class
-  static getStudentsInClass(classKey, token) {
-    return handleRequest(
-      () => apiClient.get(`/class/${classKey}/students`),
-      token
-    );
+  static getStudentsInClass(classKey) {
+    return handleRequest(() => apiClient.get(`/class/${classKey}/students`));
   }
 
-  // Get class details by course code
-  static getClassByCourseCode(courseCode, token) {
-    return handleRequest(
-      () => apiClient.get(`/teacher/class/${courseCode}`),
-      token
-    );
+  static getClassByCourseCode(courseCode) {
+    return handleRequest(() => apiClient.get(`/teacher/class/${courseCode}`));
   }
 
-  // Remove a student from a class
-  static removeStudentFromClass(classKey, email, token) {
-    return handleRequest(
-      () => apiClient.post("/teacher/remove-student", { classKey, email }),
-      token
-    );
+  static removeStudentFromClass(classKey, email) {
+    return handleRequest(() => apiClient.post("/teacher/remove-student", { classKey, email }));
   }
 }
 

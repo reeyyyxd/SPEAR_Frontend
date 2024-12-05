@@ -44,8 +44,8 @@ class UserService {
   }
 
   // Get User Profile (Currently Authenticated User)
-  static getUserProfile() {
-    return handleRequest(() => apiClient.get("/adminuser/get-profile"));
+  static getUserProfileById(userId) {
+    return handleRequest(() => apiClient.get(`/user/profile/${userId}`));
   }
 
   // Get All Active Users

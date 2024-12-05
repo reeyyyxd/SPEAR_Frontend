@@ -4,40 +4,50 @@ import Navbar from "../../../components/Navbar/Navbar";
 import JoinClassModal from "../../../components/Modals/JoinClassModal";
 import AuthContext from "../../../services/AuthContext";
 import ClassService from "../../../services/ClassService";
-import ClassCard from "./ClassCard"; // Import the ClassCard component
+import UserService from "../../../services/UserService"; // Import UserService
+import ClassCard from "./ClassCard";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const StudentDashboard = () => {
   const { authState } = useContext(AuthContext);
-  const navigate = useNavigate(); // Initialize useNavigate hook
+  const navigate = useNavigate();
   const [enrolledClasses, setEnrolledClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [studentName, setStudentName] = useState(""); // Student name state
   const [currentPage, setCurrentPage] = useState(1);
-  const [classesPerPage] = useState(6); // Classes per page
+  const [classesPerPage] = useState(6);
 
-  // Fetch enrolled classes
+  // Fetch enrolled classes and student profile
   useEffect(() => {
-    const fetchEnrolledClasses = async () => {
+    const fetchDashboardData = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
+
+        // Fetch enrolled classes
         const response = await ClassService.getClassesForStudent(
           authState.uid,
           token
         );
         setEnrolledClasses(response || []);
+
+        // Fetch student's name
+        const userProfile = await UserService.getUserProfileById(authState.uid);
+        if (userProfile) {
+          setStudentName(`${userProfile.firstname} ${userProfile.lastname}`);
+        }
       } catch (error) {
-        console.error("Error fetching enrolled classes:", error);
-        toast.error("Failed to fetch enrolled classes.");
+        console.error("Error fetching dashboard data:", error);
+        toast.error("Failed to load dashboard data.");
       } finally {
         setLoading(false);
       }
     };
 
     if (authState.isAuthenticated) {
-      fetchEnrolledClasses();
+      fetchDashboardData();
     }
   }, [authState]);
 
@@ -77,7 +87,9 @@ const StudentDashboard = () => {
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         {/* Header Section */}
         <div className="header flex justify-between items-center mb-6">
-          <h1 className="text-lg font-semibold">Welcome, Student</h1>
+          <h1 className="text-lg font-semibold">
+            Welcome, {studentName || "Student"}
+          </h1>
         </div>
 
         {/* Content Wrapper */}
@@ -101,8 +113,8 @@ const StudentDashboard = () => {
                   courseCode={classData.courseCode}
                   section={classData.section}
                   courseDescription={classData.courseDescription}
-                  teacherName={`${classData.firstname} ${classData.lastname}`} // Combine first and last name
-                  onClick={() => navigate(`/class/${classData.courseCode}`)} // Navigate to ClassPage
+                  teacherName={`${classData.firstname} ${classData.lastname}`}
+                  onClick={() => navigate(`/class/${classData.courseCode}`)}
                 />
               ))
             ) : (

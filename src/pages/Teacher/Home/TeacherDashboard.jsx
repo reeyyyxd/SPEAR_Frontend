@@ -3,6 +3,7 @@ import Navbar from "../../../components/Navbar/Navbar";
 import Header from "../../../components/Header/Header";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../../services/AuthContext";
+import UserService from "../../../services/UserService";
 import ClassCard from "./ClassCard";
 import ClassService from "../../../services/ClassService";
 
@@ -12,29 +13,35 @@ const TeacherDashboard = () => {
 
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [teacherName, setTeacherName] = useState(""); // Store teacher's name
   const [currentPage, setCurrentPage] = useState(1);
-  const [classesPerPage] = useState(6); // Number of classes to display per page
+  const [classesPerPage] = useState(6);
 
   useEffect(() => {
     if (!authState.isAuthenticated) {
       navigate("/login");
     }
 
-    const fetchClasses = async () => {
+    // Fetch teacher profile and classes
+    const fetchDashboardData = async () => {
       try {
-        const response = await ClassService.getClassesCreatedByUser(
-          authState.uid
-        );
-        setClasses(response || []); // Set the classes from the response
-        setLoading(false); // Set loading to false once data is fetched
+        // Fetch teacher's name
+        const userProfile = await UserService.getUserProfileById(authState.uid);
+        if (userProfile) {
+          setTeacherName(`${userProfile.firstname} ${userProfile.lastname}`);
+        }
+
+        // Fetch classes created by the teacher
+        const response = await ClassService.getClassesCreatedByUser(authState.uid);
+        setClasses(response || []);
+        setLoading(false);
       } catch (error) {
-        console.error("Error fetching classes:", error);
-        setClasses([]); // In case of an error, set to empty array
+        console.error("Error fetching dashboard data:", error);
         setLoading(false);
       }
     };
 
-    fetchClasses();
+    fetchDashboardData();
   }, [authState, navigate]);
 
   const handleCreateClassClick = () => {
@@ -45,12 +52,11 @@ const TeacherDashboard = () => {
     navigate(`/teacher/class/${courseCode}`);
   };
 
-  // Get the classes to display for the current page
+  // Pagination logic
   const indexOfLastClass = currentPage * classesPerPage;
   const indexOfFirstClass = indexOfLastClass - classesPerPage;
   const currentClasses = classes.slice(indexOfFirstClass, indexOfLastClass);
 
-  // Change page
   const nextPage = () => {
     if (currentPage < Math.ceil(classes.length / classesPerPage)) {
       setCurrentPage(currentPage + 1);
@@ -66,17 +72,17 @@ const TeacherDashboard = () => {
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
-      {/* Main Content */}
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         {/* Header Section */}
         <div className="header flex justify-between items-center mb-6">
-          <h1 className="text-lg font-semibold">Welcome, teacher</h1>
+          <h1 className="text-lg font-semibold">
+            Welcome, {teacherName || "Teacher"}
+          </h1>
           <Header />
         </div>
 
         {/* Content Wrapper */}
         <div className="content flex flex-col bg-gray-200 rounded-2xl p-8 min-h-[calc(100vh-8rem)]">
-          {/* Create Class Button */}
           <button
             onClick={handleCreateClassClick}
             className="joinclass-btn ml-auto w-1/6 h-1/4 bg-teal text-white rounded-lg p-4 text-sm hover:bg-peach"
@@ -86,7 +92,7 @@ const TeacherDashboard = () => {
 
           <div className="classes grid grid-cols-3 gap-12 mt-8">
             {loading ? (
-              <p>Loading...</p> // Show loading text while fetching classes
+              <p>Loading...</p>
             ) : Array.isArray(currentClasses) && currentClasses.length > 0 ? (
               currentClasses.map((classData) => (
                 <ClassCard
@@ -98,26 +104,23 @@ const TeacherDashboard = () => {
                 />
               ))
             ) : (
-              <p>No classes found</p> // Show message if no classes are available
+              <p>No classes found</p>
             )}
           </div>
 
-          {/* Pagination Buttons */}
+          {/* Pagination */}
           <div className="pagination flex mt-14">
             <button
               onClick={prevPage}
               className="w-1/6 h-1/4 bg-slate-100 text-gray-400 rounded-lg p-4 text-sm"
-              disabled={currentPage === 1} // Disable prev button on the first page
+              disabled={currentPage === 1}
             >
               Prev
             </button>
-
             <button
               onClick={nextPage}
               className="ml-auto w-1/6 h-1/4 bg-slate-100 text-gray-400 rounded-lg p-4 text-sm"
-              disabled={
-                currentPage === Math.ceil(classes.length / classesPerPage)
-              } // Disable next button on last page
+              disabled={currentPage === Math.ceil(classes.length / classesPerPage)}
             >
               Next
             </button>

@@ -3,9 +3,9 @@ import apiClient from "./apiClient";
 
 class TeamService {
   // Create a Team
-  static createTeam(projectId, teamData, token) {
+  static createTeam(projectId, groupName, token) {
     return handleRequest(
-      () => apiClient.post(`/student/create-team/${projectId}`, teamData),
+      () => apiClient.post(`/student/create-team/${projectId}`, { groupName }),
       token
     );
   }
@@ -77,6 +77,22 @@ class TeamService {
   // Get Team by ID
   static getTeamById(teamId, token) {
     return handleRequest(() => apiClient.get(`/teams/${teamId}`), token);
+  }
+
+  // Get Teams by Class
+  static getTeamsByClass(classId, token) {
+    return handleRequest(
+      () => apiClient.get(`/teams/class/${classId}`),
+      token
+    );
+  }
+
+  // Get My Team for a Class
+  static getMyTeam(userId, classId, token) {
+    return handleRequest(
+      () => apiClient.get(`/team/my/${classId}`, { params: { userId } }),
+      token
+    );
   }
 }
 
