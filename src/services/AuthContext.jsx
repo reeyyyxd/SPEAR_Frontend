@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }) => {
       console.log("Token refreshed successfully.");
     } catch (error) {
       console.error("Failed to refresh token:", error);
-      logout(); // Logout if token refresh fails
+      logout(); 
     }
   };
 
@@ -116,30 +116,34 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("role", role);
     localStorage.setItem("uid", encryptedUid);
-  
+    
     setAuthState({
       token,
       role,
       uid,
+
       isAuthenticated: true,
     });
   };
   
 
   const logout = () => {
-    // Remove all IDs from localStorage
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("uid"); // Remove encrypted UID
+    localStorage.removeItem("cid"); // Remove encrypted Class ID (cid)
+    
+    // Reset authState
     setAuthState({
       token: null,
       role: null,
       uid: null,
+      cid: null,
       isAuthenticated: false,
     });
   };
-
+  
   // Store and encrypt additional IDs (cid, pid, fid, tid, etc.)
   const storeEncryptedId = (key, id) => {
     const encryptedId = encrypt(id.toString());

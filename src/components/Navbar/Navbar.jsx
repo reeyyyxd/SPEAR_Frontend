@@ -5,7 +5,6 @@ import dashboardIcon from "../../assets/icons/dashboard-icon.svg";
 import teamIcon from "../../assets/icons/team-icon.svg";
 import settingsIcon from "../../assets/icons/settings-icon.svg";
 import logOutIcon from "../../assets/icons/log-out-icon.svg";
-import projectProposalsIcon from "../../assets/icons/proposals-icon.svg";
 import userIcon from "../../assets/icons/user-icon.svg";
 
 const Navbar = ({ userRole }) => {
@@ -24,11 +23,6 @@ const Navbar = ({ userRole }) => {
     ],
     TEACHER: [
       { label: "Dashboard", path: "/teacher-dashboard", icon: dashboardIcon },
-      {
-        label: "Project Proposals",
-        path: "/teacher/project-proposals",
-        icon: projectProposalsIcon,
-      },
       { label: "Settings", path: "/settings", icon: settingsIcon },
     ],
     ADMIN: [
@@ -44,6 +38,7 @@ const Navbar = ({ userRole }) => {
     localStorage.removeItem("role");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("uid");
+    localStorage.removeItem("cid");
     navigate("/login");
   };
 
@@ -140,13 +135,9 @@ const Navbar = ({ userRole }) => {
       )}
 
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex h-full w-64 bg-teal text-white p-6 flex-col items-center">
+      <div className="hidden md:flex h-full w-64 bg-teal text-white p-6 flex-col items-center fixed top-0 left-0">
         <div className="flex flex-col items-center mb-8">
-          <img
-            src={logo}
-            alt="Company Logo"
-            className="w-24 h-auto rounded-md"
-          />
+          <img src={logo} alt="Company Logo" className="w-24 h-auto rounded-md" />
         </div>
         <ul className="flex flex-col mt-10 space-y-10">
           {navItems.map((item) => (
