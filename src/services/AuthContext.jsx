@@ -133,6 +133,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("uid"); // Remove encrypted UID
     localStorage.removeItem("cid"); // Remove encrypted Class ID (cid)
+    localStorage.removeItem("tid");
+    localStorage.removeItem("pid");
+
     
     // Reset authState
     setAuthState({
@@ -140,6 +143,8 @@ export const AuthProvider = ({ children }) => {
       role: null,
       uid: null,
       cid: null,
+      tid: null,
+      pid: null,
       isAuthenticated: false,
     });
   };

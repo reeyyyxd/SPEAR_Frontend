@@ -12,7 +12,6 @@ const ClassPage = () => {
   const [classDetails, setClassDetails] = useState(null);
   const [totalUsers, setTotalUsers] = useState(0);
   const [students, setStudents] = useState([]);
-  const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch class details and related data
@@ -45,9 +44,6 @@ const ClassPage = () => {
         const studentsResponse = await ClassService.getStudentsInClass(classResponse.classes.classKey, authState?.token);
         setStudents(studentsResponse || []);
 
-        // Fetch teams in class
-        const teamsResponse = await ClassService.getTeamsInClass(classResponse.classes.classKey, authState?.token);
-        setTeams(teamsResponse || []);
       } catch (error) {
         console.error("Error fetching class data:", error);
       } finally {
@@ -107,6 +103,13 @@ const ClassPage = () => {
           >
             View Project Proposals
           </button>
+          <button
+          className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300"
+          onClick={() => navigate(`/teacher/teams`)}
+          >
+            View Teams
+          </button>
+
         </div>
         
         {/* Class Details */}
@@ -127,16 +130,17 @@ const ClassPage = () => {
 
         {/* Students Table */}
         <div className="bg-gray-100 shadow-md rounded-lg p-6 mt-6">
-          <h2 className="text-lg font-semibold mb-4">Enrolled Students</h2>
-          {students.length > 0 ? (
+        <h2 className="text-lg font-semibold mb-4">Enrolled Students</h2>
+        {students.length > 0 ? (
+          <div className="overflow-y-auto max-h-96">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr className="bg-teal-500 text-white">
-                  <th className="px-6 py-3 text-left text-sm font-bold text-black">First Name</th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-black">Last Name</th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-black">Email</th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-black">Role</th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-black">Action</th>
+              <thead className="sticky top-0 bg-gray-900 text-white z-20 shadow-lg">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-white">First Name</th>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-white">Last Name</th>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-white">Email</th>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-white">Role</th>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-white">Action</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -151,44 +155,18 @@ const ClassPage = () => {
                         className="bg-red-500 text-white px-4 py-2 rounded-lg"
                         onClick={() => handleKickStudent(student.email)}
                       >
-                        Kick
+                        Remove
                       </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          ) : (
-            <p className="text-gray-500">No students enrolled in this class.</p>
-          )}
-        </div>
-
-        {/* Teams Table */}
-        <div className="bg-gray-100 shadow-md rounded-lg p-6 mt-6">
-          <h2 className="text-lg font-semibold mb-4">Teams</h2>
-          {teams.length > 0 ? (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr className="bg-teal-500 text-white">
-                  <th className="px-6 py-3 text-left text-sm font-bold text-black">Group Name</th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-black">Leader</th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-black">Recruitment Status</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {teams.map((team, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 text-sm text-gray-900">{team.groupName}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{team.leader}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{team.recruitmentStatus ? "Open" : "Closed"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="text-gray-500">No teams available for this class.</p>
-          )}
-        </div>
+          </div>
+        ) : (
+          <p className="text-gray-500">No students enrolled in this class.</p>
+        )}
+      </div>
       </div>
     </div>
   );

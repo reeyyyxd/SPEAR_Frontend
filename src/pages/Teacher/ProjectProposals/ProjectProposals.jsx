@@ -149,13 +149,14 @@ const ProjectProposals = () => {
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12 font-medium">
         {/* Back Button */}
-        <button
-          className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300 mb-4"
+        <span
+          className="text-teal cursor-pointer hover:underline transition-all duration-300 mb-4 inline-block"
           onClick={() => navigate(-1)}
         >
-          Back to Class Page
-        </button>
-  
+         Back to Class Page
+        </span>
+
+
         <h1 className="text-lg font-semibold mb-6 text-center">Project Proposals</h1>
   
         {/* Proposals Table */}
