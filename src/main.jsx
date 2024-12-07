@@ -24,6 +24,7 @@ import StudentClassPage from "./pages/Student/Home/StudentClassPage";
 import ProjectProposalPage from "./pages/Student/TeamFormation/ProjectProposalPage";
 import ApplyTeamsPage from "./pages/Student/TeamFormation/ApplyTeamsPage";
 import TeacherTeams from "./pages/Teacher/Teams/TeacherTeams";
+import TeamDetails from "./pages/Teacher/Teams/TeamDetails";
 
 const router = createBrowserRouter([
   {
@@ -115,6 +116,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["TEACHER"]}>
         <ClassPage />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/team-details",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <TeamDetails />
       </PrivateRoute>
     ),
   },

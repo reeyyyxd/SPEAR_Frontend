@@ -7,7 +7,28 @@ const TeacherTeams = () => {
   const { authState, getDecryptedId, storeEncryptedId } = useContext(AuthContext); // Include `storeEncryptedId` and `getDecryptedId`
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [leaders, setLeaders] = useState({}); // Store leaders' names
   const navigate = useNavigate();
+
+  const fetchLeaderName = async (leaderId) => {
+    try {
+      const response = await fetch(`http://localhost:8080/teams/leader/${leaderId}`, {
+        headers: {
+          Authorization: `Bearer ${authState.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch leader's name");
+      }
+
+      const data = await response.json();
+      return data.leaderName || "N/A";
+    } catch (error) {
+      console.error("Error fetching leader's name:", error);
+      return "N/A";
+    }
+  };
 
   useEffect(() => {
     const fetchTeamsByClass = async () => {
@@ -30,6 +51,22 @@ const TeacherTeams = () => {
         }
 
         const data = await response.json();
+
+        // Fetch leader names for all teams
+        const leaderPromises = data.map(async (team) => ({
+          tid: team.tid,
+          leaderName: await fetchLeaderName(team.leaderId),
+        }));
+
+        const leaderData = await Promise.all(leaderPromises);
+
+        // Map leader names to team IDs
+        const leaderMap = leaderData.reduce((map, leader) => {
+          map[leader.tid] = leader.leaderName;
+          return map;
+        }, {});
+
+        setLeaders(leaderMap);
         setTeams(data || []);
       } catch (error) {
         console.error("Error fetching teams data:", error);
@@ -105,14 +142,16 @@ const TeacherTeams = () => {
                 {teams.map((team) => (
                   <tr key={team.tid}>
                     <td className="px-6 py-4 text-sm text-gray-900">{team.groupName}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{team.leader}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {leaders[team.tid] || "N/A"}
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       {team.recruitmentOpen ? "Open" : "Closed"}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       <button
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
-                        onClick={() => handleTeamClick(team.tid)}
+                        className="bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
+                        onClick={() => handleTeamClick(team.tid)} // Extract, encrypt, and store tid
                       >
                         View Details
                       </button>
