@@ -94,23 +94,28 @@ const ClassPage = () => {
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         {/* Header Section */}
         <div className="header flex justify-between items-center mb-6">
-          <h1 className="text-lg font-semibold">
+        <h1 className="text-lg font-semibold">
           {classDetails.courseCode} - {classDetails.courseDescription} - {classDetails.section}
-          </h1>
-          <button
-            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300"
-            onClick={() => navigate(`/teacher/project-proposals`)}
-          >
-            View Project Proposals
-          </button>
-          <button
+        </h1>
+        <button
+          className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300"
+          onClick={() => navigate(`/teacher/project-proposals`)}
+        >
+          View Project Proposals
+        </button>
+        <button
           className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300"
           onClick={() => navigate(`/teacher/teams`)}
-          >
-            View Teams
-          </button>
-
-        </div>
+        >
+          View Teams
+        </button>
+        <button
+          className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300"
+          onClick={() => navigate(`/teacher/evaluations`)}
+        >
+          View Evaluations
+        </button>
+      </div>
         
         {/* Class Details */}
         <div className="bg-gray-100 shadow-md rounded-lg p-6">
