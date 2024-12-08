@@ -26,8 +26,7 @@ import ApplyTeamsPage from "./pages/Student/TeamFormation/ApplyTeamsPage";
 import TeacherTeams from "./pages/Teacher/Teams/TeacherTeams";
 import TeamDetails from "./pages/Teacher/Teams/TeamDetails";
 import TeacherEvaluations from "./pages/Teacher/Evaluation/TeacherEvaluations";
-
-
+import EvaluationPage from "./pages/Student/Home/EvaluationPage";
 
 const router = createBrowserRouter([
   {
@@ -47,6 +46,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["STUDENT"]}>
         <StudentDashboard />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/class/:courseCode/evaluate-peers",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <EvaluationPage />
       </PrivateRoute>
     ),
   },
@@ -83,13 +90,13 @@ const router = createBrowserRouter([
     ),
   },
   {
-  path: "/teacher/evaluations",
-  element: (
-    <PrivateRoute requiredRoles={["TEACHER"]}>
-      <TeacherEvaluations />
-    </PrivateRoute>
-  ),
-},
+    path: "/teacher/evaluations",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <TeacherEvaluations />
+      </PrivateRoute>
+    ),
+  },
 
   {
     path: "/settings",

@@ -3,6 +3,9 @@ import { useParams } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import ClassService from "../../../services/ClassService";
+import Guidelines from "../../../components/Statics/Guidelines";
+import MembersTable from "../../../components/Tables/MembersTable";
+import { Link } from "react-router-dom";
 
 const StudentClassPage = () => {
   const { authState } = React.useContext(AuthContext);
@@ -54,6 +57,16 @@ const StudentClassPage = () => {
             {classDetails.courseCode} - {classDetails.courseDescription} -{" "}
             {classDetails.section}
           </h1>
+        </div>
+        <Guidelines />
+        <MembersTable />
+        <div className="evaluate-btn flex mt-14">
+          <Link
+            to={`/class/${courseCode}/evaluate-peers`} // Dynamic route with courseCode
+            className="ml-auto w-1/6 h-1/4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach"
+          >
+            Evaluate Peers
+          </Link>
         </div>
       </div>
     </div>
