@@ -39,12 +39,6 @@ const TeamFormation = () => {
         {/* Buttons Section */}
         <div className="flex gap-6 mb-8 justify-start">
           <button
-            className="w-1/6 h-1/4 bg-peach text-white rounded-lg p-4 text-sm hover:bg-orange-500"
-            onClick={() => navigate(`/team-formation/project-proposal`)}
-          >
-            Project Proposal
-          </button>
-          <button
             className="w-1/6 h-1/4 bg-gray-800 text-white rounded-lg p-4 text-sm hover:bg-gray-600"
             onClick={() => navigate(`/team-formation/apply-to-teams`)}
           >
