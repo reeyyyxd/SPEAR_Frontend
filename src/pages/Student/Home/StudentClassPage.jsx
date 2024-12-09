@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState, useContext } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import ClassService from "../../../services/ClassService";
 import Guidelines from "../../../components/Statics/Guidelines";
 import MembersTable from "../../../components/Tables/MembersTable";
-import { Link } from "react-router-dom";
 
 const StudentClassPage = () => {
-  const { authState } = React.useContext(AuthContext);
+  const { authState, storeEncryptedId } = useContext(AuthContext); // AuthContext for storing class ID
   const { courseCode } = useParams();
+  const navigate = useNavigate();
 
   const [classDetails, setClassDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,7 +18,10 @@ const StudentClassPage = () => {
     const fetchClassDetails = async () => {
       try {
         const response = await ClassService.getClassByCourseCode(courseCode);
-        setClassDetails(response.classes);
+        if (response?.classes) {
+          setClassDetails(response.classes);
+          storeEncryptedId("cid", response.classes.cid); // Store class ID securely
+        }
         setLoading(false);
       } catch (error) {
         console.error("Error fetching class details:", error);
@@ -27,7 +30,7 @@ const StudentClassPage = () => {
     };
 
     fetchClassDetails();
-  }, [courseCode]);
+  }, [courseCode, storeEncryptedId]);
 
   if (loading) {
     return (
@@ -53,21 +56,29 @@ const StudentClassPage = () => {
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         <div className="header flex justify-between items-center mb-6">
           <h1 className="text-lg font-semibold">
-            {" "}
             {classDetails.courseCode} - {classDetails.courseDescription} -{" "}
             {classDetails.section}
           </h1>
         </div>
+
         <Guidelines />
-        <MembersTable />
-        <div className="evaluate-btn flex mt-14">
+        <div className="actions text-end mt-8 ">
+          {/* Submit Project Proposal Button */}
           <Link
-            to={`/class/${courseCode}/evaluate-peers`} // Dynamic route with courseCode
-            className="ml-auto w-1/6 h-1/4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach"
+            to={`/team-formation/project-proposal`}
+            className="w-1/6 h-1/4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach"
+          >
+            Propose Project
+          </Link>
+          {/* Evaluate Peers Button */}
+          <Link
+            to={`/class/${courseCode}/evaluate-peers`}
+            className="w-1/6 h-1/4 ml-4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach"
           >
             Evaluate Peers
           </Link>
         </div>
+        <MembersTable />
       </div>
     </div>
   );
