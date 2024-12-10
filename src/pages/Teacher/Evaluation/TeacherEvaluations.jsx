@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom"; 
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
+import * as XLSX from 'xlsx';
 
 const TeacherEvaluations = () => {
   const { getDecryptedId, storeEncryptedId } = useContext(AuthContext);
@@ -15,7 +16,12 @@ const TeacherEvaluations = () => {
     period: "",
   });
 
-  // Utility function to calculate availability status
+  // On component mount, fetch evaluations
+  useEffect(() => {
+    fetchEvaluations();
+  }, []);
+
+
   const calculateAvailability = (dateOpen, dateClose) => {
     const currentDate = new Date();
     const openDate = new Date(dateOpen);
@@ -30,7 +36,6 @@ const TeacherEvaluations = () => {
     }
   };
 
-  // Fetch all evaluations
   const fetchEvaluations = async () => {
     try {
       const classId = getDecryptedId("cid");
@@ -41,7 +46,7 @@ const TeacherEvaluations = () => {
         throw new Error("Failed to fetch evaluations");
       }
       const data = await response.json();
-      console.log("Fetched evaluations:", data); // Log the data
+      //console.log("Fetched evaluations:", data);
       const updatedEvaluations = data.map((evaluation) => ({
         ...evaluation,
         availability: calculateAvailability(evaluation.dateOpen, evaluation.dateClose),
@@ -55,8 +60,8 @@ const TeacherEvaluations = () => {
 
   const handleCreateEvaluation = async () => {
     try {
-      const classId = getDecryptedId("cid"); // Ensure this is a valid ID
-      const url = `http://localhost:8080/teacher/create-evaluation/${classId}`; // Updated URL
+      const classId = getDecryptedId("cid");
+      const url = `http://localhost:8080/teacher/create-evaluation/${classId}`;
   
       const response = await fetch(url, {
         method: "POST",
@@ -71,7 +76,6 @@ const TeacherEvaluations = () => {
       const data = await response.json();
       alert(data.message || "Evaluation created successfully!");
   
-      // Add the new evaluation to the list
       setEvaluations((prev) => [
         ...prev,
         {
@@ -94,7 +98,7 @@ const TeacherEvaluations = () => {
   
 
   const handleDeleteEvaluation = async (eid) => {
-    console.log("Attempting to delete evaluation with ID:", eid); // Log the ID
+    //console.log("Attempting to delete evaluation with ID:", eid);
     if (!eid) {
       alert("Invalid evaluation ID");
       return;
@@ -112,7 +116,7 @@ const TeacherEvaluations = () => {
         }
   
         alert("Evaluation deleted successfully!");
-        fetchEvaluations(); // Refresh evaluations after deletion
+        fetchEvaluations(); 
       } catch (error) {
         console.error("Error deleting evaluation:", error);
       }
@@ -121,7 +125,7 @@ const TeacherEvaluations = () => {
   
   const handleEditEvaluation = async () => {
     const eid = getDecryptedId("eid");
-    console.log("Attempting to edit evaluation with ID:", eid); // Log the ID
+    // console.log("Attempting to edit evaluation with ID:", eid);
   
     if (!eid) {
       alert("Invalid evaluation ID");
@@ -157,7 +161,6 @@ const TeacherEvaluations = () => {
     }
   };
 
-  // Handle input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewEvaluation((prev) => ({
@@ -166,10 +169,75 @@ const TeacherEvaluations = () => {
     }));
   };
 
-  // On component mount, fetch evaluations
-  useEffect(() => {
-    fetchEvaluations();
-  }, []);
+  const handleDownload = async (eid) => {
+    if (!eid) {
+      alert("Invalid evaluation ID");
+      return;
+    }
+    try {
+      // Fetch all data
+      const [submissionsRes, resultsRes, responsesRes] = await Promise.all([
+        fetch(`http://localhost:8080/submissions/by-evaluation/${eid}`),
+        fetch(`http://localhost:8080/teacher/by-evaluation/${eid}`),
+        fetch(`http://localhost:8080/responses/get-evaluation/${eid}`),
+      ]);
+  
+      if (!submissionsRes.ok || !resultsRes.ok || !responsesRes.ok) {
+        throw new Error("Failed to fetch data for Excel export");
+      }
+  
+      const [submissions, results, responses] = await Promise.all([
+        submissionsRes.json(),
+        resultsRes.json(),
+        responsesRes.json(),
+      ]);
+  
+      // Prepare data for Excel
+      const exportData = {
+        Submissions: submissions.map((sub) => ({
+          "Submission ID": sub.sid,
+          "Student Name": sub.evaluatorName,
+          "Evaluation Period": sub.evaluationPeriod,
+          "Submission Date": sub.submittedAt,
+          "Status": sub.status,
+        })),
+        Results: results.map((res) => ({
+          "Result ID": res.resultId,
+          "Evaluatee Name": res.evaluateeName,
+          "Average Score": res.averageScore,
+        })),
+        Responses: responses.map((resp) => ({
+          "Response ID": resp.rid,
+          "Evaluation Period": resp.evaluationPeriod,
+          "Evaluator": resp.evaluatorName,
+          "Evaluatee": resp.evaluateeName,
+          "Question": resp.questionName,
+          "Answer": resp.score,
+        })),
+      };
+  
+      // Create Excel workbook
+      const workbook = XLSX.utils.book_new();
+  
+      Object.keys(exportData).forEach((sheetName) => {
+        const sheetData = exportData[sheetName];
+        const worksheet = XLSX.utils.json_to_sheet(sheetData);
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+      });
+  
+      // Write file
+      XLSX.writeFile(workbook, `Evaluation_${eid}_Export.xlsx`);
+      alert("Excel file downloaded successfully!");
+    } catch (error) {
+      console.error("Error downloading Excel:", error);
+      alert("An error occurred while exporting data to Excel.");
+    }
+  };
+  
+  
+  
+
+  
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
@@ -250,6 +318,12 @@ const TeacherEvaluations = () => {
                   >
                     <i className="fa fa-edit"></i>
                   </button>
+                  <button
+                    className="text-green-500 hover:text-green-700"
+                    onClick={() => handleDownload(evalItem.eid)}
+                  >
+            <i className="fa fa-download"></i>
+          </button>
                 </td>
               </tr>
             ))}

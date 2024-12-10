@@ -17,12 +17,12 @@ const Header = () => {
 
   return (
     <div className="flex items-center space-x-4">
-      <img
+      {/* <img
         src={notifBell}
         alt="notification-bell"
         className="w-8 h-8 cursor-pointer"
         onClick={handleBellClick} // Open modal on click
-      />
+      /> */}
       <img
         src={userProfile}
         alt="user-profile"
@@ -30,11 +30,11 @@ const Header = () => {
       />
 
       {/* Notification Modal */}
-      <NotificationModal
+      {/* <NotificationModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         notifications={notificationContent} // Pass notifications to modal
-      />
+      /> */}
     </div>
   );
 };
