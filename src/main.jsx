@@ -27,6 +27,7 @@ import TeacherTeams from "./pages/Teacher/Teams/TeacherTeams";
 import TeamDetails from "./pages/Teacher/Teams/TeamDetails";
 import TeacherEvaluations from "./pages/Teacher/Evaluation/TeacherEvaluations";
 import EvaluationPage from "./pages/Student/Home/EvaluationPage";
+import TeacherQuestions from "./pages/Teacher/Evaluation/TeacherQuestions";
 
 const router = createBrowserRouter([
   {
@@ -151,6 +152,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["TEACHER"]}>
         <TeacherTeams />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/teacher/questions/:eid",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <TeacherQuestions />
       </PrivateRoute>
     ),
   },

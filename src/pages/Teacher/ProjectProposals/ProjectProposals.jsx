@@ -13,7 +13,7 @@ const ProjectProposals = () => {
   const [showModal, setShowModal] = useState(false); // Modal visibility
   const [rejectReason, setRejectReason] = useState(""); // Reason for rejection
   const [selectedProposalId, setSelectedProposalId] = useState(null); // Proposal ID for rejection
-
+  
   useEffect(() => {
     if (!authState.isAuthenticated) {
       navigate("/login");
@@ -148,15 +148,15 @@ const ProjectProposals = () => {
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12 font-medium">
-        {/* Back Button */}
-        <span
-          className="text-teal cursor-pointer hover:underline transition-all duration-300 mb-4 inline-block"
-          onClick={() => navigate(-1)}
-        >
-         Back to Class Page
-        </span>
-
-
+        
+      <div className="flex justify-start mb-4">
+          <button
+            className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-all duration-300"
+            onClick={() => navigate(-1)} // Go back to the previous page
+          >
+            Back
+          </button>
+        </div>
         <h1 className="text-lg font-semibold mb-6 text-center">Project Proposals</h1>
   
         {/* Proposals Table */}
