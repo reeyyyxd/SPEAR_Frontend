@@ -175,31 +175,31 @@ const TeacherEvaluations = () => {
       return;
     }
     try {
-      // Fetch all data
-      const [submissionsRes, resultsRes, responsesRes] = await Promise.all([
+      const [detailsRes, submissionsRes, resultsRes, responsesRes] = await Promise.all([
+        fetch(`http://localhost:8080/evaluation/${eid}/details`),
         fetch(`http://localhost:8080/submissions/by-evaluation/${eid}`),
         fetch(`http://localhost:8080/teacher/by-evaluation/${eid}`),
         fetch(`http://localhost:8080/responses/get-evaluation/${eid}`),
       ]);
   
-      if (!submissionsRes.ok || !resultsRes.ok || !responsesRes.ok) {
+      if (!detailsRes.ok || !submissionsRes.ok || !resultsRes.ok || !responsesRes.ok) {
         throw new Error("Failed to fetch data for Excel export");
       }
   
-      const [submissions, results, responses] = await Promise.all([
+      const [details, submissions, results, responses] = await Promise.all([
+        detailsRes.json(),
         submissionsRes.json(),
         resultsRes.json(),
         responsesRes.json(),
       ]);
   
-      // Prepare data for Excel
       const exportData = {
         Submissions: submissions.map((sub) => ({
           "Submission ID": sub.sid,
           "Student Name": sub.evaluatorName,
           "Evaluation Period": sub.evaluationPeriod,
-          "Submission Date": sub.submittedAt,
           "Status": sub.status,
+          "Submission Date": sub.submittedAt,  
         })),
         Results: results.map((res) => ({
           "Result ID": res.resultId,
@@ -209,19 +209,34 @@ const TeacherEvaluations = () => {
         Responses: responses.map((resp) => ({
           "Response ID": resp.rid,
           "Evaluation Period": resp.evaluationPeriod,
-          "Evaluator": resp.evaluatorName,
           "Evaluatee": resp.evaluateeName,
           "Question": resp.questionName,
+          "Evaluator": resp.evaluatorName,
           "Answer": resp.score,
         })),
       };
+  
+      const headerDetails = [
+        ["EVALUATION REPORT"],
+        [`Course Code: ${details.courseCode || "Not Available"}`],
+        [`Course Name: ${details.courseDescription || "Not Available"}`],
+        [`Section: ${details.section || "Not Available"}`],
+        
+        [],
+      ];
   
       // Create Excel workbook
       const workbook = XLSX.utils.book_new();
   
       Object.keys(exportData).forEach((sheetName) => {
         const sheetData = exportData[sheetName];
-        const worksheet = XLSX.utils.json_to_sheet(sheetData);
+  
+        // Convert data to worksheet and prepend header
+        const worksheet = XLSX.utils.json_to_sheet([]);
+        XLSX.utils.sheet_add_aoa(worksheet, headerDetails, { origin: "A1" });
+        XLSX.utils.sheet_add_json(worksheet, sheetData, { origin: `A${headerDetails.length + 1}` });
+  
+        // Append worksheet to the workbook
         XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
       });
   
