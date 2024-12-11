@@ -8,6 +8,7 @@ const TeacherEvaluations = () => {
   const { getDecryptedId, storeEncryptedId } = useContext(AuthContext);
   const [evaluations, setEvaluations] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const [newEvaluation, setNewEvaluation] = useState({
     availability: "",
@@ -28,74 +29,107 @@ const TeacherEvaluations = () => {
     const closeDate = new Date(dateClose);
 
     if (currentDate < openDate) {
-      return "Pending";
-    } else if (currentDate >= openDate && currentDate <= closeDate) {
-      return "Open";
+        return "Closed"; // Before open date
+    } else if (currentDate >= openDate && currentDate < closeDate) {
+        return "Open"; // Between open and close dates
     } else {
-      return "Closed";
+        return "Closed"; // After close date
     }
-  };
+};
 
-  const fetchEvaluations = async () => {
-    try {
-      const classId = getDecryptedId("cid");
-      const response = await fetch(
-        `http://localhost:8080/teacher/class/${classId}/evaluations`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch evaluations");
-      }
-      const data = await response.json();
-      //console.log("Fetched evaluations:", data);
-      const updatedEvaluations = data.map((evaluation) => ({
-        ...evaluation,
-        availability: calculateAvailability(evaluation.dateOpen, evaluation.dateClose),
-      }));
-      setEvaluations(updatedEvaluations);
-    } catch (error) {
-      console.error("Error fetching evaluations:", error);
+const fetchEvaluations = async () => {
+  try {
+    const classId = getDecryptedId("cid");
+    const response = await fetch(`http://localhost:8080/teacher/class/${classId}/evaluations`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch evaluations");
     }
-  };
-  
+    const data = await response.json();
 
-  const handleCreateEvaluation = async () => {
-    try {
-      const classId = getDecryptedId("cid");
-      const url = `http://localhost:8080/teacher/create-evaluation/${classId}`;
-  
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newEvaluation),
-      });
-  
-      if (!response.ok) {
-        throw new Error("Failed to create evaluation");
+    // Ensure data is valid and avoid undefined fields
+    const sanitizedData = data.map((evaluation) => ({
+      ...evaluation,
+      dateOpen: evaluation.dateOpen || "",
+      dateClose: evaluation.dateClose || "",
+      period: evaluation.period || "",
+    }));
+
+    setEvaluations(sanitizedData);
+  } catch (error) {
+    console.error("Error fetching evaluations:", error);
+  }
+};
+
+
+
+const handleCreateEvaluation = async () => {
+  if (!validateEvaluation()) return;
+
+  try {
+    const classId = getDecryptedId("cid");
+    const url = `http://localhost:8080/teacher/create-evaluation/${classId}`;
+
+    const body = JSON.stringify(cleanEvaluationData(newEvaluation));
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to create evaluation.");
+    }
+
+    const data = await response.json();
+    alert(data.message || "Evaluation created successfully!");
+    window.location.reload();
+    setEvaluations((prev) => {
+      if (!data || !data.evaluation) {
+        console.error("data.evaluation is undefined. Skipping update.");
+        return prev; // Return previous state if data.evaluation is invalid
       }
-  
-      const data = await response.json();
-      alert(data.message || "Evaluation created successfully!");
-  
-      setEvaluations((prev) => [
+    
+      const { dateOpen = "N/A", dateClose = "N/A", ...rest } = data.evaluation;
+    
+      return [
         ...prev,
         {
-          ...data.evaluation,
-          availability: calculateAvailability(data.evaluation.dateOpen, data.evaluation.dateClose),
+          ...rest,
+          dateOpen,
+          dateClose,
+          availability: calculateAvailability(dateOpen, dateClose),
         },
-      ]);
-  
-      setShowModal(false);
-      setNewEvaluation({
-        availability: "",
-        dateOpen: "",
-        dateClose: "",
-        period: "",
-      });
-    } catch (error) {
-      console.error("Error creating evaluation:", error);
+      ];
+    });
+    
+
+    setShowModal(false);
+    setNewEvaluation({
+      availability: "",
+      dateOpen: "",
+      dateClose: "",
+      period: "",
+    });
+  } catch (error) {
+    setError(error.message || "Error creating evaluation.");
+  }
+};
+
+
+const cleanEvaluationData = (evaluation) => {
+  const cleaned = {};
+  Object.keys(evaluation).forEach((key) => {
+    if (evaluation[key]) {
+      cleaned[key] = evaluation[key];
     }
-  };
-  
+  });
+  return cleaned;
+};
+
+
+
 
   const handleDeleteEvaluation = async (eid) => {
     //console.log("Attempting to delete evaluation with ID:", eid);
@@ -124,9 +158,9 @@ const TeacherEvaluations = () => {
   };
   
   const handleEditEvaluation = async () => {
-    const eid = getDecryptedId("eid");
-    // console.log("Attempting to edit evaluation with ID:", eid);
+    if (!validateEvaluation()) return;
   
+    const eid = getDecryptedId("eid");
     if (!eid) {
       alert("Invalid evaluation ID");
       return;
@@ -143,23 +177,44 @@ const TeacherEvaluations = () => {
       );
   
       if (!response.ok) {
-        throw new Error("Failed to update evaluation");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update evaluation.");
       }
   
       const updatedEvaluation = await response.json();
       alert("Evaluation updated successfully!");
-      setEvaluations((prev) =>
-        prev.map((evalItem) =>
-          evalItem.eid === updatedEvaluation.eid
-            ? { ...updatedEvaluation, availability: calculateAvailability(updatedEvaluation.dateOpen, updatedEvaluation.dateClose) }
-            : evalItem
-        )
-      );
-      setShowModal(false);
+      window.location.reload();
     } catch (error) {
-      console.error("Error updating evaluation:", error);
+      setError(error.message || "Error updating evaluation.");
     }
   };
+  
+
+  const validateEvaluation = () => {
+    const { dateOpen, dateClose } = newEvaluation || {};
+    if (!dateOpen || !dateClose) {
+      setError("Both open and close dates are required.");
+      return false;
+    }
+    const openDate = new Date(dateOpen);
+    const closeDate = new Date(dateClose);
+  
+    if (isNaN(openDate.getTime()) || isNaN(closeDate.getTime())) {
+      setError("Invalid date format.");
+      return false;
+    }
+  
+    if (openDate >= closeDate) {
+      setError("Date open must be earlier than date close.");
+      return false;
+    }
+  
+    setError("");
+    return true;
+  };
+  
+  
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -299,106 +354,115 @@ const TeacherEvaluations = () => {
             </tr>
           </thead>
           <tbody>
-            {evaluations.map((evalItem, index) => (
-              <tr key={index} className="border-b">
-                <td className="px-4 py-2">{evalItem.period}</td>
-                <td className="px-4 py-2">{evalItem.dateOpen}</td>
-                <td className="px-4 py-2">{evalItem.dateClose}</td>
-                <td className="px-4 py-2">{evalItem.availability}</td>
-                <td className="px-4 py-2">
-                  <button
-                    className="text-blue-500 hover:text-blue-700"
-                    onClick={() => {
-                    storeEncryptedId("eid", evalItem.eid);
-                    window.location.href = `/teacher/questions/${evalItem.eid}`;
-                                 }}
-                                >
-                           View
-                   </button>
-                </td>
-                <td className="px-4 py-2 flex space-x-3">
-                  <button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => handleDeleteEvaluation(evalItem.eid)}
-                  >
-                    <i className="fa fa-trash"></i>
-                  </button>
-                  <button
-                    className="text-blue-500 hover:text-blue-700"
-                    onClick={() => {
-                      setShowModal(true);
-                      setNewEvaluation(evalItem);
-                      storeEncryptedId("eid", evalItem.eid);
-                    }}
-                  >
-                    <i className="fa fa-edit"></i>
-                  </button>
-                  <button
-                    className="text-green-500 hover:text-green-700"
-                    onClick={() => handleDownload(evalItem.eid)}
-                  >
-            <i className="fa fa-download"></i>
-          </button>
-                </td>
-              </tr>
-            ))}
+          {evaluations.map((evalItem, index) => (
+          <tr key={index} className="border-b">
+            <td className="px-4 py-2">{evalItem.period || "N/A"}</td>
+            <td className="px-4 py-2">{evalItem.dateOpen || "N/A"}</td>
+            <td className="px-4 py-2">{evalItem.dateClose || "N/A"}</td>
+            <td className="px-4 py-2">{evalItem.availability || "N/A"}</td>
+            <td className="px-4 py-2">
+              <button
+                className="text-blue-500 hover:text-blue-700"
+                onClick={() => {
+                  storeEncryptedId("eid", evalItem.eid);
+                  window.location.href = `/teacher/questions/${evalItem.eid}`;
+                }}
+              >
+                View
+              </button>
+            </td>
+            <td className="px-4 py-2 flex space-x-3">
+              <button
+                className="text-red-500 hover:text-red-700"
+                onClick={() => handleDeleteEvaluation(evalItem.eid)}
+              >
+                <i className="fa fa-trash"></i>
+              </button>
+              <button
+                className="text-blue-500 hover:text-blue-700"
+                onClick={() => {
+                  setShowModal(true);
+                  setNewEvaluation(evalItem);
+                  storeEncryptedId("eid", evalItem.eid);
+                }}
+              >
+                <i className="fa fa-edit"></i>
+              </button>
+              <button
+                className="text-green-500 hover:text-green-700"
+                onClick={() => handleDownload(evalItem.eid)}
+              >
+                <i className="fa fa-download"></i>
+              </button>
+            </td>
+          </tr>
+        ))}
           </tbody>
         </table>
 
         {showModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-              <h2 className="text-lg font-bold mb-4">
-                {newEvaluation.eid ? "Edit Evaluation" : "Create Evaluation"}
-              </h2>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date Open</label>
-                <input
-                  type="date"
-                  name="dateOpen"
-                  value={newEvaluation.dateOpen}
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 px-3 py-2 rounded-lg"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date Close</label>
-                <input
-                  type="date"
-                  name="dateClose"
-                  value={newEvaluation.dateClose}
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 px-3 py-2 rounded-lg"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Period</label>
-                <input
-                  type="text"
-                  name="period"
-                  value={newEvaluation.period}
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 px-3 py-2 rounded-lg"
-                  placeholder="Enter period (e.g., Prelims)"
-                />
-              </div>
-              <div className="flex justify-end space-x-4">
-                <button
-                  className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
-                  onClick={() => setShowModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark"
-                  onClick={newEvaluation.eid ? handleEditEvaluation : handleCreateEvaluation}
-                >
-                  {newEvaluation.eid ? "Update" : "Create"}
-                </button>
-              </div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+            <h2 className="text-lg font-bold mb-4">
+              {newEvaluation.eid ? "Edit Evaluation" : "Create Evaluation"}
+            </h2>
+            {error && (
+              <div className="mb-4 text-red-500 text-sm">{error}</div>
+            )}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date Open
+              </label>
+              <input
+                type="date"
+                name="dateOpen"
+                value={newEvaluation.dateOpen}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 px-3 py-2 rounded-lg"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date Close
+              </label>
+              <input
+                type="date"
+                name="dateClose"
+                value={newEvaluation.dateClose}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 px-3 py-2 rounded-lg"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Period
+              </label>
+              <input
+                type="text"
+                name="period"
+                value={newEvaluation.period}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 px-3 py-2 rounded-lg"
+                placeholder="Enter period (e.g., Prelims)"
+              />
+            </div>
+            <div className="flex justify-end space-x-4">
+              <button
+                className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark"
+                onClick={newEvaluation.eid ? handleEditEvaluation : handleCreateEvaluation}
+              >
+                {newEvaluation.eid ? "Update" : "Create"}
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
       </div>
     </div>
   );

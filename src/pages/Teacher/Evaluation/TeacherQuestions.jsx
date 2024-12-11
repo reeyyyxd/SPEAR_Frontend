@@ -91,7 +91,7 @@ const TeacherQuestions = () => {
       );
       setShowEditModal(false);
       alert("Edit success!");
-      window.location.reload(); // Reload the page to reflect changes
+      window.location.reload();
     } catch (error) {
       console.error("Error updating question:", error);
     }
