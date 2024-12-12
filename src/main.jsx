@@ -27,11 +27,8 @@ import TeacherTeams from "./pages/Teacher/Teams/TeacherTeams";
 import TeamDetails from "./pages/Teacher/Teams/TeamDetails";
 import TeacherEvaluations from "./pages/Teacher/Evaluation/TeacherEvaluations";
 import EvaluationPage from "./pages/Student/Home/EvaluationPage";
-<<<<<<< HEAD
 import ErrorPage from "./pages/Common/ErrorPage";
-=======
 import TeacherQuestions from "./pages/Teacher/Evaluation/TeacherQuestions";
->>>>>>> 461ed60212cb996394ebe6c45282fa5d6aae1cfd
 
 const router = createBrowserRouter([
   {
