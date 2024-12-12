@@ -3,11 +3,8 @@ import { useNavigate } from "react-router-dom";
 import errorImage from "../../assets/imgs/error2.jpeg";
 
 const ErrorPage = () => {
-  const navigate = useNavigate(); // Initialize the navigate function
+  const navigate = useNavigate();
 
-  const handleHomeClick = () => {
-    navigate("/"); // Redirect to the home page
-  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white text-gray-800">
@@ -23,20 +20,21 @@ const ErrorPage = () => {
         </h1>
         <p className="text-gray-500 text-lg mb-6">
           We can't find the page you're looking for. Please check the URL or
-          navigate back to the home page.
+          go back to the previous page.
         </p>
       </div>
 
       <div className="flex gap-4">
-        <button
-          className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md font-medium hover:bg-gray-400 transition duration-300"
-          onClick={handleHomeClick}
-        >
-          Home
-        </button>
-        <button className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md font-medium hover:bg-gray-400 transition duration-300">
+      <button
+      className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md font-medium hover:bg-gray-400 transition duration-300"
+      onClick={() => navigate(-1)}
+    >
+      Go back to previous page
+     </button>
+
+        {/* <button className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md font-medium hover:bg-gray-400 transition duration-300">
           Help
-        </button>
+        </button> */}
       </div>
     </div>
   );
