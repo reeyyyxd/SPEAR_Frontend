@@ -119,10 +119,9 @@ const ClassPage = () => {
             >
               View Evaluations
             </button>
-            {/* Gear Icon for Settings */}
             <button
               className="text-teal hover:text-teal-dark transition-all duration-300"
-              onClick={() => navigate(`/settings`)}
+              onClick={() => navigate(`/class-settings`)}
             >
               <i className="fas fa-cog text-2xl"></i>
             </button>
