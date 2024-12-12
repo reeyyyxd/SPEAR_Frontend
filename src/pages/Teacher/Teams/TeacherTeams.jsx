@@ -99,12 +99,14 @@ const TeacherTeams = () => {
       <Navbar userRole={authState?.role} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         {/* Back Button */}
-        <span
-          className="text-teal cursor-pointer hover:underline transition-all duration-300 mb-4 inline-block"
-          onClick={() => navigate(-1)}
-        >
-          Back to Class Page
-        </span>
+        <div className="flex justify-start mb-4">
+          <button
+            className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-all duration-300"
+            onClick={() => navigate(-1)}
+          >
+            Back
+          </button>
+        </div>
 
         <h1 className="text-lg font-semibold mb-6 text-center">Teams</h1>
         <div className="bg-gray-100 shadow-md rounded-lg p-6">

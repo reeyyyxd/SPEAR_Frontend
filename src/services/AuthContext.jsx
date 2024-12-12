@@ -131,10 +131,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("refreshToken");
-    localStorage.removeItem("uid"); // Remove encrypted UID
-    localStorage.removeItem("cid"); // Remove encrypted Class ID (cid)
+    localStorage.removeItem("uid");
+    localStorage.removeItem("cid");
     localStorage.removeItem("tid");
     localStorage.removeItem("pid");
+    localStorage.removeItem("eid");
+    localStorage.removeItem("qid");
 
     
     // Reset authState
@@ -145,15 +147,22 @@ export const AuthProvider = ({ children }) => {
       cid: null,
       tid: null,
       pid: null,
+      eid: null,
+      qid: null,
       isAuthenticated: false,
     });
   };
   
   // Store and encrypt additional IDs (cid, pid, fid, tid, etc.)
   const storeEncryptedId = (key, id) => {
+    if (!id) {
+      console.error(`Invalid ID provided for key "${key}". ID:`, id);
+      return; // Exit the function if the ID is invalid
+    }
     const encryptedId = encrypt(id.toString());
     localStorage.setItem(key, encryptedId);
   };
+  
 
   // Retrieve and decrypt additional IDs
   const getDecryptedId = (key) => {

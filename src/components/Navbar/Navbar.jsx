@@ -41,6 +41,8 @@ const Navbar = ({ userRole }) => {
     localStorage.removeItem("cid");
     localStorage.removeItem("tid");
     localStorage.removeItem("pid");
+    localStorage.removeItem("eid");
+    localStorage.removeItem("qid");
     navigate("/login");
   };
 

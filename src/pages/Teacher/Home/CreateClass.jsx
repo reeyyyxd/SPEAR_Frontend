@@ -86,10 +86,22 @@ const CreateClass = () => {
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
+
+      <div className="flex justify-start mb-4">
+          <button
+            className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-all duration-300"
+            onClick={() => navigate(-1)}
+          >
+            Back
+          </button>
+        </div>
         <div className="header flex justify-between items-center mb-6">
-          <h1 className="text-lg font-semibold">Create Class</h1>
+          <h1 className="text-lg font-semibold flex justify-center items-center h-full">Create Class</h1>
+
           <Header />
         </div>
+
+        
 
         {/* Form */}
         <form className="grid grid-cols-2 gap-8" onSubmit={handleSubmit}>
