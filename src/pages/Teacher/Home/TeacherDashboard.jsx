@@ -7,7 +7,6 @@ import UserService from "../../../services/UserService";
 import ClassCard from "./ClassCard";
 import ClassService from "../../../services/ClassService";
 
-
 const TeacherDashboard = () => {
   const { authState } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -16,14 +15,13 @@ const TeacherDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [teacherName, setTeacherName] = useState(""); // Store teacher's name
   const [currentPage, setCurrentPage] = useState(1);
-  const [classesPerPage] = useState(6);
+  const classesPerPage = 6;
 
   useEffect(() => {
     if (!authState.isAuthenticated) {
       navigate("/login");
     }
 
-    // Fetch teacher profile and classes
     const fetchDashboardData = async () => {
       try {
         // Fetch teacher's name
@@ -35,9 +33,9 @@ const TeacherDashboard = () => {
         // Fetch classes created by the teacher
         const response = await ClassService.getClassesCreatedByUser(authState.uid);
         setClasses(response || []);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
+      } finally {
         setLoading(false);
       }
     };
@@ -49,8 +47,8 @@ const TeacherDashboard = () => {
     navigate(`/teacher/create-class`);
   };
 
-  const handleCardClick = (courseCode) => {
-    navigate(`/teacher/class/${courseCode}`);
+  const handleCardClick = (courseCode, section) => {
+    navigate(`/teacher/class/${courseCode}/${section}`);
   };
 
   // Pagination logic
@@ -94,14 +92,14 @@ const TeacherDashboard = () => {
           <div className="classes grid grid-cols-3 gap-12 mt-8">
             {loading ? (
               <p>Loading...</p>
-            ) : Array.isArray(currentClasses) && currentClasses.length > 0 ? (
+            ) : currentClasses.length > 0 ? (
               currentClasses.map((classData) => (
                 <ClassCard
-                  key={classData.courseCode}
+                  key={`${classData.courseCode}-${classData.section}`} // Unique key
                   courseCode={classData.courseCode}
                   section={classData.section}
                   courseDescription={classData.courseDescription}
-                  onClick={() => handleCardClick(classData.courseCode)}
+                  onClick={() => handleCardClick(classData.courseCode, classData.section)}
                 />
               ))
             ) : (

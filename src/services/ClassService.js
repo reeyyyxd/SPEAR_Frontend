@@ -38,9 +38,12 @@ class ClassService {
     return handleRequest(() => apiClient.get(`/class/${classKey}/students`));
   }
 
-  static getClassByCourseCode(courseCode) {
-    return handleRequest(() => apiClient.get(`/teacher/class/${courseCode}`));
+  static getClassByCourseCode(courseCode, section) {
+    return handleRequest(() =>
+      apiClient.get(`/teacher/class/${courseCode}/${section}`)
+    );
   }
+  
 
   static removeStudentFromClass(classKey, email) {
     return handleRequest(() => apiClient.post("/teacher/remove-student", { classKey, email }));
