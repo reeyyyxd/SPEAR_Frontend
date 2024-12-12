@@ -29,6 +29,7 @@ import TeacherEvaluations from "./pages/Teacher/Evaluation/TeacherEvaluations";
 import EvaluationPage from "./pages/Student/Home/EvaluationPage";
 import ErrorPage from "./pages/Common/ErrorPage";
 import TeacherQuestions from "./pages/Teacher/Evaluation/TeacherQuestions";
+import ClassSettings from "./pages/Teacher/Home/ClassSettings";
 
 const router = createBrowserRouter([
   {
@@ -153,6 +154,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["TEACHER"]}>
         <TeacherTeams />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/class-settings",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <ClassSettings />
       </PrivateRoute>
     ),
   },
