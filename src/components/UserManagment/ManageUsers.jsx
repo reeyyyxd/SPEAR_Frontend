@@ -6,6 +6,7 @@ import UsersTable from "../Tables/UsersTable";
 import AddUsersModal from "../Modals/AddUsersModal";
 import UserService from "../../services/UserService";
 
+
 const ManageUsers = () => {
   const { authState } = useContext(AuthContext);
   const [isModalOpen, setModalOpen] = useState(false);

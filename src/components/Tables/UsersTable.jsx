@@ -16,22 +16,28 @@ const UsersTable = ({ users }) => {
     setCurrentPage,
   } = usePagination(users, usersPerPage);
 
-  const handleDelete = async (userId) => {
-    const userToDelete = users.find((user) => user.email === userId); // Assuming email is unique for identifying users
-    const confirmationMessage = `Are you sure you want to delete ${userToDelete?.firstname} ${userToDelete?.lastname}?`;
-
+  const handleDelete = async (userEmail) => {
+    const userToDelete = users.find((user) => user.email === userEmail);
+    if (!userToDelete) {
+      toast.error("User not found.");
+      return;
+    }
+  
+    const confirmationMessage = `Are you sure you want to delete ${userToDelete.firstname} ${userToDelete.lastname}?`;
     const confirmDeletion = window.confirm(confirmationMessage);
-
+  
+  
     if (!confirmDeletion) {
       toast.info("Deletion cancelled.");
       return;
     }
-
+  
     try {
-      await UserService.deleteUser(userId);
-      toast.success("User deleted successfully.");
+      await UserService.deleteUser(userEmail);
+      alert("User deleted successfully.");
+      window.location.reload();
     } catch (err) {
-      toast.error("Failed to delete the user.");
+      toast.error(err.response?.data?.message || "Failed to delete the user.");
     }
   };
 
@@ -55,29 +61,29 @@ const UsersTable = ({ users }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {currentUsers.map((user) => (
-                  <tr key={user.email} className="hover:bg-gray-100">
-                    <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-teal-800">
-                      {`${user.firstname} ${user.lastname}`}
-                    </td>
-                    <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
-                      {user.email}
-                    </td>
-                    <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
-                      {user.role}
-                    </td>
-                    <td className="px-6 py-2 whitespace-nowrap text-start text-sm font-medium">
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(user.email)}
-                        className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 focus:outline-none focus:text-blue-800 disabled:opacity-50 disabled:pointer-events-none"
-                      >
-                        <img src={deleteIcon} alt="delete-icon" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+              {currentUsers.map((user) => (
+                <tr key={user.email} className="hover:bg-gray-100">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-teal-800">
+                    {`${user.firstname} ${user.lastname}`}
+                  </td>
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                    {user.email}
+                  </td>
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                    {user.role}
+                  </td>
+                  <td className="px-6 py-2 whitespace-nowrap text-start text-sm font-medium">
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(user.email)}
+                      className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 focus:outline-none focus:text-blue-800 disabled:opacity-50 disabled:pointer-events-none"
+                    >
+                      <img src={deleteIcon} alt="delete-icon" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
             </table>
             {users.length === 0 && (
               <p className="text-center text-gray-500 py-4">No users found.</p>

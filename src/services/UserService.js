@@ -38,10 +38,12 @@ class UserService {
     return handleRequest(() => apiClient.put(`/student/update/${userId}`, userData));
   }
 
-  // Delete User (Soft delete)
-  static deleteUser(userId) {
-    return handleRequest(() => apiClient.delete(`/admin/delete/${userId}`));
-  }
+  // Delete User by Email
+static deleteUser(email) {
+  if (!email) throw new Error("User email is required");
+  return handleRequest(() => apiClient.delete(`/admin/delete/${email}`));
+}
+
 
   // Get User Profile (Currently Authenticated User)
   static getUserProfileById(userId) {

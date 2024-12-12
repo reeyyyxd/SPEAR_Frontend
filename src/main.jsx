@@ -30,6 +30,9 @@ import EvaluationPage from "./pages/Student/Home/EvaluationPage";
 import ErrorPage from "./pages/Common/ErrorPage";
 import TeacherQuestions from "./pages/Teacher/Evaluation/TeacherQuestions";
 import ClassSettings from "./pages/Teacher/Home/ClassSettings";
+import TeacherSettings from "./pages/Common/TeacherSettings";
+import AdminSettings from "./pages/Common/AdminSettings";
+import StudentSettings from "./pages/Common/StudentSettings";
 
 const router = createBrowserRouter([
   {
@@ -104,7 +107,7 @@ const router = createBrowserRouter([
   {
     path: "/settings",
     element: (
-      <PrivateRoute requiredRoles={["STUDENT", "TEACHER"]}>
+      <PrivateRoute requiredRoles={["ADMIN"]}>
         <Settings />
       </PrivateRoute>
     ),
@@ -165,6 +168,32 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
+  {
+    path: "/teacher-settings",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <TeacherSettings />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/admin-settings",
+    element: (
+      <PrivateRoute requiredRoles={["ADMIN"]}>
+        <AdminSettings />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/student-settings",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <StudentSettings />
+      </PrivateRoute>
+    ),
+  },
+  
+  
   {
     path: "/teacher/questions/:eid",
     element: (
