@@ -27,6 +27,7 @@ import TeacherTeams from "./pages/Teacher/Teams/TeacherTeams";
 import TeamDetails from "./pages/Teacher/Teams/TeamDetails";
 import TeacherEvaluations from "./pages/Teacher/Evaluation/TeacherEvaluations";
 import EvaluationPage from "./pages/Student/Home/EvaluationPage";
+import ErrorPage from "./pages/Common/ErrorPage";
 
 const router = createBrowserRouter([
   {
@@ -176,7 +177,7 @@ const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <h1>Nothing Here...</h1>,
+    element: <ErrorPage />,
   },
 ]);
 
