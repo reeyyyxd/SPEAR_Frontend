@@ -5,13 +5,8 @@ import { useNavigate } from "react-router-dom";
 import AuthContext from "../../services/AuthContext";
 import axios from "axios";
 
-const Settings = () => {
-  const { authState } = useContext(AuthContext);
-  const [userData, setUserData] = useState({
-    email: "",
-    firstname: "",
-    lastname: "",
-    interests: "",
+const PasswordModal = ({ userId, token, onClose, correctCurrentPassword }) => {
+  const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmNewPassword: "",
@@ -21,6 +16,126 @@ const Settings = () => {
     newPassword: false,
     confirmNewPassword: false,
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const togglePasswordVisibility = (field) => {
+    setShowPassword((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
+  };
+
+  const handlePasswordUpdate = async () => {
+    // Ensure all fields are filled
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmNewPassword) {
+      alert("All fields must be filled!");
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmNewPassword) {
+      alert("New password and confirm password do not match!");
+      return;
+    }
+  
+    try {
+      const response = await axios.put(
+        `http://localhost:8080/user/update-password/${userId}`,
+        {
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Password updated successfully!");
+        onClose();
+      }
+    } catch (error) {
+      if (error.response?.data?.message === "Current password is incorrect.") {
+        alert("The current password you entered is incorrect. Please try again.");
+      } else {
+        alert(error.response?.data?.message || "An error occurred while updating the password.");
+      }
+    }
+  };
+
+  return (
+    <div className="modal bg-gray-800 bg-opacity-75 fixed inset-0 flex justify-center items-center">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 className="text-lg font-semibold mb-4">Update Password</h2>
+        {["currentPassword", "newPassword", "confirmNewPassword"].map((field) => (
+          <div key={field} className="mb-4">
+            <label
+              htmlFor={field}
+              className="block mb-2 font-medium capitalize"
+            >
+              {field.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword[field] ? "text" : "password"}
+                id={field}
+                name={field}
+                placeholder={
+                  field === "currentPassword"
+                    ? "Enter current password"
+                    : "Enter new password"
+                }
+                value={passwordData[field]}
+                onChange={handleInputChange}
+                className="w-full border rounded-md p-3"
+              />
+              <button
+                type="button"
+                onClick={() => togglePasswordVisibility(field)}
+                className="absolute right-3 top-3 text-gray-500"
+              >
+                {showPassword[field] ? "Hide" : "Show"}
+              </button>
+            </div>
+          </div>
+        ))}
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={handlePasswordUpdate}
+            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition duration-300"
+          >
+            Update Password
+          </button>
+          <button
+            onClick={onClose}
+            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+const Settings = () => {
+  const { authState } = useContext(AuthContext);
+  const [userData, setUserData] = useState({
+    email: "",
+    firstname: "",
+    lastname: "",
+    interests: "",
+  });
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,13 +157,7 @@ const Settings = () => {
         }
       );
       const { email, firstname, lastname, interests } = response.data;
-      setUserData((prevData) => ({
-        ...prevData,
-        email,
-        firstname,
-        lastname,
-        interests,
-      }));
+      setUserData({ email, firstname, lastname, interests });
     } catch (error) {
       console.error("Failed to fetch user data:", error);
       alert("Error fetching user data. Please try again.");
@@ -64,18 +173,10 @@ const Settings = () => {
   };
 
   const handleSaveChanges = async () => {
-    if (userData.newPassword !== userData.confirmNewPassword) {
-      alert("New password and confirm password do not match!");
-      return;
-    }
-
     try {
       const response = await axios.put(
         `http://localhost:8080/teacher/update/${authState.uid}`,
-        {
-          ...userData,
-          password: userData.currentPassword,
-        },
+        userData,
         {
           headers: {
             Authorization: `Bearer ${authState.token}`,
@@ -84,22 +185,14 @@ const Settings = () => {
       );
 
       if (response.status === 200) {
-        alert("Profile and password updated successfully!");
-        navigate(`/teacher/class/${classData.courseCode}`);
+        alert("Profile updated successfully!");
       } else {
         alert(response.data.message || "Failed to update profile.");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Error updating profile. Please check your current password.");
+      alert("Error updating profile. Please try again.");
     }
-  };
-
-  const togglePasswordVisibility = (field) => {
-    setShowPassword((prev) => ({
-      ...prev,
-      [field]: !prev[field],
-    }));
   };
 
   return (
@@ -112,106 +205,95 @@ const Settings = () => {
         </div>
 
         <form
-            className="bg-gray-100 shadow-md rounded-lg p-8 space-y-6"
-            onSubmit={(e) => {
-                e.preventDefault();
-                handleSaveChanges();
-            }}
+          className="bg-gray-100 shadow-md rounded-lg p-8 space-y-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSaveChanges();
+          }}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="email" className="block mb-2 font-medium">
+                Email
+              </label>
+              <input
+                type="text"
+                id="email"
+                name="email"
+                value={userData.email}
+                onChange={handleInputChange}
+                className="w-full border rounded-md p-3"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="firstname" className="block mb-2 font-medium">
+                First Name
+              </label>
+              <input
+                type="text"
+                id="firstname"
+                name="firstname"
+                value={userData.firstname}
+                onChange={handleInputChange}
+                className="w-full border rounded-md p-3"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="lastname" className="block mb-2 font-medium">
+                Last Name
+              </label>
+              <input
+                type="text"
+                id="lastname"
+                name="lastname"
+                value={userData.lastname}
+                onChange={handleInputChange}
+                className="w-full border rounded-md p-3"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="interests" className="block mb-2 font-medium">
+                Interests
+              </label>
+              <input
+                type="text"
+                id="interests"
+                name="interests"
+                value={userData.interests}
+                onChange={handleInputChange}
+                className="w-full border rounded-md p-3"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-between mt-6">
+            <button
+              type="button"
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="bg-teal text-white px-6 py-2 rounded-lg hover:bg-teal-dark transition duration-300"
             >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                <label htmlFor="email" className="block mb-2 font-medium">
-                    Email
-                </label>
-                <input
-                    type="text"
-                    id="email"
-                    name="email"
-                    value={userData.email}
-                    onChange={handleInputChange}
-                    className="w-full border rounded-md p-3"
-                />
-                </div>
-
-                <div>
-                <label htmlFor="firstname" className="block mb-2 font-medium">
-                    First Name
-                </label>
-                <input
-                    type="text"
-                    id="firstname"
-                    name="firstname"
-                    value={userData.firstname}
-                    onChange={handleInputChange}
-                    className="w-full border rounded-md p-3"
-                />
-                </div>
-
-                <div>
-                <label htmlFor="lastname" className="block mb-2 font-medium">
-                    Last Name
-                </label>
-                <input
-                    type="text"
-                    id="lastname"
-                    name="lastname"
-                    value={userData.lastname}
-                    onChange={handleInputChange}
-                    className="w-full border rounded-md p-3"
-                />
-                </div>
-
-                <div>
-                <label htmlFor="interests" className="block mb-2 font-medium">
-                    Interests
-                </label>
-                <input
-                    type="text"
-                    id="interests"
-                    name="interests"
-                    value={userData.interests}
-                    onChange={handleInputChange}
-                    className="w-full border rounded-md p-3"
-                />
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {["currentPassword", "newPassword", "confirmNewPassword"].map((field) => (
-                <div key={field}>
-                    <label htmlFor={field} className="block mb-2 font-medium">
-                    {field.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
-                    </label>
-                    <div className="relative">
-                    <input
-                        type={showPassword[field] ? "text" : "password"}
-                        id={field}
-                        name={field}
-                        value={userData[field]}
-                        onChange={handleInputChange}
-                        className="w-full border rounded-md p-3"
-                    />
-                    <button
-                        type="button"
-                        onClick={() => togglePasswordVisibility(field)}
-                        className="absolute right-3 top-3 text-gray-500"
-                    >
-                        {showPassword[field] ? "Hide" : "Show"}
-                    </button>
-                    </div>
-                </div>
-                ))}
-            </div>
-            <div className="flex justify-end mt-6">
-                <button
-                type="submit"
-                className="bg-teal text-white px-6 py-2 rounded-lg hover:bg-teal-dark transition duration-300"
-                >
-                Save Changes
-                </button>
-            </div>
+              Change Password
+            </button>
+            <button
+              type="submit"
+              className="bg-teal text-white px-6 py-2 rounded-lg hover:bg-teal-dark transition duration-300"
+            >
+              Save Changes
+            </button>
+          </div>
         </form>
       </div>
+
+      {isPasswordModalOpen && (
+        <PasswordModal
+          userId={authState.uid}
+          token={authState.token}
+          onClose={() => setIsPasswordModalOpen(false)}
+        />
+      )}
     </div>
   );
 };
