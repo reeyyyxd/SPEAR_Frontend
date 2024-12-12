@@ -102,19 +102,19 @@ const ClassPage = () => {
           </h1>
           <div className="flex space-x-4">
             <button
-              className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300"
+              className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
               onClick={() => navigate(`/teacher/project-proposals`)}
             >
               View Project Proposals
             </button>
             <button
-              className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300"
+              className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
               onClick={() => navigate(`/teacher/teams`)}
             >
               View Teams
             </button>
             <button
-              className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300"
+              className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
               onClick={() => navigate(`/teacher/evaluations`)}
             >
               View Evaluations
@@ -130,8 +130,8 @@ const ClassPage = () => {
         </div>
 
         {/* Class Details */}
-        <div className="bg-gray-100 shadow-md rounded-lg p-6">
-          <div className="grid grid-cols-4 gap-6">
+        
+          <div className="grid grid-cols-4 gap-6 mb-10">
             <div>
               <p className="text-md font-medium text-gray-500">
                 Class Key: <span className="text-lg font-medium text-teal">{classDetails.classKey}</span>
@@ -143,26 +143,26 @@ const ClassPage = () => {
               </p>
             </div>
           </div>
-        </div>
+        
 
         {/* Students Table */}
-        <div className="bg-gray-100 shadow-md rounded-lg p-6 mt-6">
-          <h2 className="text-lg font-semibold mb-4">Enrolled Students</h2>
+        
+          <h2 className="text-lg font-semibold mb-4 text-teal">Enrolled Students</h2>
           {students.length > 0 ? (
-            <div className="overflow-y-auto max-h-96">
+            <div className="overflow-y-auto max-h-96 rounded-lg shadow-md">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="sticky top-0 bg-gray-900 text-white z-20 shadow-lg">
+                <thead className="sticky top-0 bg-teal text-white z-20 shadow-lg">
                   <tr>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-white">First Name</th>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-white">Last Name</th>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-white">Email</th>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-white">Role</th>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-white">Action</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-white">First Name</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-white">Last Name</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-white">Email</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-white">Role</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-white">Action</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {students.map((student, index) => (
-                    <tr key={index}>
+                    <tr key={index} >
                       <td className="px-6 py-4 text-sm text-gray-900">{student.firstname}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{student.lastname}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{student.email}</td>
@@ -183,7 +183,7 @@ const ClassPage = () => {
           ) : (
             <p className="text-gray-500">No students enrolled in this class.</p>
           )}
-        </div>
+        
       </div>
     </div>
   );
