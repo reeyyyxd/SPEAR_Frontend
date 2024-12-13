@@ -4,7 +4,7 @@ import Navbar from "../../../components/Navbar/Navbar";
 import JoinClassModal from "../../../components/Modals/JoinClassModal";
 import AuthContext from "../../../services/AuthContext";
 import ClassService from "../../../services/ClassService";
-import UserService from "../../../services/UserService"; // Import UserService
+import UserService from "../../../services/UserService";
 import ClassCard from "./ClassCard";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -58,6 +58,11 @@ const StudentDashboard = () => {
 
   const handleCloseModal = () => {
     setModalOpen(false);
+  };
+
+  // Navigation for Class Cards
+  const handleCardClick = (courseCode, section) => {
+    navigate(`/class/${courseCode}/${section}`);
   };
 
   // Pagination Logic
@@ -114,13 +119,13 @@ const StudentDashboard = () => {
                   section={classData.section}
                   courseDescription={classData.courseDescription}
                   teacherName={`${classData.firstname} ${classData.lastname}`}
-                  onClick={() => navigate(`/class/${classData.courseCode}`)}
+                  onClick={() =>
+                    handleCardClick(classData.courseCode, classData.section) // Cleanly use handleCardClick
+                  }
                 />
               ))
             ) : (
-              <p className="text-center text-gray-500">
-                No classes enrolled yet.
-              </p>
+              <p className="text-center text-gray-500">No classes enrolled yet.</p>
             )}
           </div>
 
@@ -178,5 +183,4 @@ const StudentDashboard = () => {
     </div>
   );
 };
-
 export default StudentDashboard;
