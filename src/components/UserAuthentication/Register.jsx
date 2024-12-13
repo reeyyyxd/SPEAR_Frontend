@@ -6,7 +6,6 @@ import UserService from "../../services/UserService";
 const Register = () => {
   const navigate = useNavigate();
 
-  // Form state object
   const [formData, setFormData] = useState({
     email: "",
     firstName: "",
@@ -17,7 +16,6 @@ const Register = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Handle form field changes
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     setFormData((prevState) => ({
@@ -26,19 +24,19 @@ const Register = () => {
     }));
   };
 
-  // Validate form and handle submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     // Validate password match
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match!");
+      alert("Passwords do not match!");
       return;
     }
-
+  
     setError(null);
     setIsLoading(true);
-
+  
     const userData = {
       email: formData.email,
       firstname: formData.firstName,
@@ -46,21 +44,40 @@ const Register = () => {
       password: formData.password,
       role: "STUDENT",
     };
-
+  
     try {
-      // Register the user
-      await UserService.register(userData);
-
-      alert("User created successfully"); // Alert on success
-      navigate("/login"); // Redirect to login page
+      // Send request to register the user
+      const response = await UserService.register(userData);
+  
+      // Check response status
+      if (response?.status === 200) {
+        alert("User created successfully"); // Alert on success
+        navigate("/login"); // Redirect to login page
+      } else {
+        const errorMessage = response?.data?.message || "Registration failed.";
+        setError(errorMessage);
+        alert(errorMessage); // Alert the error
+      }
     } catch (err) {
-      console.error(err);
-      setError("Registration failed. Please try again."); // Handle any error during registration
+      console.error("Error during registration:", err);
+  
+      // Handle backend validation errors
+      if (err.response && err.response.status === 400) {
+        const errorMessage = err.response.data.message || "This email is already registered.";
+        setError(errorMessage);
+        alert(errorMessage); // Alert duplicate email error
+      } else {
+        const errorMessage = "Registration failed. Please try again.";
+        setError(errorMessage);
+        alert(errorMessage); // Alert general error
+      }
     } finally {
-      setIsLoading(false); // Stop loading state
+      setIsLoading(false);
     }
   };
-
+  
+  
+  
   return (
     <div>
       <div className="flex items-center justify-center min-h-screen">
@@ -74,7 +91,6 @@ const Register = () => {
           </div>
 
           <div className="form-field w-full px-32 py-16">
-            {/* Identifier */}
             <h1 className="text-white text-2xl font-medium pb-16 text-center">
               Registration
             </h1>
@@ -84,12 +100,9 @@ const Register = () => {
               </div>
             )}
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-8">
-              {/* University Email */}
+              {/* Form Fields */}
               <div className="col-span-2">
-                <label
-                  className="block text-sm text-white mb-1"
-                  htmlFor="email"
-                >
+                <label className="block text-sm text-white mb-1" htmlFor="email">
                   University Email
                 </label>
                 <input
@@ -102,12 +115,8 @@ const Register = () => {
                 />
               </div>
 
-              {/* First Name */}
               <div>
-                <label
-                  className="block text-sm text-white mb-1"
-                  htmlFor="firstName"
-                >
+                <label className="block text-sm text-white mb-1" htmlFor="firstName">
                   First Name
                 </label>
                 <input
@@ -120,12 +129,8 @@ const Register = () => {
                 />
               </div>
 
-              {/* Last Name */}
               <div>
-                <label
-                  className="block text-sm text-white mb-1"
-                  htmlFor="lastName"
-                >
+                <label className="block text-sm text-white mb-1" htmlFor="lastName">
                   Last Name
                 </label>
                 <input
@@ -138,12 +143,8 @@ const Register = () => {
                 />
               </div>
 
-              {/* Password */}
               <div>
-                <label
-                  className="block text-sm text-white mb-1"
-                  htmlFor="password"
-                >
+                <label className="block text-sm text-white mb-1" htmlFor="password">
                   Password
                 </label>
                 <input
@@ -156,12 +157,8 @@ const Register = () => {
                 />
               </div>
 
-              {/* Confirm Password */}
               <div>
-                <label
-                  className="block text-sm text-white mb-1"
-                  htmlFor="confirmPassword"
-                >
+                <label className="block text-sm text-white mb-1" htmlFor="confirmPassword">
                   Confirm Password
                 </label>
                 <input
@@ -174,7 +171,6 @@ const Register = () => {
                 />
               </div>
 
-              {/* Register Button */}
               <div className="col-span-2">
                 <button
                   type="submit"
@@ -205,3 +201,4 @@ const Register = () => {
 };
 
 export default Register;
+  
