@@ -19,15 +19,16 @@ const Navbar = ({ userRole }) => {
     STUDENT: [
       { label: "Classes", path: "/student-dashboard", icon: dashboardIcon },
       { label: "Team Formation", path: "/team-formation", icon: teamIcon },
-      { label: "Settings", path: "/settings", icon: settingsIcon },
+      { label: "Settings", path: "/student-settings", icon: settingsIcon },
     ],
     TEACHER: [
       { label: "Dashboard", path: "/teacher-dashboard", icon: dashboardIcon },
-      { label: "Settings", path: "/settings", icon: settingsIcon },
+      { label: "Settings", path: "/teacher-settings", icon: settingsIcon },
     ],
     ADMIN: [
       { label: "Dashboard", path: "/admin-dashboard", icon: dashboardIcon },
       { label: "Manage Users", path: "/manage-users", icon: userIcon },
+      { label: "Settings", path: "/admin-settings", icon: userIcon },
     ],
   };
 

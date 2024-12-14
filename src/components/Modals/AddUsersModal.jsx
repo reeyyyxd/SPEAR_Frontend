@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { toast } from "react-toastify"; // Importing toast
+import { toast } from "react-toastify";
 import UserService from "../../services/UserService";
 
 const AddUsersModal = ({ isOpen, onClose }) => {
-  const hardcodedPassword = "password"; // Hardcoded password
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -11,6 +10,8 @@ const AddUsersModal = ({ isOpen, onClose }) => {
     email: "",
     firstName: "",
     lastName: "",
+    password: "",
+    interests: "",
     role: "",
   });
 
@@ -31,19 +32,17 @@ const AddUsersModal = ({ isOpen, onClose }) => {
       email: formData.email,
       firstname: formData.firstName,
       lastname: formData.lastName,
-      password: hardcodedPassword,
+      password: formData.password,
+      interests: formData.interests,
       role: formData.role,
     };
 
     try {
-      // Add new user
       const newUser = await UserService.register(userData);
-
-      // Show success toast
-      toast.success("User added successfully!");
-
-      // Close the modal after successful submission
+      
+      alert("User added successfully!");
       onClose();
+      window.location.reload();
     } catch (err) {
       console.error(err);
       setError("Failed to add user. Please try again.");
@@ -145,6 +144,43 @@ const AddUsersModal = ({ isOpen, onClose }) => {
               />
             </div>
 
+            {/* Password */}
+            <div>
+              <label
+                htmlFor="password"
+                className="block mb-2 text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                className="w-full p-2 border rounded-md focus:ring-teal-500 focus:border-teal-500"
+                placeholder="Enter password"
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+
+            {/* Interests */}
+            <div>
+              <label
+                htmlFor="interests"
+                className="block mb-2 text-sm font-medium text-gray-700"
+              >
+                Interests
+              </label>
+              <input
+                type="text"
+                id="interests"
+                className="w-full p-2 border rounded-md focus:ring-teal-500 focus:border-teal-500"
+                placeholder="Enter interests"
+                value={formData.interests}
+                onChange={handleInputChange}
+              />
+            </div>
+
             {/* Role */}
             <div>
               <label
@@ -163,7 +199,6 @@ const AddUsersModal = ({ isOpen, onClose }) => {
                 <option value="" disabled>
                   Select Role
                 </option>
-                <option value="STUDENT">STUDENT</option>
                 <option value="TEACHER">TEACHER</option>
                 <option value="ADMIN">ADMIN</option>
               </select>

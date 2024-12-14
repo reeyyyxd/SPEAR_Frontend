@@ -9,7 +9,10 @@ class UserService {
 
   // Register
   static register(userData) {
-    return handleRequest(() => apiClient.post("/register", userData));
+    return apiClient.post("/register", userData).catch((error) => {
+      // Throw the error for the caller to handle
+      throw error;
+    });
   }
 
   // Refresh Token
@@ -38,10 +41,12 @@ class UserService {
     return handleRequest(() => apiClient.put(`/student/update/${userId}`, userData));
   }
 
-  // Delete User (Soft delete)
-  static deleteUser(userId) {
-    return handleRequest(() => apiClient.delete(`/admin/delete/${userId}`));
-  }
+  // Delete User by Email
+static deleteUser(email) {
+  if (!email) throw new Error("User email is required");
+  return handleRequest(() => apiClient.delete(`/admin/delete/${email}`));
+}
+
 
   // Get User Profile (Currently Authenticated User)
   static getUserProfileById(userId) {

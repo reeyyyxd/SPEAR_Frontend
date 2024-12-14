@@ -151,33 +151,33 @@ const ProjectProposals = () => {
         
       <div className="flex justify-start mb-4">
           <button
-            className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-all duration-300"
+            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
             onClick={() => navigate(-1)} // Go back to the previous page
           >
             Back
           </button>
         </div>
-        <h1 className="text-lg font-semibold mb-6 text-center">Project Proposals</h1>
+        <h1 className="text-lg font-semibold mb-6 text-center text-teal">Project Proposals</h1>
   
         {/* Proposals Table */}
-        <div className="bg-gray-100 shadow-md rounded-lg p-6">
+        <div className="overflow-y-auto max-h-96 rounded-lg shadow-md">
           {proposals.length > 0 ? (
             <table className="min-w-full divide-y divide-gray-200">
               {/* Table Header */}
-              <thead>
+              <thead className="sticky top-0 bg-teal text-white z-20 shadow-lg">
                 <tr className="bg-teal-500 text-white">
-                  <th className="px-6 py-3 text-center text-sm font-bold text-black">Project Name</th>
-                  <th className="px-6 py-3 text-center text-sm font-bold text-black">Description</th>
-                  <th className="px-6 py-3 text-center text-sm font-bold text-black">Features</th>
-                  <th className="px-6 py-3 text-center text-sm font-bold text-black">Adviser</th>
-                  <th className="px-6 py-3 text-center text-sm font-bold text-black">Status</th>
-                  <th className="px-6 py-3 text-center text-sm font-bold text-black">Reason</th>
-                  <th className="px-6 py-3 text-center text-sm font-bold text-black">Action</th>
+                  <th className="px-6 py-3 text-center text-sm font-bold text-white">Project Name</th>
+                  <th className="px-6 py-3 text-center text-sm font-bold text-white">Description</th>
+                  <th className="px-6 py-3 text-center text-sm font-bold text-white">Features</th>
+                  <th className="px-6 py-3 text-center text-sm font-bold text-white">Adviser</th>
+                  <th className="px-6 py-3 text-center text-sm font-bold text-white">Status</th>
+                  <th className="px-6 py-3 text-center text-sm font-bold text-white">Reason</th>
+                  <th className="px-6 py-3 text-center text-sm font-bold text-white">Action</th>
                 </tr>
               </thead>
   
               {/* Table Body */}
-              <tbody>
+              <tbody className="bg-white divide-y divide-gray-200">
                 {proposals.map((proposal) => (
                   <tr key={proposal.pid}>
                     <td className="px-6 py-4 text-center text-sm text-gray-900">{proposal.projectName}</td>
