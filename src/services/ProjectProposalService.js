@@ -173,6 +173,15 @@ class ProjectProposalService {
       )
     );
   }
+
+  static getProposalsByUser(studentId, token) {
+    return handleRequest(() =>
+      apiClient.get(
+        `/proposals/user/${studentId}`,
+        this.attachHeaders(token)
+      )
+  );
+  }
 }
 
 export default ProjectProposalService;

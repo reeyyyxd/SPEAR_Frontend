@@ -6,6 +6,7 @@ import teamIcon from "../../assets/icons/team-icon.svg";
 import settingsIcon from "../../assets/icons/settings-icon.svg";
 import logOutIcon from "../../assets/icons/log-out-icon.svg";
 import userIcon from "../../assets/icons/user-icon.svg";
+import notebook from "../../assets/icons/notebook.svg";
 
 const Navbar = ({ userRole }) => {
   const location = useLocation();
@@ -18,7 +19,7 @@ const Navbar = ({ userRole }) => {
   const navItemsByRole = {
     STUDENT: [
       { label: "Classes", path: "/student-dashboard", icon: dashboardIcon },
-      { label: "Team Formation", path: "/team-formation", icon: teamIcon },
+      { label: "Projects", path: "/student-proposals", icon: notebook },
       { label: "Settings", path: "/student-settings", icon: settingsIcon },
     ],
     TEACHER: [

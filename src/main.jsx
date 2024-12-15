@@ -33,6 +33,7 @@ import ClassSettings from "./pages/Teacher/Home/ClassSettings";
 import TeacherSettings from "./pages/Common/TeacherSettings";
 import AdminSettings from "./pages/Common/AdminSettings";
 import StudentSettings from "./pages/Common/StudentSettings";
+import StudentProposals from "./pages/Student/StudentProposals";
 
 const router = createBrowserRouter([
   {
@@ -95,6 +96,15 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
+  {
+    path: "/student-proposals",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <StudentProposals />
+      </PrivateRoute>
+    ),
+  }
+  ,
   {
     path: "/teacher/evaluations",
     element: (
