@@ -34,6 +34,7 @@ import TeacherSettings from "./pages/Common/TeacherSettings";
 import AdminSettings from "./pages/Common/AdminSettings";
 import StudentSettings from "./pages/Common/StudentSettings";
 import StudentProposals from "./pages/Student/StudentProposals";
+import ManageTeams from "./pages/Student/TeamFormation/ManageTeams";
 
 const router = createBrowserRouter([
   {
@@ -69,6 +70,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["STUDENT"]}>
         <TeamFormation />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/manage-teams",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <ManageTeams />
       </PrivateRoute>
     ),
   },

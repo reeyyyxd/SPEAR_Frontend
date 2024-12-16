@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../../assets/imgs/logo-light.png";
 import dashboardIcon from "../../assets/icons/dashboard-icon.svg";
-import teamIcon from "../../assets/icons/team-icon.svg";
+import teamIcon from "../../assets/icons/teams-icon.svg";
 import settingsIcon from "../../assets/icons/settings-icon.svg";
 import logOutIcon from "../../assets/icons/log-out-icon.svg";
 import userIcon from "../../assets/icons/user-icon.svg";
@@ -20,6 +20,7 @@ const Navbar = ({ userRole }) => {
     STUDENT: [
       { label: "Classes", path: "/student-dashboard", icon: dashboardIcon },
       { label: "Projects", path: "/student-proposals", icon: notebook },
+      { label: "Manage Teams", path: "/manage-teams", icon: teamIcon },
       { label: "Settings", path: "/student-settings", icon: settingsIcon },
     ],
     TEACHER: [
@@ -143,7 +144,11 @@ const Navbar = ({ userRole }) => {
       {/* Desktop Sidebar */}
       <div className="hidden md:flex h-full w-64 bg-teal text-white p-6 flex-col items-center fixed top-0 left-0">
         <div className="flex flex-col items-center mb-8">
-          <img src={logo} alt="Company Logo" className="w-24 h-auto rounded-md" />
+          <img
+            src={logo}
+            alt="Company Logo"
+            className="w-24 h-auto rounded-md"
+          />
         </div>
         <ul className="flex flex-col mt-10 space-y-10">
           {navItems.map((item) => (
