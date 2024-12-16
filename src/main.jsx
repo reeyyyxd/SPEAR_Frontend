@@ -76,7 +76,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/team-formation/apply-team/:teamId/:projectId",
+    path: "/team-formation/apply-team/:teamId/:pid",
     element: (
       <PrivateRoute requiredRoles={["STUDENT"]}>
         <TeamFormation />
