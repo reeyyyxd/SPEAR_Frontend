@@ -5,8 +5,8 @@ const ApplyTeamsTable = ({ teams = [] }) => {
   const navigate = useNavigate();
 
   // Handle row click and redirect
-  const handleRowClick = (teamId) => {
-    navigate(`/team-formation/apply-team/${teamId}`); // Redirect to the team application page
+  const handleRowClick = (teamId, projectId) => {  
+    navigate(`/team-formation/apply-team/${teamId}/${projectId}`); // Redirect to the team application page
   };
 
   return (
@@ -39,7 +39,7 @@ const ApplyTeamsTable = ({ teams = [] }) => {
                   <tr
                     key={team.id}
                     className="hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleRowClick(team.id)} // Add click event
+                    onClick={() => handleRowClick(team.id,team.projectId)} // Add click event
                   >
                     {/* Project Name */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">

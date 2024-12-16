@@ -35,6 +35,7 @@ import AdminSettings from "./pages/Common/AdminSettings";
 import StudentSettings from "./pages/Common/StudentSettings";
 import StudentProposals from "./pages/Student/StudentProposals";
 import ManageTeams from "./pages/Student/TeamFormation/ManageTeams";
+import TeamApplication from "./pages/Student/TeamFormation/TeamApplication";
 
 const router = createBrowserRouter([
   {
@@ -66,10 +67,18 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/team-formation/apply-team/:teamId",
+    path: "/team-formation/apply-team/:teamId/:projectId",
     element: (
       <PrivateRoute requiredRoles={["STUDENT"]}>
         <TeamFormation />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/team-formation/apply-team/:teamId/TeamApplication",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <TeamApplication />
       </PrivateRoute>
     ),
   },
