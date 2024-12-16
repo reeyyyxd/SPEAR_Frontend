@@ -17,7 +17,10 @@ const StudentClassPage = () => {
       setLoading(true);
       try {
         // Fetch class details by courseCode and section
-        const response = await ClassService.getClassByCourseCodeStudent(courseCode, section);
+        const response = await ClassService.getClassByCourseCodeStudent(
+          courseCode,
+          section
+        );
         if (response?.classes) {
           setClassDetails(response.classes);
           storeEncryptedId("cid", response.classes.cid); // Store class ID securely
@@ -59,7 +62,8 @@ const StudentClassPage = () => {
         {/* Header Section */}
         <div className="header flex justify-between items-center mb-6">
           <h1 className="text-lg font-semibold">
-            {classDetails.courseCode} - {classDetails.courseDescription} - {classDetails.section}
+            {classDetails.courseCode} - {classDetails.courseDescription} -{" "}
+            {classDetails.section}
           </h1>
         </div>
 
@@ -67,17 +71,24 @@ const StudentClassPage = () => {
 
         {/* Action Buttons */}
         <div className="actions text-end mt-8">
+          {/* Apply to teams Button */}
+          <Link
+            to={`/team-formation/apply-to-teams`}
+            className="w-1/6 h-1/4 ml-4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach mx-2"
+          >
+            Apply Teams
+          </Link>
           {/* Propose Project Button */}
           <Link
             to="/team-formation/project-proposal"
-            className="w-1/6 h-1/4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach"
+            className="w-1/6 h-1/4 bg-teal mx-4 text-white rounded-lg p-4 text-sm text-center hover:bg-peach"
           >
             Propose Project
-          </Link>
+          </Link>{" "}
           {/* Evaluate Peers Button */}
           <Link
             to={`/class/${courseCode}/evaluate-peers`}
-            className="w-1/6 h-1/4 ml-4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach"
+            className="w-1/6 h-1/4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach"
           >
             Evaluate Peers
           </Link>
