@@ -1,43 +1,6 @@
 import React from "react";
-import deleteIcon from "../../assets/icons/delete-icon.svg";
 
-const ApplyTeamsTable = () => {
-  // Static data for demonstration
-  const staticTeams = [
-    {
-      id: 1,
-      name: "Team Alpha",
-      members: ["Alice", "Bob", "Charlie"],
-      creationDate: "2023-01-10",
-    },
-    {
-      id: 2,
-      name: "Team Beta",
-      members: ["David", "Eve", "Frank"],
-      creationDate: "2023-02-15",
-    },
-    {
-      id: 3,
-      name: "Team Gamma",
-      members: ["Grace", "Hank", "Ivy"],
-      creationDate: "2023-03-20",
-    },
-  ];
-
-  const handleDelete = (teamId) => {
-    const teamToDelete = staticTeams.find((team) => team.id === teamId);
-    const confirmationMessage = `Are you sure you want to delete team "${teamToDelete?.name}"?`;
-
-    const confirmDeletion = window.confirm(confirmationMessage);
-
-    if (!confirmDeletion) {
-      alert("Deletion cancelled.");
-      return;
-    }
-
-    alert(`Team "${teamToDelete?.name}" deleted successfully (simulated).`);
-  };
-
+const ApplyTeamsTable = ({ teams = [] }) => {
   return (
     <div className="flex flex-col">
       <div className="overflow-x-auto">
@@ -45,47 +8,68 @@ const ApplyTeamsTable = () => {
           <div className="overflow-hidden rounded-lg border border-gray-300">
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
-                <tr className="bg-teal font-medium text-white">
-                  {["Name", "Members", "Creation Date", "Action"].map(
-                    (heading) => (
-                      <th
-                        key={heading}
-                        scope="col"
-                        className="px-6 py-2 text-start text-md font-medium"
-                      >
-                        {heading}
-                      </th>
-                    )
-                  )}
+                <tr className="bg-gray-800 text-white font-medium">
+                  {[
+                    "Project Name",
+                    "Description",
+                    "Features",
+                    "Adviser",
+                    "Status",
+                  ].map((heading) => (
+                    <th
+                      key={heading}
+                      scope="col"
+                      className="px-6 py-3 text-start text-md"
+                    >
+                      {heading}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {staticTeams.map((team) => (
+                {teams.map((team) => (
                   <tr key={team.id} className="hover:bg-gray-100">
-                    <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-teal-800">
-                      {team.name}
+                    {/* Project Name */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                      {team.name || "N/A"}
                     </td>
-                    <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
-                      {team.members.join(", ")}
+
+                    {/* Description */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                      {team.description || "N/A"}
                     </td>
-                    <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
-                      {new Date(team.creationDate).toLocaleDateString()}
+
+                    {/* Features */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                      {team.features || "N/A"}
                     </td>
-                    <td className="px-6 py-2 whitespace-nowrap text-start text-sm font-medium">
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(team.id)}
-                        className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 focus:outline-none focus:text-blue-800 disabled:opacity-50 disabled:pointer-events-none"
+
+                    {/* Adviser */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                      {team.adviser || "N/A"}
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span
+                        className={`inline-block px-3 py-3 rounded-md font-semibold 
+                          ${
+                            team.status === "APPROVED"
+                              ? "bg-green-500 text-white"
+                              : "bg-gray-200 text-gray-700"
+                          }`}
                       >
-                        <img src={deleteIcon} alt="delete-icon" />
-                      </button>
+                        {team.status || "N/A"}
+                      </span>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {staticTeams.length === 0 && (
-              <p className="text-center text-gray-500 py-4">No teams found.</p>
+            {teams.length === 0 && (
+              <p className="text-center text-gray-500 py-4">
+                No projects found.
+              </p>
             )}
           </div>
         </div>
