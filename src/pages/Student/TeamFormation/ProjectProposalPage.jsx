@@ -1,45 +1,17 @@
 import React, { useContext, useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
-import ClassService from "../../../services/ClassService";
 import ProjectProposalService from "../../../services/ProjectProposalService";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const ProjectProposalPage = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
   const [projectTitle, setProjectTitle] = useState("");
   const [projectOverview, setProjectOverview] = useState("");
-  const [features, setFeatures] = useState([
-    { title: "", description: "" },
-    { title: "", description: "" },
-  ]);
-  const [advisers, setAdvisers] = useState([]);
-  const [selectedAdviser, setSelectedAdviser] = useState(null);
-  const [isCapstone, setIsCapstone] = useState(false);
+  const [features, setFeatures] = useState([{ title: "", description: "" }]);
 
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  useEffect(() => {
-    const fetchAdvisers = async () => {
-      const storedClassId = getDecryptedId("cid");
-      if (searchParams.get("capstone") === "true" && storedClassId) {
-        setIsCapstone(true);
-        try {
-          const adviserList = await ClassService.getAdvisersForClass(
-            storedClassId
-          );
-          setAdvisers(adviserList || []);
-        } catch (error) {
-          console.error("Error fetching advisers:", error);
-        }
-      }
-    };
-
-    fetchAdvisers();
-  }, [searchParams, getDecryptedId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,18 +29,15 @@ const ProjectProposalPage = () => {
       projectName: projectTitle.trim(),
       description: projectOverview.trim(),
       classId: parseInt(storedClassId, 10),
-      features: features.filter(
-        (feature) => feature.title.trim() && feature.description.trim()
-      ),
+      features: features
+        .filter((feature) => feature.title.trim() && feature.description.trim())
+        .map((feature) => ({
+          featureTitle: feature.title.trim(),
+          featureDescription: feature.description.trim(),
+        })),
     };
 
-    if (isCapstone) {
-      if (!selectedAdviser) {
-        toast.error("Please select an adviser for your capstone project.");
-        return;
-      }
-      proposalData.adviserId = selectedAdviser;
-    }
+    console.log("Submitting Proposal Data:", proposalData);
 
     try {
       await ProjectProposalService.createProposal(
@@ -86,6 +55,14 @@ const ProjectProposalPage = () => {
         error.response?.data?.message || "Failed to submit the proposal."
       );
     }
+  };
+
+  const handleAddFeature = () => {
+    setFeatures([...features, { title: "", description: "" }]);
+  };
+
+  const handleRemoveFeature = (index) => {
+    setFeatures(features.filter((_, i) => i !== index));
   };
 
   return (
@@ -120,35 +97,22 @@ const ProjectProposalPage = () => {
               required
             ></textarea>
           </div>
-          {isCapstone && (
-            <div>
-              <label className="block text-base font-medium text-teal">
-                Select Adviser
-              </label>
-              <select
-                className="block w-full border border-gray-300 rounded-md p-3"
-                value={selectedAdviser}
-                onChange={(e) => setSelectedAdviser(e.target.value)}
-                required
-              >
-                <option value="">Select an adviser</option>
-                {advisers.map((adviser) => (
-                  <option key={adviser.id} value={adviser.id}>
-                    {adviser.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
           <div>
             <h3 className="text-lg font-semibold text-teal mb-4">Features</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={handleAddFeature}
+              className=" text-white bg-teal px-4 py-2 my-4 rounded-md border hover:bg-teal-dark transition"
+            >
+              Add Feature
+            </button>
+            <div className="grid gap-4">
               {features.map((feature, index) => (
-                <div key={index}>
+                <div key={index} className="flex items-center space-x-4">
                   <input
                     type="text"
                     placeholder="Feature title"
-                    className="block w-full border border-gray-300 rounded-md p-3 mb-2"
+                    className="flex-1 border border-gray-300 rounded-md p-3"
                     value={feature.title}
                     onChange={(e) => {
                       const updatedFeatures = [...features];
@@ -159,7 +123,7 @@ const ProjectProposalPage = () => {
                   <input
                     type="text"
                     placeholder="Feature description"
-                    className="block w-full border border-gray-300 rounded-md p-3"
+                    className="flex-1 border border-gray-300 rounded-md p-3"
                     value={feature.description}
                     onChange={(e) => {
                       const updatedFeatures = [...features];
@@ -167,10 +131,18 @@ const ProjectProposalPage = () => {
                       setFeatures(updatedFeatures);
                     }}
                   />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFeature(index)}
+                    className="text-red-500 border border-red-500 px-3 py-1 rounded-md hover:bg-red-500 hover:text-white transition"
+                  >
+                    Remove
+                  </button>
                 </div>
               ))}
             </div>
           </div>
+
           <button
             type="submit"
             className="bg-teal text-white px-6 py-3 rounded-md hover:bg-teal-dark transition"
