@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import React from "react";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
+import ManageTeamsTable from "../../../components/Tables/ManageTeamsTable";
 
 const ManageTeams = () => {
   const { authState } = useContext(AuthContext);
@@ -14,11 +15,13 @@ const ManageTeams = () => {
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         {/* Header Section */}
         <button
-          className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
+          className="bg-teal text-white px-4 py-2 my-8 rounded-lg hover:bg-peach hover:text-white "
           onClick={() => navigate(-1)} // Go back to the previous page
         >
           Back
         </button>
+
+        <ManageTeamsTable />
       </div>
     </div>
   );
