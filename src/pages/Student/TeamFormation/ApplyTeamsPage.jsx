@@ -67,7 +67,7 @@ const ApplyTeamsPage = () => {
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         <div className="header flex justify-between items-center mb-6">
-          <h1 className="text-lg font-semibold">Approved Projects</h1>
+          <h1 className="text-lg font-semibold">Select Available Teams</h1>
         </div>
         {loading && (
           <p className="text-center text-gray-500">

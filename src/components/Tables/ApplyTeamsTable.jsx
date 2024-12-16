@@ -1,6 +1,14 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const ApplyTeamsTable = ({ teams = [] }) => {
+  const navigate = useNavigate();
+
+  // Handle row click and redirect
+  const handleRowClick = (teamId) => {
+    navigate(`/team-formation/apply-team/${teamId}`); // Redirect to the team application page
+  };
+
   return (
     <div className="flex flex-col">
       <div className="overflow-x-auto">
@@ -28,7 +36,11 @@ const ApplyTeamsTable = ({ teams = [] }) => {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {teams.map((team) => (
-                  <tr key={team.id} className="hover:bg-gray-100">
+                  <tr
+                    key={team.id}
+                    className="hover:bg-gray-100 cursor-pointer"
+                    onClick={() => handleRowClick(team.id)} // Add click event
+                  >
                     {/* Project Name */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                       {team.name || "N/A"}

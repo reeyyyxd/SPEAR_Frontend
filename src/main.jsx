@@ -65,7 +65,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/team-formation",
+    path: "/team-formation/apply-team/:teamId",
     element: (
       <PrivateRoute requiredRoles={["STUDENT"]}>
         <TeamFormation />
@@ -103,8 +103,7 @@ const router = createBrowserRouter([
         <StudentProposals />
       </PrivateRoute>
     ),
-  }
-  ,
+  },
   {
     path: "/teacher/evaluations",
     element: (
@@ -154,7 +153,7 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
-  
+
   {
     path: "/team-details",
     element: (
@@ -203,8 +202,7 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
-  
-  
+
   {
     path: "/teacher/questions/:eid",
     element: (
