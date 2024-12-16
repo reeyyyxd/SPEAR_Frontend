@@ -36,6 +36,7 @@ import StudentSettings from "./pages/Common/StudentSettings";
 import StudentProposals from "./pages/Student/StudentProposals";
 import ManageTeams from "./pages/Student/TeamFormation/ManageTeams";
 import TeamApplication from "./pages/Student/TeamFormation/TeamApplication";
+import ManageTeamsPage from "./pages/Student/TeamFormation/ManageTeamsPage";
 
 const router = createBrowserRouter([
   {
@@ -63,6 +64,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["STUDENT"]}>
         <EvaluationPage />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/manage-teams/:teamId",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <ManageTeamsPage />
       </PrivateRoute>
     ),
   },
@@ -262,6 +271,4 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <ToastContainer position="top-right" autoClose={3000} />{" "}
     </AuthProvider>
   </React.StrictMode>
-
-  
 );
