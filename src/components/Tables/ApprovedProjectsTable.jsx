@@ -2,12 +2,16 @@ import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../services/AuthContext";
 import ProjectProposalService from "../../services/ProjectProposalService";
+import TeamService from "../../services/TeamService";
+import FormTeamModal from "../Modals/FormTeamModal";
 
-const ManageTeamsTable = () => {
+const ApprovedProjectsTable = () => {
   const { authState } = useContext(AuthContext);
   const [approvedProjects, setApprovedProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,13 +20,10 @@ const ManageTeamsTable = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch all approved projects
         const response = await ProjectProposalService.getProposalsByStatus(
           "APPROVED",
           authState.token
         );
-
-        console.log("API Response:", response); // Debugging: Log the API response
 
         // Map API response to table format
         const mappedProjects = response.map((project) => ({
@@ -50,8 +51,10 @@ const ManageTeamsTable = () => {
     fetchApprovedProjects();
   }, [authState.token]);
 
-  const handleRowClick = (teamId) => {
-    navigate(`/manage-teams/${teamId}`);
+  // Handle "Form Team" button click
+  const handleFormTeamClick = (projectId) => {
+    setSelectedProjectId(projectId); // Set the selected project ID
+    setShowModal(true); // Open the modal
   };
 
   return (
@@ -72,6 +75,7 @@ const ManageTeamsTable = () => {
                       "Features",
                       "Adviser",
                       "Status",
+                      "Action",
                     ].map((heading) => (
                       <th
                         key={heading}
@@ -88,7 +92,6 @@ const ManageTeamsTable = () => {
                     <tr
                       key={team.id}
                       className="hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleRowClick(team.id)}
                     >
                       {/* Course Code */}
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
@@ -118,15 +121,24 @@ const ManageTeamsTable = () => {
                       {/* Status */}
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <span
-                          className={`inline-block px-3 py-1 rounded-md font-semibold 
-                            ${
-                              team.status === "APPROVED"
-                                ? "bg-green-500 text-white"
-                                : "bg-gray-200 text-gray-700"
-                            }`}
+                          className={`inline-block px-3 py-1 rounded-md font-semibold ${
+                            team.status === "APPROVED"
+                              ? "bg-green-500 text-white"
+                              : "bg-gray-200 text-gray-700"
+                          }`}
                         >
                           {team.status}
                         </span>
+                      </td>
+
+                      {/* Action */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                        <button
+                          onClick={() => handleFormTeamClick(team.projectId)}
+                          className="bg-teal text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+                        >
+                          Form Team
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -141,8 +153,16 @@ const ManageTeamsTable = () => {
           </div>
         </div>
       )}
+
+      {/* Modal */}
+      {showModal && (
+        <FormTeamModal
+          onClose={() => setShowModal(false)}
+          projectId={selectedProjectId}
+        />
+      )}
     </div>
   );
 };
 
-export default ManageTeamsTable;
+export default ApprovedProjectsTable;

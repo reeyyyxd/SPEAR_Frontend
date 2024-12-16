@@ -124,7 +124,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/student-proposals",
+    path: "/approved-projects",
     element: (
       <PrivateRoute requiredRoles={["STUDENT"]}>
         <StudentProposals />
