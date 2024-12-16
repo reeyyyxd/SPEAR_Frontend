@@ -68,7 +68,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/manage-teams/:teamId",
+    path: "/manage-teams/:tid",
     element: (
       <PrivateRoute requiredRoles={["STUDENT"]}>
         <ManageTeamsPage />
