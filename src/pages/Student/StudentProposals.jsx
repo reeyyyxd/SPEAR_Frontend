@@ -42,7 +42,7 @@ const StudentProposals = () => {
 
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         <div className="header flex justify-between items-center my-6">
-          <h1 className="text-lg font-semibold">Approved Projects</h1>
+          <h1 className="text-lg font-semibold">Your Approved Projects</h1>
         </div>
 
         <ApprovedProjectsTable />

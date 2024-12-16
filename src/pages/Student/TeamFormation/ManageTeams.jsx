@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import React from "react";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
+import FormedTeamsTable from "../../../components/Tables/FormedTeamsTable";
 
 const ManageTeams = () => {
   const { authState } = useContext(AuthContext);
@@ -18,6 +19,7 @@ const ManageTeams = () => {
         >
           Back
         </button>
+        <FormedTeamsTable />
       </div>
     </div>
   );

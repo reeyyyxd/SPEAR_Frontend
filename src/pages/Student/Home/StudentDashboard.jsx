@@ -86,29 +86,22 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
-      {/* Main Content */}
-      <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
-        {/* Header Section */}
-        <div className="header flex justify-between items-center mb-6">
+      <div className="main-content bg-white text-teal px-6 sm:px-12 md:px-20 lg:px-28 pt-8 md:pt-12">
+        <div className="header flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <h1 className="text-lg font-semibold">
             Welcome, {studentName || "Student"}
           </h1>
         </div>
-
-        {/* Content Wrapper */}
-        <div className="content flex flex-col bg-gray-200 rounded-2xl p-8 min-h-[calc(100vh-8rem)]">
-          {/* Join Class Button */}
+        <div className="content flex flex-col bg-gray-200 rounded-2xl p-6 sm:p-8 min-h-[calc(100vh-8rem)]">
           <button
             onClick={handleJoinClassClick}
-            className="joinclass-btn ml-auto w-1/6 h-1/4 bg-teal text-white rounded-lg p-4 text-sm hover:bg-peach"
+            className="joinclass-btn self-center sm:self-end w-full sm:w-1/2 md:w-1/6 bg-teal text-white rounded-lg py-2 px-4 text-sm hover:bg-peach transition-all"
           >
             Join Class
           </button>
-
-          {/* Enrolled Classes Section */}
-          <div className="classes grid grid-cols-3 gap-12 mt-8">
+          <div className="classes grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 mt-8">
             {loading ? (
               <p className="text-center text-teal">Loading...</p>
             ) : Array.isArray(currentClasses) && currentClasses.length > 0 ? (
@@ -120,27 +113,27 @@ const StudentDashboard = () => {
                   courseDescription={classData.courseDescription}
                   teacherName={`${classData.firstname} ${classData.lastname}`}
                   onClick={() =>
-                    handleCardClick(classData.courseCode, classData.section) // Cleanly use handleCardClick
+                    handleCardClick(classData.courseCode, classData.section)
                   }
                 />
               ))
             ) : (
-              <p className="text-center text-gray-500">No classes enrolled yet.</p>
+              <p className="text-center text-gray-500">
+                No classes enrolled yet.
+              </p>
             )}
           </div>
-
-          {/* Pagination Buttons */}
           <div className="pagination flex mt-14">
             <button
               onClick={prevPage}
-              className="w-1/6 h-1/4 bg-slate-100 text-gray-400 rounded-lg p-4 text-sm"
+              className="w-full sm:w-1/3 md:w-1/6 bg-slate-100 text-gray-400 rounded-lg py-2 px-4 text-sm"
               disabled={currentPage === 1}
             >
               Prev
             </button>
             <button
               onClick={nextPage}
-              className="ml-auto w-1/6 h-1/4 bg-slate-100 text-gray-400 rounded-lg p-4 text-sm"
+              className="ml-auto w-full sm:w-1/3 md:w-1/6 bg-slate-100 text-gray-400 rounded-lg py-2 px-4 text-sm"
               disabled={
                 currentPage ===
                 Math.ceil(enrolledClasses.length / classesPerPage)
@@ -151,8 +144,6 @@ const StudentDashboard = () => {
           </div>
         </div>
       </div>
-
-      {/* Join Class Modal */}
       <JoinClassModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
@@ -165,7 +156,6 @@ const StudentDashboard = () => {
             );
             if (response && response.statusCode === 200) {
               toast.success("Enrolled successfully!");
-              // Refresh enrolled classes
               const updatedClasses = await ClassService.getClassesForStudent(
                 authState.uid,
                 token
@@ -176,7 +166,7 @@ const StudentDashboard = () => {
             }
           } catch (error) {
             console.error("Error enrolling in class:", error);
-            throw error; // Re-throw for modal to handle
+            throw error;
           }
         }}
       />
