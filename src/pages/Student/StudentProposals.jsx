@@ -61,7 +61,7 @@ const StudentProposals = () => {
                   {proposals.map((proposal) => (
                     <tr key={proposal.pid} className="hover:bg-gray-100">
                       <td className="py-2 px-4 text-teal-800">{proposal.courseCode || "N/A"}</td>
-                      <td className="py-2 px-4 text-teal-800">{proposal.projectname || "N/A"}</td>
+                      <td className="py-2 px-4 text-teal-800">{proposal.projectName || "N/A"}</td>
                       <td className="py-2 px-4 text-teal-800">{proposal.description || "N/A"}</td>
                       <td className="py-2 px-4 text-teal-800">{proposal.status || "N/A"}</td>
                       <td className="py-2 px-4 text-teal-800">
