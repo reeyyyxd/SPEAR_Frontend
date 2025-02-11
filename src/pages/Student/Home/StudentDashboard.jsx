@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import JoinClassModal from "../../../components/Modals/JoinClassModal";
 import AuthContext from "../../../services/AuthContext";
-import ClassService from "../../../services/ClassService";
-import UserService from "../../../services/UserService";
 import ClassCard from "./ClassCard";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -15,11 +13,10 @@ const StudentDashboard = () => {
   const [enrolledClasses, setEnrolledClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
-  const [studentName, setStudentName] = useState(""); // Student name state
+  const [studentName, setStudentName] = useState(""); 
   const [currentPage, setCurrentPage] = useState(1);
   const [classesPerPage] = useState(6);
 
-  // Fetch enrolled classes and student profile
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
@@ -27,14 +24,25 @@ const StudentDashboard = () => {
         const token = localStorage.getItem("token");
 
         // Fetch enrolled classes
-        const response = await ClassService.getClassesForStudent(
-          authState.uid,
-          token
+        const classesResponse = await fetch(
+          `http://localhost:8080/student/${authState.uid}/enrolled-classes`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
-        setEnrolledClasses(response || []);
+
+        const classesData = await classesResponse.json();
+        setEnrolledClasses(classesData || []);
 
         // Fetch student's name
-        const userProfile = await UserService.getUserProfileById(authState.uid);
+        const profileResponse = await fetch(
+          `http://localhost:8080/user/profile/${authState.uid}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const userProfile = await profileResponse.json();
         if (userProfile) {
           setStudentName(`${userProfile.firstname} ${userProfile.lastname}`);
         }
@@ -52,13 +60,8 @@ const StudentDashboard = () => {
   }, [authState]);
 
   // Modal Handlers
-  const handleJoinClassClick = () => {
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-  };
+  const handleJoinClassClick = () => setModalOpen(true);
+  const handleCloseModal = () => setModalOpen(false);
 
   // Navigation for Class Cards
   const handleCardClick = (courseCode, section) => {
@@ -68,10 +71,7 @@ const StudentDashboard = () => {
   // Pagination Logic
   const indexOfLastClass = currentPage * classesPerPage;
   const indexOfFirstClass = indexOfLastClass - classesPerPage;
-  const currentClasses = enrolledClasses.slice(
-    indexOfFirstClass,
-    indexOfLastClass
-  );
+  const currentClasses = enrolledClasses.slice(indexOfFirstClass, indexOfLastClass);
 
   const nextPage = () => {
     if (currentPage < Math.ceil(enrolledClasses.length / classesPerPage)) {
@@ -112,9 +112,7 @@ const StudentDashboard = () => {
                   section={classData.section}
                   courseDescription={classData.courseDescription}
                   teacherName={`${classData.firstname} ${classData.lastname}`}
-                  onClick={() =>
-                    handleCardClick(classData.courseCode, classData.section)
-                  }
+                  onClick={() => handleCardClick(classData.courseCode, classData.section)}
                 />
               ))
             ) : (
@@ -134,10 +132,7 @@ const StudentDashboard = () => {
             <button
               onClick={nextPage}
               className="ml-auto w-full sm:w-1/3 md:w-1/6 bg-slate-100 text-gray-400 rounded-lg py-2 px-4 text-sm"
-              disabled={
-                currentPage ===
-                Math.ceil(enrolledClasses.length / classesPerPage)
-              }
+              disabled={currentPage === Math.ceil(enrolledClasses.length / classesPerPage)}
             >
               Next
             </button>
@@ -150,23 +145,35 @@ const StudentDashboard = () => {
         onEnroll={async (classKey) => {
           const token = localStorage.getItem("token");
           try {
-            const response = await ClassService.enrollStudentByClassKey(
-              classKey,
-              token
-            );
-            if (response && response.statusCode === 200) {
+            const response = await fetch("http://localhost:8080/student/enroll", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ classKey }),
+            });
+
+            const result = await response.json();
+            if (response.ok) {
               toast.success("Enrolled successfully!");
-              const updatedClasses = await ClassService.getClassesForStudent(
-                authState.uid,
-                token
+
+              // Fetch updated enrolled classes
+              const updatedClassesResponse = await fetch(
+                `http://localhost:8080/student/${authState.uid}/enrolled-classes`,
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                }
               );
+
+              const updatedClasses = await updatedClassesResponse.json();
               setEnrolledClasses(updatedClasses || []);
             } else {
-              toast.error(response.message || "Failed to enroll in class.");
+              toast.error(result.message || "Failed to enroll in class.");
             }
           } catch (error) {
             console.error("Error enrolling in class:", error);
-            throw error;
+            toast.error("Error enrolling in class.");
           }
         }}
       />

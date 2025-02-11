@@ -2,7 +2,6 @@ import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
-import ProjectProposalService from "../../../services/ProjectProposalService";
 import { toast } from "react-toastify";
 
 const ProjectProposalPage = () => {
@@ -40,20 +39,26 @@ const ProjectProposalPage = () => {
     console.log("Submitting Proposal Data:", proposalData);
 
     try {
-      await ProjectProposalService.createProposal(
-        proposalData,
-        authState.token
-      );
+      const response = await fetch("http://localhost:8080/student/create-proposal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authState.token}`,
+        },
+        body: JSON.stringify(proposalData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to submit the proposal.");
+      }
+
       toast.success("Proposal submitted successfully!");
       navigate("/student-dashboard");
     } catch (error) {
-      console.error(
-        "Error submitting proposal:",
-        error.response?.data || error.message
-      );
-      toast.error(
-        error.response?.data?.message || "Failed to submit the proposal."
-      );
+      console.error("Error submitting proposal:", error);
+      toast.error(error.message || "Failed to submit the proposal.");
     }
   };
 

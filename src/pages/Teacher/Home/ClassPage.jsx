@@ -1,12 +1,11 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
-import ClassService from "../../../services/ClassService";
 
 const ClassPage = () => {
-  const { authState, storeEncryptedId } = useContext(AuthContext); // Include storeEncryptedId
-  const { courseCode, section } = useParams(); // Extract courseCode and section from URL
+  const { authState, storeEncryptedId } = useContext(AuthContext);
+  const { courseCode, section } = useParams();
   const navigate = useNavigate();
 
   const [classDetails, setClassDetails] = useState(null);
@@ -16,32 +15,57 @@ const ClassPage = () => {
 
   useEffect(() => {
     if (!authState.isAuthenticated) {
-      navigate("/login"); // Redirect to login if not authenticated
+      navigate("/login");
       return;
     }
 
     const fetchClassDetails = async () => {
       try {
-        // Fetch class details by courseCode and section
-        const classResponse = await ClassService.getClassByCourseCode(courseCode, section, authState?.token);
-        if (!classResponse || !classResponse.classes) {
-          setLoading(false);
-          return;
-        }
+        const token = authState.token;
 
-        // Set class details
-        setClassDetails(classResponse.classes);
+        // Fetch class details by courseCode and section
+        const classResponse = await fetch(
+          `http://localhost:8080/teacher/class/${courseCode}/${section}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!classResponse.ok) throw new Error("Failed to fetch class details.");
+
+        const classData = await classResponse.json();
+        setClassDetails(classData.classes);
 
         // Store class ID (cid) in localStorage
-        storeEncryptedId("cid", classResponse.classes.cid);
+        storeEncryptedId("cid", classData.classes.cid);
 
         // Fetch total users in class
-        const totalUsersResponse = await ClassService.getTotalUsersInClass(classResponse.classes.cid, authState?.token);
-        setTotalUsers(totalUsersResponse?.[0]?.[1] || 0);
+        const totalUsersResponse = await fetch(
+          `http://localhost:8080/class/${classData.classes.cid}/total-users`,
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const totalUsersData = await totalUsersResponse.json();
+        setTotalUsers(totalUsersData?.[0]?.[1] || 0);
 
         // Fetch students in class
-        const studentsResponse = await ClassService.getStudentsInClass(classResponse.classes.classKey, authState?.token);
-        setStudents(studentsResponse || []);
+        const studentsResponse = await fetch(
+          `http://localhost:8080/class/${classData.classes.classKey}/students`,
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const studentsData = await studentsResponse.json();
+        setStudents(studentsData || []);
       } catch (error) {
         console.error("Error fetching class data:", error);
       } finally {
@@ -57,15 +81,27 @@ const ClassPage = () => {
     if (!confirmRemoval) return;
 
     try {
-      const response = await ClassService.removeStudentFromClass(classDetails.classKey, email, authState?.token);
-      if (response.statusCode === 200) {
-        alert("Student removed successfully.");
-        // Update the students state instead of reloading the page
-        setStudents((prevStudents) => prevStudents.filter((student) => student.email !== email));
-        setTotalUsers((prevTotal) => prevTotal - 1);
-      } else {
-        alert(`Failed to remove student: ${response.message}`);
+      const response = await fetch("http://localhost:8080/teacher/remove-student", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authState.token}`,
+        },
+        body: JSON.stringify({
+          classKey: classDetails.classKey,
+          email,
+        }),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.message || "Failed to remove student.");
       }
+
+      alert("Student removed successfully.");
+      setStudents((prevStudents) => prevStudents.filter((student) => student.email !== email));
+      setTotalUsers((prevTotal) => prevTotal - 1);
     } catch (error) {
       console.error("Error kicking student:", error);
       alert("An error occurred while trying to remove the student. Please try again.");

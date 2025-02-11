@@ -3,9 +3,8 @@ import { usePagination } from "../../components/CustomHooks/usePagination";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import deleteIcon from "../../assets/icons/delete-icon.svg";
-import UserService from "../../services/UserService";
 
-const UsersTable = ({ users }) => {
+const UsersTable = ({ users, onUserDeleted }) => {
   const usersPerPage = 10;
 
   const {
@@ -22,22 +21,34 @@ const UsersTable = ({ users }) => {
       toast.error("User not found.");
       return;
     }
-  
-    const confirmationMessage = `Are you sure you want to delete ${userToDelete.firstname} ${userToDelete.lastname}?`;
-    const confirmDeletion = window.confirm(confirmationMessage);
-  
-  
+
+    const confirmDeletion = window.confirm(
+      `Are you sure you want to delete ${userToDelete.firstname} ${userToDelete.lastname}?`
+    );
     if (!confirmDeletion) {
       toast.info("Deletion cancelled.");
       return;
     }
-  
+
     try {
-      await UserService.deleteUser(userEmail);
-      alert("User deleted successfully.");
-      window.location.reload();
+      const response = await fetch(`http://localhost:8080/admin/delete/${userEmail}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete the user.");
+      }
+
+      toast.success("User deleted successfully.");
+      onUserDeleted(userEmail);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to delete the user.");
+      console.error("Error deleting user:", err);
+      toast.error(err.message || "Failed to delete the user.");
     }
   };
 
@@ -50,44 +61,34 @@ const UsersTable = ({ users }) => {
               <thead>
                 <tr className="bg-teal font-medium text-white">
                   {["Name", "Email", "Role", "Action"].map((heading) => (
-                    <th
-                      key={heading}
-                      scope="col"
-                      className="px-6 py-2 text-start text-md font-medium"
-                    >
+                    <th key={heading} scope="col" className="px-6 py-2 text-start text-md font-medium">
                       {heading}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-              {currentUsers.map((user) => (
-                <tr key={user.email} className="hover:bg-gray-100">
-                  <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-teal-800">
-                    {`${user.firstname} ${user.lastname}`}
-                  </td>
-                  <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
-                    {user.email}
-                  </td>
-                  <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
-                    {user.role}
-                  </td>
-                  <td className="px-6 py-2 whitespace-nowrap text-start text-sm font-medium">
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(user.email)}
-                      className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 focus:outline-none focus:text-blue-800 disabled:opacity-50 disabled:pointer-events-none"
-                    >
-                      <img src={deleteIcon} alt="delete-icon" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                {currentUsers.map((user) => (
+                  <tr key={user.email} className="hover:bg-gray-100">
+                    <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-teal-800">
+                      {`${user.firstname} ${user.lastname}`}
+                    </td>
+                    <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">{user.email}</td>
+                    <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">{user.role}</td>
+                    <td className="px-6 py-2 whitespace-nowrap text-start text-sm font-medium">
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(user.email)}
+                        className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 focus:outline-none focus:text-blue-800 disabled:opacity-50 disabled:pointer-events-none"
+                      >
+                        <img src={deleteIcon} alt="delete-icon" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
-            {users.length === 0 && (
-              <p className="text-center text-gray-500 py-4">No users found.</p>
-            )}
+            {users.length === 0 && <p className="text-center text-gray-500 py-4">No users found.</p>}
           </div>
         </div>
       </div>
@@ -106,18 +107,14 @@ const UsersTable = ({ users }) => {
               key={number}
               onClick={() => setCurrentPage(number)}
               className={`px-4 py-2 border rounded-lg mx-1 ${
-                currentPage === number
-                  ? "bg-teal text-white"
-                  : "text-teal hover:bg-peach hover:text-white"
+                currentPage === number ? "bg-teal text-white" : "text-teal hover:bg-peach hover:text-white"
               }`}
             >
               {number}
             </button>
           ))}
           <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
             className="px-4 py-2 border rounded-lg text-teal hover:bg-peach hover:text-white"
           >

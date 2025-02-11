@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/imgs/logo-dark.png";
-import UserService from "../../services/UserService";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -47,7 +46,13 @@ const Register = () => {
   
     try {
       // Send request to register the user
-      const response = await UserService.register(userData);
+      const response = await fetch("http://localhost:8080/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
   
       // Check response status
       if (response?.status === 200) {

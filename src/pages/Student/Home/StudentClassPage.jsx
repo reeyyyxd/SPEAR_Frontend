@@ -2,13 +2,12 @@ import React, { useEffect, useState, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
-import ClassService from "../../../services/ClassService";
 import Guidelines from "../../../components/Statics/Guidelines";
 import MembersTable from "../../../components/Tables/MembersTable";
 
 const StudentClassPage = () => {
-  const { authState, storeEncryptedId } = useContext(AuthContext); // AuthContext for storing class ID
-  const { courseCode, section } = useParams(); // Include section
+  const { authState, storeEncryptedId } = useContext(AuthContext);
+  const { courseCode, section } = useParams();
   const [classDetails, setClassDetails] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -16,19 +15,20 @@ const StudentClassPage = () => {
     const fetchClassDetails = async () => {
       setLoading(true);
       try {
-        // Fetch class details by courseCode and section
-        const response = await ClassService.getClassByCourseCodeStudent(
-          courseCode,
-          section
+        const response = await fetch(
+          `http://localhost:8080/class/${courseCode}/${section}`
         );
-        if (response?.classes) {
-          setClassDetails(response.classes);
-          storeEncryptedId("cid", response.classes.cid); // Store class ID securely
+        const data = await response.json();
+
+        if (response.ok && data?.classes) {
+          setClassDetails(data.classes);
+          storeEncryptedId("cid", data.classes.cid);
         } else {
           setClassDetails(null);
         }
       } catch (error) {
         console.error("Error fetching class details:", error);
+        setClassDetails(null);
       } finally {
         setLoading(false);
       }
@@ -71,21 +71,18 @@ const StudentClassPage = () => {
 
         {/* Action Buttons */}
         <div className="actions text-end mt-8">
-          {/* Apply to teams Button */}
           <Link
             to={`/team-formation/apply-to-teams`}
             className="w-1/6 h-1/4 ml-4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach mx-2"
           >
             Apply Teams
           </Link>
-          {/* Propose Project Button */}
           <Link
             to="/team-formation/project-proposal"
             className="w-1/6 h-1/4 bg-teal mx-4 text-white rounded-lg p-4 text-sm text-center hover:bg-peach"
           >
             Propose Project
-          </Link>{" "}
-          {/* Evaluate Peers Button */}
+          </Link>
           <Link
             to={`/class/${courseCode}/evaluate-peers`}
             className="w-1/6 h-1/4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach"

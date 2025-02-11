@@ -4,30 +4,44 @@ import Header from "../Header/Header";
 import AuthContext from "../../services/AuthContext";
 import UsersTable from "../Tables/UsersTable";
 import AddUsersModal from "../Modals/AddUsersModal";
-import UserService from "../../services/UserService";
-
 
 const ManageUsers = () => {
   const { authState } = useContext(AuthContext);
   const [isModalOpen, setModalOpen] = useState(false);
   const [users, setUsers] = useState([]);
 
-  // Function to fetch active users from the server
+  // Fetch active users from API
   const fetchUsers = async () => {
     try {
-      const fetchedUsers = await UserService.getAllActiveUsers(); // Updated to use the new endpoint
-      setUsers(fetchedUsers); // Update the state with the fetched data
+      const response = await fetch("http://localhost:8080/admin/users/active", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`, 
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch active users.");
+      }
+
+      const fetchedUsers = await response.json();
+      setUsers(fetchedUsers || []);
     } catch (error) {
       console.error("Failed to fetch active users", error);
     }
   };
 
   useEffect(() => {
-    fetchUsers(); // Fetch users initially when the component mounts
+    fetchUsers();
   }, []);
 
   const handleUserAdded = () => {
-    fetchUsers(); // Refresh the user list when a new user is added
+    fetchUsers(); 
+  };
+
+  const handleUserDeleted = (deletedEmail) => {
+    setUsers((prevUsers) => prevUsers.filter((user) => user.email !== deletedEmail));
   };
 
   return (
@@ -35,7 +49,7 @@ const ManageUsers = () => {
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         <div className="header flex justify-between items-center mb-6">
-          <h1 className="text-lg font-semibold">Welcome, admin</h1>
+          <h1 className="text-lg font-semibold">Welcome, Admin</h1>
           <Header />
         </div>
         <div className="flex justify-end mt-4">
@@ -46,7 +60,8 @@ const ManageUsers = () => {
             Add Users
           </button>
         </div>
-        <UsersTable users={users} /> {/* Pass users to UsersTable */}
+        {/* Pass `handleUserDeleted` to UsersTable */}
+        <UsersTable users={users} onUserDeleted={handleUserDeleted} />
         <AddUsersModal
           isOpen={isModalOpen}
           onClose={() => setModalOpen(false)}

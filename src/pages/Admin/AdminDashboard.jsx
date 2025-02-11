@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
-import ProjectProposalService from "../../services/ProjectProposalService";
 import { toast } from "react-toastify";
 import Header from "../../components/Header/Header";
 
@@ -8,15 +7,29 @@ const AdminDashboard = () => {
   const [proposals, setProposals] = useState([]);
   const [status, setStatus] = useState("approved"); // Default status filter
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); 
 
   // Fetch proposals by status
   const fetchProposals = async (selectedStatus) => {
     setIsLoading(true);
     setError(null);
+  
     try {
-      const fetchedProposals = await ProjectProposalService.getProposalsByStatus(selectedStatus);
-      setProposals(fetchedProposals);
+      const response = await fetch(`http://localhost:8080/proposals/status/${selectedStatus}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to load proposals.");
+      }
+  
+      const fetchedProposals = await response.json();
+      setProposals(fetchedProposals || []);
     } catch (err) {
       console.error("Error fetching proposals:", err);
       toast.error("Failed to load proposals. Please try again.");
@@ -25,8 +38,7 @@ const AdminDashboard = () => {
       setIsLoading(false);
     }
   };
-
-  // Fetch proposals when the status changes
+  
   useEffect(() => {
     fetchProposals(status);
   }, [status]);

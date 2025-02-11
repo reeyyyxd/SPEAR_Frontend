@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import Navbar from "../../../components/Navbar/Navbar";
 import ApplyTeamsTable from "../../../components/Tables/ApplyTeamsTable";
-import ProjectProposalService from "../../../services/ProjectProposalService";
 import AuthContext from "../../../services/AuthContext";
 
 const ApplyTeamsPage = () => {
@@ -23,13 +22,22 @@ const ApplyTeamsPage = () => {
 
         setLoading(true);
 
-        // Fetch only approved projects
-        const approvedProjectsData =
-          await ProjectProposalService.getApprovedProposalsByClass(
-            classId,
-            authState.token
-          );
+        const response = await fetch(
+          `http://localhost:8080/proposals/class/${classId}/approved`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authState.token}`,
+            },
+          }
+        );
 
+        if (!response.ok) {
+          throw new Error("Failed to fetch approved projects.");
+        }
+
+        const approvedProjectsData = await response.json();
         console.log("API Response:", approvedProjectsData); // Debugging step
 
         // Map API response and ensure clean values

@@ -1,5 +1,4 @@
 import React, { useState, useContext } from "react";
-import TeamService from "../../services/TeamService";
 import AuthContext from "../../services/AuthContext";
 
 const FormTeamModal = ({ onClose, projectId }) => {
@@ -14,16 +13,29 @@ const FormTeamModal = ({ onClose, projectId }) => {
     setError(null);
 
     try {
-      // Call the TeamService to create a team
-      await TeamService.createTeam(projectId, groupName, authState.token);
+      const response = await fetch(`http://localhost:8080/student/create-team/${projectId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authState.token}`,
+        },
+        body: JSON.stringify({ groupName }),
+      });
+    
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create team.");
+      }
+    
       alert("Team successfully created!");
       onClose(); // Close the modal
     } catch (err) {
-      setError("Failed to create team. Please try again.");
+      setError(err.message || "Failed to create team. Please try again.");
       console.error("Error creating team:", err);
     } finally {
       setIsSubmitting(false);
     }
+    
   };
 
   return (

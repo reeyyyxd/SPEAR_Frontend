@@ -4,11 +4,10 @@ import Select from "react-select";
 import Navbar from "../../../components/Navbar/Navbar";
 import Header from "../../../components/Header/Header";
 import AuthContext from "../../../services/AuthContext";
-import ClassService from "../../../services/ClassService"; // Import your ClassService
 
 const semesterOptions = [
-  { value: "First", label: "First" },
-  { value: "Second", label: "Second" },
+  { value: "1st Semester", label: "1st Semester" },
+  { value: "2nd Semeseter", label: "2nd Semester" },
   { value: "Mid-Year", label: "Mid-Year" },
 ];
 
@@ -65,21 +64,33 @@ const CreateClass = () => {
       schoolYear: schoolYear.label,
       semester: semester.label,
       courseDescription,
-      createdBy: { uid: authState.uid }, // Ensure uid is correctly passed
+      createdBy: { uid: authState.uid },
     };
 
     try {
-      const response = await ClassService.createClass(
-        classData,
-        authState.token
-      );
-      setMessage(`Class created successfully! Class Key: ${response.classKey}`);
+      const response = await fetch("http://localhost:8080/teacher/create-class", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authState.token}`,
+        },
+        body: JSON.stringify(classData),
+      });
+    
+      const responseData = await response.json();
+    
+      if (!response.ok) {
+        throw new Error(responseData.message || "Failed to create class. Please try again.");
+      }
+    
+      setMessage(`Class created successfully! Class Key: ${responseData.classKey}`);
       setError(null);
       navigate("/teacher-dashboard");
     } catch (err) {
       setError(err.message || "Failed to create class. Please try again.");
       setMessage(null);
     }
+    
   };
 
   return (

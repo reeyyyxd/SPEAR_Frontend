@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import UserService from "../../services/UserService";
 
 const AddUsersModal = ({ isOpen, onClose }) => {
   const [error, setError] = useState(null);
@@ -38,17 +37,33 @@ const AddUsersModal = ({ isOpen, onClose }) => {
     };
 
     try {
-      const newUser = await UserService.register(userData);
-      
+      const response = await fetch("http://localhost:8080/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+    
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to add user.");
+      }
+    
       alert("User added successfully!");
       onClose();
-      window.location.reload();
+    
+      // Instead of reloading the page, update UI dynamically
+      // Example: call a function to refetch user data
+      // mutateUsers(); // Uncomment if using SWR
+    
     } catch (err) {
-      console.error(err);
-      setError("Failed to add user. Please try again.");
+      console.error("Registration error:", err);
+      setError(err.message || "Failed to add user. Please try again.");
     } finally {
       setIsLoading(false);
     }
+    
   };
 
   if (!isOpen) return null;

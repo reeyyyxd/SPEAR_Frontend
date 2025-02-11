@@ -3,9 +3,7 @@ import Navbar from "../../../components/Navbar/Navbar";
 import Header from "../../../components/Header/Header";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../../services/AuthContext";
-import UserService from "../../../services/UserService";
 import ClassCard from "./ClassCard";
-import ClassService from "../../../services/ClassService";
 
 const TeacherDashboard = () => {
   const { authState } = useContext(AuthContext);
@@ -20,38 +18,66 @@ const TeacherDashboard = () => {
   useEffect(() => {
     if (!authState.isAuthenticated) {
       navigate("/login");
+      return;
     }
-
+  
     const fetchDashboardData = async () => {
       try {
-        // Fetch teacher's name
-        const userProfile = await UserService.getUserProfileById(authState.uid);
+        const token = authState.token;
+        const userProfileResponse = await fetch(
+          `http://localhost:8080/user/profile/${authState.uid}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+  
+        if (!userProfileResponse.ok) {
+          throw new Error("Failed to fetch user profile.");
+        }
+  
+        const userProfile = await userProfileResponse.json();
         if (userProfile) {
           setTeacherName(`${userProfile.firstname} ${userProfile.lastname}`);
         }
-
+  
         // Fetch classes created by the teacher
-        const response = await ClassService.getClassesCreatedByUser(authState.uid);
-        setClasses(response || []);
+        const classesResponse = await fetch(
+          `http://localhost:8080/teacher/classes-created/${authState.uid}`,
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+  
+        if (!classesResponse.ok) {
+          throw new Error("Failed to fetch teacher's classes.");
+        }
+  
+        const classesData = await classesResponse.json();
+        setClasses(classesData || []);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchDashboardData();
   }, [authState, navigate]);
-
+  
   const handleCreateClassClick = () => {
     navigate(`/teacher/create-class`);
   };
-
+  
   const handleCardClick = (courseCode, section) => {
     navigate(`/teacher/class/${courseCode}/${section}`);
   };
+  
 
-  // Pagination logic
   const indexOfLastClass = currentPage * classesPerPage;
   const indexOfFirstClass = indexOfLastClass - classesPerPage;
   const currentClasses = classes.slice(indexOfFirstClass, indexOfLastClass);

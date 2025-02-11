@@ -2,8 +2,6 @@ import React, { useEffect, useState, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AuthContext from "../../../services/AuthContext";
 import Navbar from "../../../components/Navbar/Navbar";
-import TeamService from "../../../services/TeamService";
-import ProjectProposalService from "../../../services/ProjectProposalService";
 
 const ManageTeamsPage = () => {
   const { authState } = useContext(AuthContext);
@@ -21,25 +19,43 @@ const ManageTeamsPage = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch team details by tid
-        const teamResponse = await TeamService.getTeamById(
-          tid,
-          authState.token
-        );
-        setTeamDetails(teamResponse);
-        console.log("Team Details:", teamResponse);
+        const token = authState.token;
+
+        const teamResponse = await fetch(`http://localhost:8080/teams/${tid}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!teamResponse.ok) {
+          throw new Error("Failed to fetch team details.");
+        }
+
+        const teamData = await teamResponse.json();
+        setTeamDetails(teamData);
+        console.log("Team Details:", teamData);
 
         // If projectId exists, fetch project details
-        if (teamResponse?.projectId) {
-          const projectResponse =
-            await ProjectProposalService.getProposalsByClassAndStatus(
-              teamResponse.classId,
-              "APPROVED",
-              authState.token
-            );
-          const project = projectResponse.find(
-            (p) => p.id === teamResponse.projectId
-          ); // Match projectId
+        if (teamData?.projectId) {
+          const projectResponse = await fetch(
+            `http://localhost:8080/proposals/class/${teamData.classId}/approved`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (!projectResponse.ok) {
+            throw new Error("Failed to fetch project details.");
+          }
+
+          const projectData = await projectResponse.json();
+          const project = projectData.find((p) => p.id === teamData.projectId);
           setProjectDetails(project || null);
           console.log("Project Details:", project);
         }

@@ -1,14 +1,13 @@
 import React, { useContext, useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
-import TeamRecruitmentService from "../../../services/TeamRecuitmentService";
-import { useNavigate, useParams } from "react-router-dom";
 
 const TeamApplication = () => {
   const { authState } = useContext(AuthContext);
   const { teamId } = useParams();
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false); // Initially false since no action is happening
+  const [loading, setLoading] = useState(false);
   const [role, setRole] = useState("");
   const [reason, setReason] = useState("");
 
@@ -18,57 +17,47 @@ const TeamApplication = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-  
+
     try {
-      // Constructing the application data payload
+      // Construct the application data payload
       const applicationData = {
-        teamId : parseInt(teamId), // Team ID extracted from the URL
-        userId: parseInt(authState.uid), // Current user's ID from authState
-        role,   // Role provided by the user in the form
-        reason, // Reason provided by the user in the form
+        teamId: parseInt(teamId),
+        userId: parseInt(authState.uid),
+        role,
+        reason,
       };
-      console.log("Submitted Payload:", applicationData); // Log application data for debugging
-  
+
+      console.log("Submitted Payload:", applicationData);
+
       // Call the API to apply to the team
-      const response = await TeamRecruitmentService.applyToTeam(applicationData, authState.token);
-      console.log("API Response:", response); // Log API response for debugging
-  
-      // Handling the response from the API
-      if (response.success) {
-        // Navigate to a success or confirmation page
-        navigate(`/team-formation/apply-to-teams`);
-      } else {
-        setError(response.message || "Failed to submit the application.");
+      const response = await fetch("http://localhost:8080/student/apply", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authState.token}`,
+        },
+        body: JSON.stringify(applicationData),
+      });
+
+      const responseData = await response.json();
+      console.log("API Response:", responseData);
+
+      if (!response.ok) {
+        throw new Error(responseData.message || "Failed to submit the application.");
       }
+
+      // Navigate to a success or confirmation page
+      navigate(`/team-formation/apply-to-teams`);
     } catch (error) {
-      // Error handling similar to axios example
-      console.log('Error during form submission:');
-      
-      if (error.response) {
-        // The request was made and the server responded with a status code that falls out of the range of 2xx
-        console.log('Response error:', error.response.data);
-        console.log('Response status:', error.response.status);
-        console.log('Response headers:', error.response.headers);
-        setError(`Backend error: ${error.response.status} - ${error.response.data.message || 'Unknown error'}`);
-      } else if (error.request) {
-        // The request was made but no response was received
-        console.log('Request error:', error.request);
-        setError('No response received from the server. Please check your network.');
-      } else {
-        // Something happened in setting up the request
-        console.log('Error message:', error.message);
-        setError(`Error: ${error.message}`);
-      }
-  
-      console.log('Error config:', error.config); // Log the axios configuration if needed
+      console.error("Error during form submission:", error);
+      setError(error.message || "An unexpected error occurred. Please try again.");
     } finally {
-      // Reset loading state after the API call is completed
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    console.log("Team ID:", teamId); 
+    console.log("Team ID:", teamId);
   }, [teamId]);
 
   return (
@@ -81,10 +70,10 @@ const TeamApplication = () => {
         <div className="header flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold my-6">Team Application</h1>
         </div>
-        
+
         {/* Form Section */}
         <div className="bg-gray-100 p-6 rounded-lg shadow-md">
-          <form onSubmit={handleSubmit}> {/* Add onSubmit here */}
+          <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label htmlFor="role" className="block text-sm font-semibold mb-2">
                 Role to fill

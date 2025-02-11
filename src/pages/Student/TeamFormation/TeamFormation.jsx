@@ -1,15 +1,14 @@
 import React, { useContext, useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
-import ProjectProposalService from "../../../services/ProjectProposalService";
-import { useNavigate, useParams } from "react-router-dom";
 
 const TeamFormation = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
-  const [proposal, setProposal] = useState(null); 
+  const [proposal, setProposal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { teamId } = useParams(); 
+  const { teamId } = useParams();
   const classId = getDecryptedId("cid");
   const navigate = useNavigate();
 
@@ -26,24 +25,39 @@ const TeamFormation = () => {
   const fetchProjectDetails = async () => {
     setLoading(true);
     setError(null);
+
     try {
+      if (!classId) {
+        throw new Error("Class ID not found. Please navigate to your class first.");
+      }
+
       console.log("Fetching project with teamId:", teamId);
 
-      // Fetch project proposal details by class and student
-      const projectData = await ProjectProposalService.getProposalsByClassAndStudent(
-        classId,
-        authState.uid
+      const response = await fetch(
+        `http://localhost:8080/proposals/class/${classId}/student/${authState.uid}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authState.token}`,
+          },
+        }
       );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch project details.");
+      }
+
+      const projectData = await response.json();
       console.log("Fetched Project Data:", projectData);
 
-      // Check if data is an array and set the first proposal
       if (Array.isArray(projectData) && projectData.length > 0) {
-        setProposal(projectData[0]); 
+        setProposal(projectData[0]);
       } else {
         setError("Project data not found.");
       }
     } catch (err) {
-      setError("Failed to fetch project details.");
+      setError(err.message || "Failed to fetch project details.");
       console.error("Error fetching project details:", err);
     } finally {
       setLoading(false);
@@ -71,7 +85,7 @@ const TeamFormation = () => {
           {loading ? (
             <div>Loading project details...</div>
           ) : error ? (
-            <div>{error}</div>
+            <div className="text-red-500">{error}</div>
           ) : proposal ? (
             <div className="project-details">
               <h2 className="text-xl font-semibold">
@@ -97,9 +111,9 @@ const TeamFormation = () => {
           {/* Submit Button */}
           <div className="text-right mt-6">
             <button
-              type="button" 
+              type="button"
               className="w-1/6 h-1/4 ml-4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach mx-2"
-              onClick={handleNavigate} 
+              onClick={handleNavigate}
             >
               Apply
             </button>
@@ -109,7 +123,5 @@ const TeamFormation = () => {
     </div>
   );
 };
-
-
 
 export default TeamFormation;

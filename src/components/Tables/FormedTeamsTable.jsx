@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../services/AuthContext";
-import TeamService from "../../services/TeamService";
 
 const FormedTeamsTable = () => {
   const { authState } = useContext(AuthContext);
@@ -15,40 +14,53 @@ const FormedTeamsTable = () => {
       try {
         setLoading(true);
         setError(null);
-
-        // Fetch all formed teams
-        const response = await TeamService.getAllActiveTeams(authState.token);
-
-        console.log("API Response:", response);
-        response.forEach((team) => console.log("Team Object:", team));
-
+  
+        const response = await fetch("http://localhost:8080/teams/all-active", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authState.token}`,
+          },
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to fetch formed teams.");
+        }
+  
+        const teams = await response.json();
+  
+        console.log("API Response:", teams);
+        teams.forEach((team) => console.log("Team Object:", team));
+  
         // Map API response to table format using `tid`
-        const mappedTeams = response.map((team) => ({
+        const mappedTeams = teams.map((team) => ({
           id: team.tid, // Use 'tid' as the unique key
-          groupName: team.groupName || "N/A", // Correct key: 'groupName'
-          projectName: team.projectName || "N/A", // Correct key: 'projectName'
-          projectId: team.projectId || "N/A", // Correct key: 'projectId'
-          classId: team.classId || "N/A", // Correct key: 'classId'
-          leaderId: team.leaderId || "N/A", // Correct key: 'leaderId'
-          status: team.recruitmentOpen ? "ACTIVE" : "INACTIVE", // Boolean check for 'recruitmentOpen'
+          groupName: team.groupName || "N/A",
+          projectName: team.projectName || "N/A",
+          projectId: team.projectId || "N/A",
+          classId: team.classId || "N/A",
+          leaderId: team.leaderId || "N/A",
+          status: team.recruitmentOpen ? "ACTIVE" : "INACTIVE",
         }));
-
+  
         setFormedTeams(mappedTeams);
       } catch (err) {
-        setError("Failed to fetch formed teams.");
+        setError(err.message || "Failed to fetch formed teams.");
         console.error("Error fetching teams:", err);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchFormedTeams();
   }, [authState.token]);
-
+  
   // Use `tid` to redirect
   const handleRowClick = (tid, projectId) => {
     navigate(`/manage-teams/${tid}?projectId=${projectId}`);
   };
+  
 
   return (
     <div className="flex flex-col">

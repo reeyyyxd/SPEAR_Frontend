@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import UserService from "../../services/UserService";
 import { toast } from "react-toastify";
 
 const UpdateUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
@@ -18,14 +17,29 @@ const UpdateUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await UserService.updateAdminUser(user.uid, formData);
+      const response = await fetch(`http://localhost:8080/admin/update/${user.uid}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authState.token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update user.");
+      }
+  
       toast.success("User updated successfully.");
-      onUserUpdated(); // Refresh user list
+      onUserUpdated(); // Refresh user list dynamically
       onClose(); // Close the modal
     } catch (err) {
-      toast.error("Failed to update user.");
+      console.error("Error updating user:", err);
+      toast.error(err.message || "Failed to update user.");
     }
   };
+  
 
   if (!isOpen) return null;
 

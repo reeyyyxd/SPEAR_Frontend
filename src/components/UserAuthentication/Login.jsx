@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/imgs/logo-dark.png";
 import { Link } from "react-router-dom";
-import UserService from "../../services/UserService";
 import AuthContext from "../../services/AuthContext";
 import { useContext } from "react";
 
@@ -16,43 +15,53 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-
+  
     try {
-      // Authenticate the user
-      const response = await UserService.login(email, password);
-
+      const response = await fetch("http://localhost:8080/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Invalid email or password. Please try again.");
+        } else if (response.status === 500) {
+          throw new Error("Server error. Please try again later.");
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to login.");
+        }
+      }
+  
+      const data = await response.json();
+  
       // Validate the response structure
-      if (!response || !response.token || !response.role) {
+      if (!data || !data.token || !data.role) {
         throw new Error("Invalid Credentials.");
       }
-
+  
       // Pass all necessary data to login, including uid and refreshToken
-      login(response.token, response.role, response.refreshToken, response.uid);
-
+      login(data.token, data.role, data.refreshToken, data.uid);
+  
       // Redirect based on role
-      if (response.role === "STUDENT") {
+      if (data.role === "STUDENT") {
         navigate("/student-dashboard");
-      } else if (response.role === "TEACHER") {
+      } else if (data.role === "TEACHER") {
         navigate("/teacher-dashboard");
-      } else if (response.role === "ADMIN") {
+      } else if (data.role === "ADMIN") {
         navigate("/admin-dashboard");
       } else {
         throw new Error("Invalid user role.");
       }
     } catch (err) {
-      if (err.response && err.response.status === 401) {
-        setError("Invalid email or password. Please try again.");
-      } else if (err.response && err.response.status === 500) {
-        setError("Server error. Please try again later.");
-      } else if (err.message === "Network Error") {
-        setError("Network error. Please check your internet connection.");
-      } else {
-        setError(
-          err.message || "An unexpected error occurred. Please try again."
-        );
-      }
+      console.error("Login error:", err.message);
+      setError(err.message || "An unexpected error occurred. Please try again.");
     }
   };
+  
 
   return (
     <div>

@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../services/AuthContext";
-import ProjectProposalService from "../../services/ProjectProposalService";
-import TeamService from "../../services/TeamService";
 import FormTeamModal from "../Modals/FormTeamModal";
 
 const ApprovedProjectsTable = () => {
@@ -19,14 +17,24 @@ const ApprovedProjectsTable = () => {
       try {
         setLoading(true);
         setError(null);
-
-        const response = await ProjectProposalService.getProposalsByStatus(
-          "APPROVED",
-          authState.token
-        );
-
+  
+        const response = await fetch(`http://localhost:8080/proposals/status/APPROVED`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authState.token}`,
+          },
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to fetch approved projects.");
+        }
+  
+        const projects = await response.json();
+  
         // Map API response to table format
-        const mappedProjects = response.map((project) => ({
+        const mappedProjects = projects.map((project) => ({
           id: project.pid,
           projectId: project.pid,
           courseCode: project.courseCode || "N/A",
@@ -38,24 +46,25 @@ const ApprovedProjectsTable = () => {
           adviser: project.adviser || "No Adviser",
           status: project.status || "N/A",
         }));
-
+  
         setApprovedProjects(mappedProjects);
       } catch (err) {
-        setError("Failed to fetch approved projects.");
+        setError(err.message || "Failed to fetch approved projects.");
         console.error("Error fetching projects:", err);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchApprovedProjects();
   }, [authState.token]);
-
+  
   // Handle "Form Team" button click
   const handleFormTeamClick = (projectId) => {
     setSelectedProjectId(projectId); // Set the selected project ID
     setShowModal(true); // Open the modal
   };
+  
 
   return (
     <div className="flex flex-col">

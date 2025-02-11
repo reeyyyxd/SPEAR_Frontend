@@ -1,12 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import AuthContext from "../../services/AuthContext";
-import ProjectProposalService from "../../services/ProjectProposalService";
 import { toast } from "react-toastify";
 import ApprovedProjectsTable from "../../components/Tables/ApprovedProjectsTable";
 
 const StudentProposals = () => {
-  const { authState, getDecryptedId } = useContext(AuthContext); // Access current user's auth state
+  const { authState } = useContext(AuthContext);
   const [proposals, setProposals] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -17,11 +16,24 @@ const StudentProposals = () => {
     setError(null);
 
     try {
-      const fetchedProposals = await ProjectProposalService.getProposalsByUser(
-        authState.uid
+      const response = await fetch(
+        `http://localhost:8080/proposals/user/${authState.uid}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authState.token}`,
+          },
+        }
       );
-      setProposals(fetchedProposals.proposals);
-      console.log(fetchedProposals);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch student proposals.");
+      }
+
+      const fetchedProposals = await response.json();
+      setProposals(fetchedProposals.proposals || []);
+      console.log("Fetched Proposals:", fetchedProposals);
     } catch (err) {
       console.error("Error fetching student proposals:", err);
       toast.error("Failed to load your proposals. Please try again.");
@@ -45,7 +57,15 @@ const StudentProposals = () => {
           <h1 className="text-lg font-semibold">Your Approved Projects</h1>
         </div>
 
-        <ApprovedProjectsTable />
+        {isLoading ? (
+          <p className="text-center text-gray-500">Loading proposals...</p>
+        ) : error ? (
+          <p className="text-center text-red-500">{error}</p>
+        ) : proposals.length > 0 ? (
+          <ApprovedProjectsTable proposals={proposals} />
+        ) : (
+          <p className="text-center text-gray-500">No approved projects found.</p>
+        )}
       </div>
     </div>
   );
