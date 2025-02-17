@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
+import axios from "axios";
 
 const TeamApplication = () => {
   const { authState } = useContext(AuthContext);
@@ -19,7 +20,6 @@ const TeamApplication = () => {
     setError(null);
 
     try {
-      // Construct the application data payload
       const applicationData = {
         teamId: parseInt(teamId),
         userId: parseInt(authState.uid),
@@ -29,28 +29,22 @@ const TeamApplication = () => {
 
       console.log("Submitted Payload:", applicationData);
 
-      // Call the API to apply to the team
-      const response = await fetch("http://localhost:8080/student/apply", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authState.token}`,
-        },
-        body: JSON.stringify(applicationData),
-      });
+      const response = await axios.post(
+        "http://localhost:8080/student/apply",
+        applicationData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authState.token}`,
+          },
+        }
+      );
 
-      const responseData = await response.json();
-      console.log("API Response:", responseData);
-
-      if (!response.ok) {
-        throw new Error(responseData.message || "Failed to submit the application.");
-      }
-
-      // Navigate to a success or confirmation page
+      console.log("API Response:", response.data);
       navigate(`/team-formation/apply-to-teams`);
     } catch (error) {
       console.error("Error during form submission:", error);
-      setError(error.message || "An unexpected error occurred. Please try again.");
+      setError(error.response?.data?.message || "An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -59,6 +53,7 @@ const TeamApplication = () => {
   useEffect(() => {
     console.log("Team ID:", teamId);
   }, [teamId]);
+
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">

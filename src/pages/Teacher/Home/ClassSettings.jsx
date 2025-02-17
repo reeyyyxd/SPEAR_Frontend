@@ -8,7 +8,6 @@ const ClassSettings = () => {
   const navigate = useNavigate();
   const { authState, getDecryptedId } = useContext(AuthContext);
   const [classData, setClassData] = useState({
-    courseType: "",
     courseDescription: "",
     courseCode: "",
     section: "",
@@ -19,67 +18,41 @@ const ClassSettings = () => {
   useEffect(() => {
     const fetchClassData = async () => {
       const classId = getDecryptedId("cid");
-      if (!classId || !authState.token) {
-        console.error("Class ID or authentication token is missing.");
-        return;
-      }
-  
+      if (!classId) return console.error("Class ID is missing.");
+
       try {
-        const response = await axios.get(`http://localhost:8080/class/${classId}`, {
-          headers: {
-            Authorization: `Bearer ${authState.token}`,
-          },
+        const { data } = await axios.get(`http://localhost:8080/class/${classId}`, {
+          headers: { Authorization: `Bearer ${authState.token}` },
         });
-  
-        const { courseType, courseDescription, courseCode, section, schoolYear, semester } = response.data;
-        setClassData({ courseType, courseDescription, courseCode, section, schoolYear, semester });
+        setClassData(data);
       } catch (error) {
         console.error("Error fetching class data:", error);
       }
     };
-  
+
     fetchClassData();
   }, [authState.token, getDecryptedId]);
-  
 
   const handleUpdateClass = async (event) => {
     event.preventDefault();
-    const confirmation = window.confirm("Are you sure you want to update the class details?");
-    if (!confirmation) return;
-  
+    if (!window.confirm("Are you sure you want to update the class details?")) return;
+
     const classId = getDecryptedId("cid");
-    if (!classId || !authState.token) {
-      console.error("Class ID or authentication token is missing.");
-      return;
-    }
-  
+    if (!classId) return console.error("Class ID is missing.");
+
     try {
-      const response = await axios.put(
-        `http://localhost:8080/teacher/updateClass/${classId}`,
-        classData,
-        {
-          headers: {
-            Authorization: `Bearer ${authState.token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      alert("Class updated successfully: " + response.data.message);
-  
-      // Redirect to ClassPage
+      await axios.put(`http://localhost:8080/teacher/updateClass/${classId}`, classData, {
+        headers: { Authorization: `Bearer ${authState.token}`, "Content-Type": "application/json" },
+      });
+      alert("Class updated successfully!");
       navigate(`/teacher/class/${classData.courseCode}`);
     } catch (error) {
       console.error("Error updating class:", error);
       alert("Failed to update class. Please try again.");
     }
   };
-  
-  
 
-  const handleChange = (e) => {
-    const { id, value } = e.target;
-    setClassData((prevData) => ({ ...prevData, [id]: value }));
-  };
+  const handleChange = (e) => setClassData({ ...classData, [e.target.id]: e.target.value });
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
@@ -97,19 +70,6 @@ const ClassSettings = () => {
 
         <div className="bg-gray-100 shadow-md rounded-lg p-6">
           <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleUpdateClass}>
-            <div>
-              <label htmlFor="courseType" className="block text-sm font-medium text-gray-700">
-                Course Type
-              </label>
-              <input
-                type="text"
-                id="courseType"
-                value={classData.courseType}
-                onChange={handleChange}
-                className="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal focus:border-teal"
-              />
-            </div>
-
             <div>
               <label htmlFor="courseDescription" className="block text-sm font-medium text-gray-700">
                 Course Description

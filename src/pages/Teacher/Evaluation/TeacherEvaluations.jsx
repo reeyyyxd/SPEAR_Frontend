@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import * as XLSX from 'xlsx';
+import axios from "axios";
 
 const TeacherEvaluations = () => {
   const { getDecryptedId, storeEncryptedId } = useContext(AuthContext);
@@ -40,27 +41,18 @@ const TeacherEvaluations = () => {
 const fetchEvaluations = async () => {
   try {
     const classId = getDecryptedId("cid");
-    const response = await fetch(`http://localhost:8080/teacher/class/${classId}/evaluations`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch evaluations");
-    }
-    const data = await response.json();
-
-    // Ensure data is valid and avoid undefined fields
-    const sanitizedData = data.map((evaluation) => ({
+    const response = await axios.get(`http://localhost:8080/teacher/class/${classId}/evaluations`);
+    const sanitizedData = response.data.map((evaluation) => ({
       ...evaluation,
       dateOpen: evaluation.dateOpen || "",
       dateClose: evaluation.dateClose || "",
       period: evaluation.period || "",
     }));
-
     setEvaluations(sanitizedData);
   } catch (error) {
     console.error("Error fetching evaluations:", error);
   }
 };
-
-
 
 const handleCreateEvaluation = async () => {
   if (!validateEvaluation()) return;
@@ -69,29 +61,19 @@ const handleCreateEvaluation = async () => {
     const classId = getDecryptedId("cid");
     const url = `http://localhost:8080/teacher/create-evaluation/${classId}`;
 
-    const body = JSON.stringify(cleanEvaluationData(newEvaluation));
+    const body = cleanEvaluationData(newEvaluation);
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body,
-    });
+    const response = await axios.post(url, body);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to create evaluation.");
-    }
-
-    const data = await response.json();
-    alert(data.message || "Evaluation created successfully!");
+    alert(response.data.message || "Evaluation created successfully!");
     window.location.reload();
     setEvaluations((prev) => {
-      if (!data || !data.evaluation) {
+      if (!response.data || !response.data.evaluation) {
         console.error("data.evaluation is undefined. Skipping update.");
-        return prev; // Return previous state if data.evaluation is invalid
+        return prev;
       }
     
-      const { dateOpen = "N/A", dateClose = "N/A", ...rest } = data.evaluation;
+      const { dateOpen = "N/A", dateClose = "N/A", ...rest } = response.data.evaluation;
     
       return [
         ...prev,
@@ -103,7 +85,6 @@ const handleCreateEvaluation = async () => {
         },
       ];
     });
-    
 
     setShowModal(false);
     setNewEvaluation({
@@ -113,9 +94,10 @@ const handleCreateEvaluation = async () => {
       period: "",
     });
   } catch (error) {
-    setError(error.message || "Error creating evaluation.");
+    setError(error.response?.data?.message || "Error creating evaluation.");
   }
 };
+
 
 
 const cleanEvaluationData = (evaluation) => {
@@ -131,63 +113,41 @@ const cleanEvaluationData = (evaluation) => {
 
 
 
-  const handleDeleteEvaluation = async (eid) => {
-    //console.log("Attempting to delete evaluation with ID:", eid);
-    if (!eid) {
-      alert("Invalid evaluation ID");
-      return;
-    }
-  
-    if (window.confirm("Are you sure you want to delete this evaluation?")) {
-      try {
-        const response = await fetch(
-          `http://localhost:8080/teacher/delete-evaluation/${eid}`,
-          { method: "DELETE" }
-        );
-  
-        if (!response.ok) {
-          throw new Error("Failed to delete evaluation");
-        }
-  
-        alert("Evaluation deleted successfully!");
-        fetchEvaluations(); 
-      } catch (error) {
-        console.error("Error deleting evaluation:", error);
-      }
-    }
-  };
-  
-  const handleEditEvaluation = async () => {
-    if (!validateEvaluation()) return;
-  
-    const eid = getDecryptedId("eid");
-    if (!eid) {
-      alert("Invalid evaluation ID");
-      return;
-    }
-  
+const handleDeleteEvaluation = async (eid) => {
+  if (!eid) {
+    alert("Invalid evaluation ID");
+    return;
+  }
+
+  if (window.confirm("Are you sure you want to delete this evaluation?")) {
     try {
-      const response = await fetch(
-        `http://localhost:8080/teacher/update-evaluation/${eid}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newEvaluation),
-        }
-      );
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update evaluation.");
-      }
-  
-      const updatedEvaluation = await response.json();
-      alert("Evaluation updated successfully!");
-      window.location.reload();
+      await axios.delete(`http://localhost:8080/teacher/delete-evaluation/${eid}`);
+      alert("Evaluation deleted successfully!");
+      fetchEvaluations();
     } catch (error) {
-      setError(error.message || "Error updating evaluation.");
+      console.error("Error deleting evaluation:", error);
     }
-  };
+  }
+};
+  
+const handleEditEvaluation = async () => {
+  if (!validateEvaluation()) return;
+  const eid = getDecryptedId("eid");
+  if (!eid) {
+    alert("Invalid evaluation ID");
+    return;
+  }
+  try {
+    const response = await axios.put(
+      `http://localhost:8080/teacher/update-evaluation/${eid}`,
+      newEvaluation
+    );  
+    alert("Evaluation updated successfully!");
+    window.location.reload();
+  } catch (error) {
+    setError(error.response?.data?.message || "Error updating evaluation.");
+  }
+};
   
 
   const validateEvaluation = () => {
@@ -230,38 +190,27 @@ const cleanEvaluationData = (evaluation) => {
       return;
     }
     try {
-      const [detailsRes, submissionsRes, resultsRes, responsesRes] = await Promise.all([
-        fetch(`http://localhost:8080/evaluation/${eid}/details`),
-        fetch(`http://localhost:8080/submissions/by-evaluation/${eid}`),
-        fetch(`http://localhost:8080/teacher/by-evaluation/${eid}`),
-        fetch(`http://localhost:8080/responses/get-evaluation/${eid}`),
-      ]);
-  
-      if (!detailsRes.ok || !submissionsRes.ok || !resultsRes.ok || !responsesRes.ok) {
-        throw new Error("Failed to fetch data for Excel export");
-      }
-  
       const [details, submissions, results, responses] = await Promise.all([
-        detailsRes.json(),
-        submissionsRes.json(),
-        resultsRes.json(),
-        responsesRes.json(),
+        axios.get(`http://localhost:8080/evaluation/${eid}/details`),
+        axios.get(`http://localhost:8080/submissions/by-evaluation/${eid}`),
+        axios.get(`http://localhost:8080/teacher/by-evaluation/${eid}`),
+        axios.get(`http://localhost:8080/responses/get-evaluation/${eid}`),
       ]);
   
       const exportData = {
-        Submissions: submissions.map((sub) => ({
+        Submissions: submissions.data.map(sub => ({
           "Submission ID": sub.sid,
           "Student Name": sub.evaluatorName,
           "Evaluation Period": sub.evaluationPeriod,
           "Status": sub.status,
-          "Submission Date": sub.submittedAt,  
+          "Submission Date": sub.submittedAt,
         })),
-        Results: results.map((res) => ({
+        Results: results.data.map(res => ({
           "Result ID": res.resultId,
           "Evaluatee Name": res.evaluateeName,
           "Average Score": res.averageScore,
         })),
-        Responses: responses.map((resp) => ({
+        Responses: responses.data.map(resp => ({
           "Response ID": resp.rid,
           "Evaluation Period": resp.evaluationPeriod,
           "Evaluatee": resp.evaluateeName,
@@ -273,29 +222,20 @@ const cleanEvaluationData = (evaluation) => {
   
       const headerDetails = [
         ["EVALUATION REPORT"],
-        [`Course Code: ${details.courseCode || "Not Available"}`],
-        [`Course Name: ${details.courseDescription || "Not Available"}`],
-        [`Section: ${details.section || "Not Available"}`],
-        
+        [`Course Code: ${details.data.courseCode || "Not Available"}`],
+        [`Course Name: ${details.data.courseDescription || "Not Available"}`],
+        [`Section: ${details.data.section || "Not Available"}`],
         [],
       ];
   
-      // Create Excel workbook
       const workbook = XLSX.utils.book_new();
-  
-      Object.keys(exportData).forEach((sheetName) => {
-        const sheetData = exportData[sheetName];
-  
-        // Convert data to worksheet and prepend header
+      Object.keys(exportData).forEach(sheetName => {
         const worksheet = XLSX.utils.json_to_sheet([]);
         XLSX.utils.sheet_add_aoa(worksheet, headerDetails, { origin: "A1" });
-        XLSX.utils.sheet_add_json(worksheet, sheetData, { origin: `A${headerDetails.length + 1}` });
-  
-        // Append worksheet to the workbook
+        XLSX.utils.sheet_add_json(worksheet, exportData[sheetName], { origin: `A${headerDetails.length + 1}` });
         XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
       });
   
-      // Write file
       XLSX.writeFile(workbook, `Evaluation_${eid}_Export.xlsx`);
       alert("Excel file downloaded successfully!");
     } catch (error) {
@@ -306,9 +246,6 @@ const cleanEvaluationData = (evaluation) => {
   
   
   
-
-  
-
   return (
 <div className="grid grid-cols-[256px_1fr] min-h-screen">
   <Navbar userRole="TEACHER" />

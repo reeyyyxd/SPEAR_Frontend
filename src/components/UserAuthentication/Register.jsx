@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import logo from "../../assets/imgs/logo-dark.png";
 
 const Register = () => {
@@ -26,7 +27,6 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    // Validate password match
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match!");
       alert("Passwords do not match!");
@@ -45,42 +45,36 @@ const Register = () => {
     };
   
     try {
-      // Send request to register the user
-      const response = await fetch("http://localhost:8080/register", {
-        method: "POST",
+      const response = await axios.post("http://localhost:8080/register", userData, {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(userData),
       });
   
-      // Check response status
-      if (response?.status === 200) {
-        alert("User created successfully"); // Alert on success
-        navigate("/login"); // Redirect to login page
+      if (response.status === 200) {
+        alert("User created successfully");
+        navigate("/login");
       } else {
-        const errorMessage = response?.data?.message || "Registration failed.";
+        const errorMessage = response.data?.message || "Registration failed.";
         setError(errorMessage);
-        alert(errorMessage); // Alert the error
+        alert(errorMessage);
       }
     } catch (err) {
       console.error("Error during registration:", err);
   
-      // Handle backend validation errors
       if (err.response && err.response.status === 400) {
         const errorMessage = err.response.data.message || "This email is already registered.";
         setError(errorMessage);
-        alert(errorMessage); // Alert duplicate email error
+        alert(errorMessage);
       } else {
         const errorMessage = "Registration failed. Please try again.";
         setError(errorMessage);
-        alert(errorMessage); // Alert general error
+        alert(errorMessage);
       }
     } finally {
       setIsLoading(false);
     }
   };
-  
   
   
   return (

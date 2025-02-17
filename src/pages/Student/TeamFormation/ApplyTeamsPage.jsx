@@ -3,6 +3,7 @@ import Navbar from "../../../components/Navbar/Navbar";
 import ApplyTeamsTable from "../../../components/Tables/ApplyTeamsTable";
 import AuthContext from "../../../services/AuthContext";
 
+//continue here we left off.
 const ApplyTeamsPage = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
   const [approvedProjects, setApprovedProjects] = useState([]);
@@ -22,10 +23,9 @@ const ApplyTeamsPage = () => {
 
         setLoading(true);
 
-        const response = await fetch(
+        const response = await axios.get(
           `http://localhost:8080/proposals/class/${classId}/approved`,
           {
-            method: "GET",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${authState.token}`,
@@ -33,15 +33,10 @@ const ApplyTeamsPage = () => {
           }
         );
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch approved projects.");
-        }
-
-        const approvedProjectsData = await response.json();
-        console.log("API Response:", approvedProjectsData); // Debugging step
+        console.log("API Response:", response.data); // Debugging step
 
         // Map API response and ensure clean values
-        const mappedProjects = approvedProjectsData.map((project) => ({
+        const mappedProjects = response.data.map((project) => ({
           id: project.pid || "N/A",
           name:
             project.project_name?.trim() ||

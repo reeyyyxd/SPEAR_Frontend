@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { toast } from "react-toastify";
 
 const AddUsersModal = ({ isOpen, onClose }) => {
@@ -37,33 +38,20 @@ const AddUsersModal = ({ isOpen, onClose }) => {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/register", {
-        method: "POST",
+      const response = await axios.post("http://localhost:8080/register", userData, {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(userData),
       });
-    
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to add user.");
-      }
-    
-      alert("User added successfully!");
+
+      toast.success("User added successfully!");
       onClose();
-    
-      // Instead of reloading the page, update UI dynamically
-      // Example: call a function to refetch user data
-      // mutateUsers(); // Uncomment if using SWR
-    
     } catch (err) {
       console.error("Registration error:", err);
-      setError(err.message || "Failed to add user. Please try again.");
+      setError(err.response?.data?.message || "Failed to add user. Please try again.");
     } finally {
       setIsLoading(false);
     }
-    
   };
 
   if (!isOpen) return null;

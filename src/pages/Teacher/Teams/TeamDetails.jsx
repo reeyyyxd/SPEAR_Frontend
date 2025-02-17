@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
+import axios from "axios";
 
 const TeamDetails = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
@@ -12,7 +13,7 @@ const TeamDetails = () => {
 
   useEffect(() => {
     const fetchTeamDetails = async () => {
-      const teamId = getDecryptedId("tid"); // Retrieve team ID from local storage
+      const teamId = getDecryptedId("tid");
       if (!teamId) {
         console.error("Team ID is not available.");
         setLoading(false);
@@ -21,49 +22,26 @@ const TeamDetails = () => {
 
       try {
         // Fetch team details including leader, features, and project description
-        const response = await fetch(`http://localhost:8080/teams/${teamId}`, {
-          headers: {
-            Authorization: `Bearer ${authState.token}`,
-          },
+        const { data } = await axios.get(`http://localhost:8080/teams/${teamId}`, {
+          headers: { Authorization: `Bearer ${authState.token}` },
         });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch team details: ${response.status}`);
-        }
-
-        const data = await response.json();
 
         // Fetch leader's name
-        const leaderResponse = await fetch(`http://localhost:8080/teams/leader/${data.leaderId}`, {
-          headers: {
-            Authorization: `Bearer ${authState.token}`,
-          },
-        });
+        const leaderResponse = await axios.get(
+          `http://localhost:8080/teams/leader/${data.leaderId}`,
+          { headers: { Authorization: `Bearer ${authState.token}` } }
+        );
 
-        if (!leaderResponse.ok) {
-          throw new Error("Failed to fetch leader's name");
-        }
-
-        const leaderData = await leaderResponse.json();
-        data.leaderName = leaderData.leaderName || "N/A"; // Combine leader name into team details
+        data.leaderName = leaderResponse.data.leaderName || "N/A";
         setTeamDetails(data);
 
         // Fetch team members
-        const membersResponse = await fetch(
+        const membersResponse = await axios.get(
           `http://localhost:8080/teams/${teamId}/members`,
-          {
-            headers: {
-              Authorization: `Bearer ${authState.token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${authState.token}` } }
         );
 
-        if (!membersResponse.ok) {
-          throw new Error("Failed to fetch team members");
-        }
-
-        const membersData = await membersResponse.json();
-        setMembers(membersData);
+        setMembers(membersResponse.data);
       } catch (error) {
         console.error("Error fetching team details:", error);
       } finally {

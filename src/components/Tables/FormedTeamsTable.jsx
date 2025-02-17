@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 import AuthContext from "../../services/AuthContext";
+import FormTeamModal from "../Modals/FormTeamModal";
 
 const FormedTeamsTable = () => {
   const { authState } = useContext(AuthContext);
@@ -15,20 +18,14 @@ const FormedTeamsTable = () => {
         setLoading(true);
         setError(null);
   
-        const response = await fetch("http://localhost:8080/teams/all-active", {
-          method: "GET",
+        const response = await axios.get("http://localhost:8080/teams/all-active", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${authState.token}`,
           },
         });
   
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to fetch formed teams.");
-        }
-  
-        const teams = await response.json();
+        const teams = response.data;
   
         console.log("API Response:", teams);
         teams.forEach((team) => console.log("Team Object:", team));
@@ -46,7 +43,7 @@ const FormedTeamsTable = () => {
   
         setFormedTeams(mappedTeams);
       } catch (err) {
-        setError(err.message || "Failed to fetch formed teams.");
+        setError(err.response?.data?.message || "Failed to fetch formed teams.");
         console.error("Error fetching teams:", err);
       } finally {
         setLoading(false);
@@ -60,7 +57,6 @@ const FormedTeamsTable = () => {
   const handleRowClick = (tid, projectId) => {
     navigate(`/manage-teams/${tid}?projectId=${projectId}`);
   };
-  
 
   return (
     <div className="flex flex-col">

@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 import AuthContext from "../../services/AuthContext";
 import FormTeamModal from "../Modals/FormTeamModal";
 
@@ -18,20 +20,17 @@ const ApprovedProjectsTable = () => {
         setLoading(true);
         setError(null);
   
-        const response = await fetch(`http://localhost:8080/proposals/status/APPROVED`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authState.token}`,
-          },
-        });
+        const response = await axios.get(
+          `http://localhost:8080/proposals/status/APPROVED`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authState.token}`,
+            },
+          }
+        );
   
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to fetch approved projects.");
-        }
-  
-        const projects = await response.json();
+        const projects = response.data;
   
         // Map API response to table format
         const mappedProjects = projects.map((project) => ({
@@ -49,7 +48,7 @@ const ApprovedProjectsTable = () => {
   
         setApprovedProjects(mappedProjects);
       } catch (err) {
-        setError(err.message || "Failed to fetch approved projects.");
+        setError(err.response?.data?.message || "Failed to fetch approved projects.");
         console.error("Error fetching projects:", err);
       } finally {
         setLoading(false);
@@ -64,7 +63,53 @@ const ApprovedProjectsTable = () => {
     setSelectedProjectId(projectId); // Set the selected project ID
     setShowModal(true); // Open the modal
   };
+
+  useEffect(() => {
+    const fetchFormedTeams = async () => {
+      try {
+        setLoading(true);
+        setError(null);
   
+        const response = await axios.get("http://localhost:8080/teams/all-active", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authState.token}`,
+          },
+        });
+  
+        const teams = response.data;
+  
+        console.log("API Response:", teams);
+        teams.forEach((team) => console.log("Team Object:", team));
+  
+        // Map API response to table format using `tid`
+        const mappedTeams = teams.map((team) => ({
+          id: team.tid, // Use 'tid' as the unique key
+          groupName: team.groupName || "N/A",
+          projectName: team.projectName || "N/A",
+          projectId: team.projectId || "N/A",
+          classId: team.classId || "N/A",
+          leaderId: team.leaderId || "N/A",
+          status: team.recruitmentOpen ? "ACTIVE" : "INACTIVE",
+        }));
+  
+        setApprovedProjects(mappedTeams);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to fetch formed teams.");
+        console.error("Error fetching teams:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchFormedTeams();
+  }, [authState.token]);
+  
+  // Use `tid` to redirect
+  const handleRowClick = (tid, projectId) => {
+    navigate(`/manage-teams/${tid}?projectId=${projectId}`);
+  };
+
 
   return (
     <div className="flex flex-col">

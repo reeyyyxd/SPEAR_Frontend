@@ -3,6 +3,7 @@ import Navbar from "../../components/Navbar/Navbar";
 import AuthContext from "../../services/AuthContext";
 import { toast } from "react-toastify";
 import ApprovedProjectsTable from "../../components/Tables/ApprovedProjectsTable";
+import axios from "axios";
 
 const StudentProposals = () => {
   const { authState } = useContext(AuthContext);
@@ -16,10 +17,9 @@ const StudentProposals = () => {
     setError(null);
 
     try {
-      const response = await fetch(
+      const response = await axios.get(
         `http://localhost:8080/proposals/user/${authState.uid}`,
         {
-          method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${authState.token}`,
@@ -27,17 +27,12 @@ const StudentProposals = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch student proposals.");
-      }
-
-      const fetchedProposals = await response.json();
-      setProposals(fetchedProposals.proposals || []);
-      console.log("Fetched Proposals:", fetchedProposals);
+      setProposals(response.data.proposals || []);
+      console.log("Fetched Proposals:", response.data);
     } catch (err) {
       console.error("Error fetching student proposals:", err);
       toast.error("Failed to load your proposals. Please try again.");
-      setError(err.message || "Failed to load proposals.");
+      setError(err.response?.data?.message || "Failed to load proposals.");
     } finally {
       setIsLoading(false);
     }

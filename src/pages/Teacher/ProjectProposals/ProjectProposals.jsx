@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
+import axios from "axios";
 
 const ProjectProposals = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
@@ -10,10 +11,10 @@ const ProjectProposals = () => {
   const [advisers, setAdvisers] = useState({});
   const [loading, setLoading] = useState(true);
   const [classId, setClassId] = useState(null);
-  const [showModal, setShowModal] = useState(false); // Modal visibility
-  const [rejectReason, setRejectReason] = useState(""); // Reason for rejection
-  const [selectedProposalId, setSelectedProposalId] = useState(null); // Proposal ID for rejection
-  
+  const [showModal, setShowModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [selectedProposalId, setSelectedProposalId] = useState(null);
+
   useEffect(() => {
     if (!authState.isAuthenticated) {
       navigate("/login");
@@ -30,22 +31,10 @@ const ProjectProposals = () => {
 
     const fetchProposals = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/proposals/class/with-features/${cid}`, {
-          headers: {
-            Authorization: `Bearer ${authState.token}`,
-          },
-        });
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            console.error("Unauthorized. Please log in again.");
-            navigate("/login");
-            return;
-          }
-          throw new Error(`Failed to fetch project proposals. Status: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const { data } = await axios.get(
+          `http://localhost:8080/proposals/class/with-features/${cid}`,
+          { headers: { Authorization: `Bearer ${authState.token}` } }
+        );
         setProposals(data || []);
         fetchAdvisers(data);
       } catch (error) {
@@ -58,17 +47,17 @@ const ProjectProposals = () => {
     const fetchAdvisers = async (proposals) => {
       try {
         const adviserMap = {};
-        for (const proposal of proposals) {
-          if (proposal.adviserId) {
-            const response = await fetch(`http://localhost:8080/proposals/${proposal.pid}/adviser`, {
-              headers: {
-                Authorization: `Bearer ${authState.token}`,
-              },
-            });
-            const data = await response.json();
-            adviserMap[proposal.pid] = data.adviserFullName || "N/A";
-          }
-        }
+        await Promise.all(
+          proposals.map(async (proposal) => {
+            if (proposal.adviserId) {
+              const { data } = await axios.get(
+                `http://localhost:8080/proposals/${proposal.pid}/adviser`,
+                { headers: { Authorization: `Bearer ${authState.token}` } }
+              );
+              adviserMap[proposal.pid] = data.adviserFullName || "N/A";
+            }
+          })
+        );
         setAdvisers(adviserMap);
       } catch (error) {
         console.error("Error fetching adviser names:", error);
@@ -78,59 +67,39 @@ const ProjectProposals = () => {
     fetchProposals();
   }, [authState, navigate, getDecryptedId]);
 
-  // Approve Proposal
   const handleApprove = async (proposalId) => {
     try {
-      const response = await fetch(`http://localhost:8080/teacher/status-proposal/${proposalId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authState.token}`,
-        },
-        body: JSON.stringify({ status: "APPROVED", reason: null }),
-      });
-
-      if (response.ok) {
-        alert("Proposal approved successfully.");
-        setProposals((prevProposals) =>
-          prevProposals.map((proposal) =>
-            proposal.pid === proposalId ? { ...proposal, status: "APPROVED", reason: null } : proposal
-          )
-        );
-      } else {
-        const errorData = await response.json();
-        alert(`Failed to approve proposal: ${errorData.error}`);
-      }
+      await axios.put(
+        `http://localhost:8080/teacher/status-proposal/${proposalId}`,
+        { status: "APPROVED", reason: null },
+        { headers: { Authorization: `Bearer ${authState.token}` } }
+      );
+      alert("Proposal approved successfully.");
+      setProposals((prev) =>
+        prev.map((proposal) =>
+          proposal.pid === proposalId ? { ...proposal, status: "APPROVED", reason: null } : proposal
+        )
+      );
     } catch (error) {
       console.error("Error approving proposal:", error);
     }
   };
 
-  // Reject Proposal
   const handleReject = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/teacher/status-proposal/${selectedProposalId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authState.token}`,
-        },
-        body: JSON.stringify({ status: "DENIED", reason: rejectReason }),
-      });
-
-      if (response.ok) {
-        alert("Proposal rejected successfully.");
-        setProposals((prevProposals) =>
-          prevProposals.map((proposal) =>
-            proposal.pid === selectedProposalId ? { ...proposal, status: "DENIED", reason: rejectReason } : proposal
-          )
-        );
-        setShowModal(false); // Close the modal
-        setRejectReason(""); // Clear the reason
-      } else {
-        const errorData = await response.json();
-        alert(`Failed to reject proposal: ${errorData.error}`);
-      }
+      await axios.put(
+        `http://localhost:8080/teacher/status-proposal/${selectedProposalId}`,
+        { status: "DENIED", reason: rejectReason },
+        { headers: { Authorization: `Bearer ${authState.token}` } }
+      );
+      alert("Proposal rejected successfully.");
+      setProposals((prev) =>
+        prev.map((proposal) =>
+          proposal.pid === selectedProposalId ? { ...proposal, status: "DENIED", reason: rejectReason } : proposal
+        )
+      );
+      setShowModal(false);
+      setRejectReason("");
     } catch (error) {
       console.error("Error rejecting proposal:", error);
     }

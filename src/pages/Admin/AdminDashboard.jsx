@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import { toast } from "react-toastify";
 import Header from "../../components/Header/Header";
+import axios from "axios";
 
 const AdminDashboard = () => {
   const [proposals, setProposals] = useState([]);
@@ -15,21 +16,13 @@ const AdminDashboard = () => {
     setError(null);
   
     try {
-      const response = await fetch(`http://localhost:8080/proposals/status/${selectedStatus}`, {
-        method: "GET",
+      const response = await axios.get(`http://localhost:8080/proposals/status/${selectedStatus}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to load proposals.");
-      }
-  
-      const fetchedProposals = await response.json();
-      setProposals(fetchedProposals || []);
+      setProposals(response.data || []);
     } catch (err) {
       console.error("Error fetching proposals:", err);
       toast.error("Failed to load proposals. Please try again.");

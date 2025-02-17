@@ -4,6 +4,7 @@ import Header from "../../../components/Header/Header";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../../services/AuthContext";
 import ClassCard from "./ClassCard";
+import axios from "axios";
 
 const TeacherDashboard = () => {
   const { authState } = useContext(AuthContext);
@@ -24,48 +25,35 @@ const TeacherDashboard = () => {
     const fetchDashboardData = async () => {
       try {
         const token = authState.token;
-        const userProfileResponse = await fetch(
+        const headers = { Authorization: `Bearer ${token}` };
+    
+        // Fetch teacher profile
+        const { data: userProfile } = await axios.get(
           `http://localhost:8080/user/profile/${authState.uid}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers }
         );
-  
-        if (!userProfileResponse.ok) {
-          throw new Error("Failed to fetch user profile.");
-        }
-  
-        const userProfile = await userProfileResponse.json();
+    
         if (userProfile) {
           setTeacherName(`${userProfile.firstname} ${userProfile.lastname}`);
         }
-  
+    
         // Fetch classes created by the teacher
-        const classesResponse = await fetch(
+        const { data: classesData } = await axios.get(
           `http://localhost:8080/teacher/classes-created/${authState.uid}`,
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers }
         );
-  
-        if (!classesResponse.ok) {
-          throw new Error("Failed to fetch teacher's classes.");
-        }
-  
-        const classesData = await classesResponse.json();
+    
         setClasses(classesData || []);
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+        console.error(
+          "Error fetching dashboard data:",
+          error.response?.data || error.message
+        );
       } finally {
         setLoading(false);
       }
     };
-  
+    
     fetchDashboardData();
   }, [authState, navigate]);
   

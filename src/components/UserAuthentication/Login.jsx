@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import logo from "../../assets/imgs/logo-dark.png";
+import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import AuthContext from "../../services/AuthContext";
-import { useContext } from "react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -17,36 +18,15 @@ const Login = () => {
     setError("");
   
     try {
-      const response = await fetch("http://localhost:8080/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await axios.post("http://localhost:8080/login", { email, password });
+      const data = response.data;
   
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("Invalid email or password. Please try again.");
-        } else if (response.status === 500) {
-          throw new Error("Server error. Please try again later.");
-        } else {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to login.");
-        }
-      }
-  
-      const data = await response.json();
-  
-      // Validate the response structure
       if (!data || !data.token || !data.role) {
         throw new Error("Invalid Credentials.");
       }
   
-      // Pass all necessary data to login, including uid and refreshToken
       login(data.token, data.role, data.refreshToken, data.uid);
   
-      // Redirect based on role
       if (data.role === "STUDENT") {
         navigate("/student-dashboard");
       } else if (data.role === "TEACHER") {

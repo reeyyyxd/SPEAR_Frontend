@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
+import axios from "axios";
 
 const TeacherQuestions = () => {
   const { getDecryptedId, storeEncryptedId } = useContext(AuthContext);
@@ -15,40 +16,24 @@ const TeacherQuestions = () => {
   const fetchQuestions = async () => {
     try {
       const evaluationId = getDecryptedId("eid");
-      const response = await fetch(
-        `http://localhost:8080/get-questions-by-evaluation/${evaluationId}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch questions");
-      }
-      const data = await response.json();
-      setQuestions(data);
+      const response = await axios.get(`http://localhost:8080/get-questions-by-evaluation/${evaluationId}`);
+      setQuestions(response.data);
     } catch (error) {
       console.error("Error fetching questions:", error);
     }
   };
 
+
   const handleCreateQuestion = async () => {
     try {
       const classId = getDecryptedId("cid");
       const evaluationId = getDecryptedId("eid");
-
-      const response = await fetch(
+      const response = await axios.post(
         `http://localhost:8080/teacher/create-question/${classId}/${evaluationId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ questionText: newQuestion }),
-        }
+        { questionText: newQuestion }
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to create question");
-      }
-
-      const data = await response.json();
       alert("Question created successfully!");
-      setQuestions((prev) => [...prev, data]);
+      setQuestions([...questions, response.data]);
       setNewQuestion("");
       setShowCreateModal(false);
     } catch (error) {
@@ -68,25 +53,14 @@ const TeacherQuestions = () => {
     }
 
     try {
-      const response = await fetch(
+      const response = await axios.put(
         `http://localhost:8080/teacher/update-question/${qid}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ questionText: editQuestion.questionText }),
-        }
+        { questionText: editQuestion.questionText }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to update question");
-      }
-
-      const updatedQuestion = await response.json();
       setQuestions((prev) =>
         prev.map((q) =>
-          q.questionId === updatedQuestion.questionId
-            ? updatedQuestion
-            : q
+          q.questionId === response.data.questionId ? response.data : q
         )
       );
       setShowEditModal(false);
@@ -103,22 +77,10 @@ const TeacherQuestions = () => {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/teacher/delete-question/${questionId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to delete question");
-      }
-
-      setQuestions((prev) =>
-        prev.filter((q) => q.questionId !== questionId)
-      );
+      await axios.delete(`http://localhost:8080/teacher/delete-question/${questionId}`);
+      setQuestions((prev) => prev.filter((q) => q.questionId !== questionId));
       alert("Delete success!");
-      window.location.reload(); // Reload the page after deletion
+      window.location.reload();
     } catch (error) {
       console.error("Error deleting question:", error);
     }

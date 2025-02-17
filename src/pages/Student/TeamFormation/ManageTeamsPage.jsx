@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AuthContext from "../../../services/AuthContext";
 import Navbar from "../../../components/Navbar/Navbar";
+import axios from "axios";
 
 const ManageTeamsPage = () => {
   const { authState } = useContext(AuthContext);
@@ -21,28 +22,24 @@ const ManageTeamsPage = () => {
 
         const token = authState.token;
 
-        const teamResponse = await fetch(`http://localhost:8080/teams/${tid}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const teamResponse = await axios.get(
+          `http://localhost:8080/teams/${tid}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-        if (!teamResponse.ok) {
-          throw new Error("Failed to fetch team details.");
-        }
-
-        const teamData = await teamResponse.json();
-        setTeamDetails(teamData);
-        console.log("Team Details:", teamData);
+        setTeamDetails(teamResponse.data);
+        console.log("Team Details:", teamResponse.data);
 
         // If projectId exists, fetch project details
-        if (teamData?.projectId) {
-          const projectResponse = await fetch(
-            `http://localhost:8080/proposals/class/${teamData.classId}/approved`,
+        if (teamResponse.data?.projectId) {
+          const projectResponse = await axios.get(
+            `http://localhost:8080/proposals/class/${teamResponse.data.classId}/approved`,
             {
-              method: "GET",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
@@ -50,12 +47,9 @@ const ManageTeamsPage = () => {
             }
           );
 
-          if (!projectResponse.ok) {
-            throw new Error("Failed to fetch project details.");
-          }
-
-          const projectData = await projectResponse.json();
-          const project = projectData.find((p) => p.id === teamData.projectId);
+          const project = projectResponse.data.find(
+            (p) => p.id === teamResponse.data.projectId
+          );
           setProjectDetails(project || null);
           console.log("Project Details:", project);
         }

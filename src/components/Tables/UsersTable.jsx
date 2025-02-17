@@ -1,5 +1,6 @@
 import React from "react";
 import { usePagination } from "../../components/CustomHooks/usePagination";
+import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import deleteIcon from "../../assets/icons/delete-icon.svg";
@@ -31,24 +32,18 @@ const UsersTable = ({ users, onUserDeleted }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/admin/delete/${userEmail}`, {
-        method: "DELETE",
+      const response = await axios.delete(`http://localhost:8080/admin/delete/${userEmail}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete the user.");
-      }
-
       toast.success("User deleted successfully.");
       onUserDeleted(userEmail);
     } catch (err) {
       console.error("Error deleting user:", err);
-      toast.error(err.message || "Failed to delete the user.");
+      toast.error(err.response?.data?.message || "Failed to delete the user.");
     }
   };
 

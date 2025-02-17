@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import Header from "../../components/Header/Header";
 import { useNavigate } from "react-router-dom";
@@ -76,6 +76,7 @@ const PasswordModal = ({ userId, token, onClose }) => {
       }
     }
   };
+
 
   return (
     <div className="modal bg-gray-800 bg-opacity-75 fixed inset-0 flex justify-center items-center">

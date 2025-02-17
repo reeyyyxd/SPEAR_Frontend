@@ -1,4 +1,5 @@
 import React, { useState, useContext } from "react";
+import axios from "axios";
 import AuthContext from "../../services/AuthContext";
 
 const FormTeamModal = ({ onClose, projectId }) => {
@@ -13,30 +14,27 @@ const FormTeamModal = ({ onClose, projectId }) => {
     setError(null);
 
     try {
-      const response = await fetch(`http://localhost:8080/student/create-team/${projectId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authState.token}`,
-        },
-        body: JSON.stringify({ groupName }),
-      });
-    
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create team.");
-      }
-    
+      const response = await axios.post(
+        `http://localhost:8080/student/create-team/${projectId}`,
+        { groupName },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authState.token}`,
+          },
+        }
+      );
+
       alert("Team successfully created!");
       onClose(); // Close the modal
     } catch (err) {
-      setError(err.message || "Failed to create team. Please try again.");
+      setError(err.response?.data?.message || "Failed to create team. Please try again.");
       console.error("Error creating team:", err);
     } finally {
       setIsSubmitting(false);
     }
-    
   };
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">

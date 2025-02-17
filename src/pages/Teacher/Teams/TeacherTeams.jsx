@@ -2,28 +2,21 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
+import axios from "axios";
 
 const TeacherTeams = () => {
-  const { authState, getDecryptedId, storeEncryptedId } = useContext(AuthContext); // Include `storeEncryptedId` and `getDecryptedId`
+  const { authState, getDecryptedId, storeEncryptedId } = useContext(AuthContext);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [leaders, setLeaders] = useState({}); // Store leaders' names
+  const [leaders, setLeaders] = useState({});
   const navigate = useNavigate();
 
   const fetchLeaderName = async (leaderId) => {
     try {
-      const response = await fetch(`http://localhost:8080/teams/leader/${leaderId}`, {
-        headers: {
-          Authorization: `Bearer ${authState.token}`,
-        },
+      const response = await axios.get(`http://localhost:8080/teams/leader/${leaderId}`, {
+        headers: { Authorization: `Bearer ${authState.token}` },
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch leader's name");
-      }
-
-      const data = await response.json();
-      return data.leaderName || "N/A";
+      return response.data.leaderName || "N/A";
     } catch (error) {
       console.error("Error fetching leader's name:", error);
       return "N/A";
@@ -32,7 +25,7 @@ const TeacherTeams = () => {
 
   useEffect(() => {
     const fetchTeamsByClass = async () => {
-      const classId = getDecryptedId("cid"); // Retrieve classId securely from local storage
+      const classId = getDecryptedId("cid");
       if (!classId) {
         console.error("Class ID is not available. Please ensure it's stored.");
         setLoading(false);
@@ -40,27 +33,18 @@ const TeacherTeams = () => {
       }
 
       try {
-        const response = await fetch(`http://localhost:8080/teams/class/${classId}`, {
-          headers: {
-            Authorization: `Bearer ${authState.token}`,
-          },
+        const response = await axios.get(`http://localhost:8080/teams/class/${classId}`, {
+          headers: { Authorization: `Bearer ${authState.token}` },
         });
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch teams data: ${response.status}`);
-        }
+        const data = response.data;
 
-        const data = await response.json();
-
-        // Fetch leader names for all teams
         const leaderPromises = data.map(async (team) => ({
           tid: team.tid,
           leaderName: await fetchLeaderName(team.leaderId),
         }));
 
         const leaderData = await Promise.all(leaderPromises);
-
-        // Map leader names to team IDs
         const leaderMap = leaderData.reduce((map, leader) => {
           map[leader.tid] = leader.leaderName;
           return map;
@@ -79,10 +63,7 @@ const TeacherTeams = () => {
   }, [authState, getDecryptedId]);
 
   const handleTeamClick = (teamId) => {
-    // Encrypt and store the teamId in local storage
     storeEncryptedId("tid", teamId);
-
-    // Navigate to another page or perform another action as needed
     navigate(`/team-details`);
   };
 

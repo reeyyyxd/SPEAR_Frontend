@@ -4,6 +4,7 @@ import Header from "../Header/Header";
 import AuthContext from "../../services/AuthContext";
 import UsersTable from "../Tables/UsersTable";
 import AddUsersModal from "../Modals/AddUsersModal";
+import axios from "axios";
 
 const ManageUsers = () => {
   const { authState } = useContext(AuthContext);
@@ -13,20 +14,13 @@ const ManageUsers = () => {
   // Fetch active users from API
   const fetchUsers = async () => {
     try {
-      const response = await fetch("http://localhost:8080/admin/users/active", {
-        method: "GET",
+      const response = await axios.get("http://localhost:8080/admin/users/active", {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`, 
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch active users.");
-      }
-
-      const fetchedUsers = await response.json();
-      setUsers(fetchedUsers || []);
+      setUsers(response.data || []);
     } catch (error) {
       console.error("Failed to fetch active users", error);
     }

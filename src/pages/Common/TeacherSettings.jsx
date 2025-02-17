@@ -25,6 +25,8 @@ const PasswordModal = ({ userId, token, onClose, correctCurrentPassword }) => {
     }));
   };
 
+  //make also function for new interest
+
   const togglePasswordVisibility = (field) => {
     setShowPassword((prev) => ({
       ...prev,
@@ -253,7 +255,7 @@ const Settings = () => {
                 className="w-full border rounded-md p-3"
               />
             </div>
-
+            {/* change interest since it is now independent */}
             <div>
               <label htmlFor="interests" className="block mb-2 font-medium">
                 Interests

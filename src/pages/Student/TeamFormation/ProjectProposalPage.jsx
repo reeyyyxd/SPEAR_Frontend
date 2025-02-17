@@ -1,15 +1,15 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 const ProjectProposalPage = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
   const [projectTitle, setProjectTitle] = useState("");
   const [projectOverview, setProjectOverview] = useState("");
   const [features, setFeatures] = useState([{ title: "", description: "" }]);
-
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -39,26 +39,22 @@ const ProjectProposalPage = () => {
     console.log("Submitting Proposal Data:", proposalData);
 
     try {
-      const response = await fetch("http://localhost:8080/student/create-proposal", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authState.token}`,
-        },
-        body: JSON.stringify(proposalData),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to submit the proposal.");
-      }
+      const response = await axios.post(
+        "http://localhost:8080/student/create-proposal",
+        proposalData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authState.token}`,
+          },
+        }
+      );
 
       toast.success("Proposal submitted successfully!");
       navigate("/student-dashboard");
     } catch (error) {
       console.error("Error submitting proposal:", error);
-      toast.error(error.message || "Failed to submit the proposal.");
+      toast.error(error.response?.data?.message || "Failed to submit the proposal.");
     }
   };
 
@@ -69,6 +65,7 @@ const ProjectProposalPage = () => {
   const handleRemoveFeature = (index) => {
     setFeatures(features.filter((_, i) => i !== index));
   };
+
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">

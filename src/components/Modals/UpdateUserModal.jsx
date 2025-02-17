@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import axios from "axios";
 import { toast } from "react-toastify";
+import AuthContext from "../../services/AuthContext";
 
 const UpdateUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
+  const { authState } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     firstname: user?.firstname || "",
     lastname: user?.lastname || "",
@@ -17,29 +20,25 @@ const UpdateUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:8080/admin/update/${user.uid}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authState.token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update user.");
-      }
-  
+      const response = await axios.put(
+        `http://localhost:8080/admin/update/${user.uid}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authState.token}`,
+          },
+        }
+      );
+
       toast.success("User updated successfully.");
       onUserUpdated(); // Refresh user list dynamically
       onClose(); // Close the modal
     } catch (err) {
       console.error("Error updating user:", err);
-      toast.error(err.message || "Failed to update user.");
+      toast.error(err.response?.data?.message || "Failed to update user.");
     }
   };
-  
 
   if (!isOpen) return null;
 

@@ -4,6 +4,7 @@ import Select from "react-select";
 import Navbar from "../../../components/Navbar/Navbar";
 import Header from "../../../components/Header/Header";
 import AuthContext from "../../../services/AuthContext";
+import axios from "axios";
 
 const semesterOptions = [
   { value: "1st Semester", label: "1st Semester" },
@@ -18,10 +19,6 @@ const schoolYearOptions = [
   { value: "2026-2027", label: "2026-2027" },
 ];
 
-const courseType = [
-  { value: 1, label: "Capstone" },
-  { value: 0, label: "Non-Capstone" },
-];
 
 const CreateClass = () => {
   const navigate = useNavigate();
@@ -33,7 +30,6 @@ const CreateClass = () => {
     }
   }, [authState.isAuthenticated, navigate]);
 
-  const [courseTypeValue, setCourseTypeValue] = useState(null);
   const [courseCode, setCourseCode] = useState("");
   const [section, setSection] = useState("");
   const [schoolYear, setSchoolYear] = useState(null);
@@ -41,24 +37,17 @@ const CreateClass = () => {
   const [courseDescription, setCourseDescription] = useState("");
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
+  const [feedback, setFeedback] = useState({ message: null, error: null });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (
-      !courseTypeValue ||
-      !courseCode ||
-      !section ||
-      !schoolYear ||
-      !semester ||
-      !courseDescription
-    ) {
-      setError("Please fill in all fields.");
+  
+    if (!courseCode || !section || !schoolYear || !semester || !courseDescription) {
+      setFeedback({ error: "Please fill in all fields.", message: null });
       return;
     }
-
+  
     const classData = {
-      courseType: courseTypeValue.label,
       courseCode,
       section,
       schoolYear: schoolYear.label,
@@ -66,33 +55,21 @@ const CreateClass = () => {
       courseDescription,
       createdBy: { uid: authState.uid },
     };
-
+  
     try {
-      const response = await fetch("http://localhost:8080/teacher/create-class", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authState.token}`,
-        },
-        body: JSON.stringify(classData),
-      });
-    
-      const responseData = await response.json();
-    
-      if (!response.ok) {
-        throw new Error(responseData.message || "Failed to create class. Please try again.");
-      }
-    
-      setMessage(`Class created successfully! Class Key: ${responseData.classKey}`);
-      setError(null);
+      const response = await axios.post(
+        "http://localhost:8080/teacher/create-class",
+        classData,
+        { headers: { Authorization: `Bearer ${authState.token}` } }
+      );
+  
+      setFeedback({ message: `Class created successfully! Class Key: ${response.data.classKey}`, error: null });
       navigate("/teacher-dashboard");
     } catch (err) {
-      setError(err.message || "Failed to create class. Please try again.");
-      setMessage(null);
+      setFeedback({ error: err.response?.data?.message || "Failed to create class.", message: null });
     }
-    
   };
-
+  
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
@@ -116,20 +93,6 @@ const CreateClass = () => {
 
         {/* Form */}
         <form className="grid grid-cols-2 gap-8" onSubmit={handleSubmit}>
-          {/* Course Type */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Course Type
-            </label>
-            <Select
-              options={courseType}
-              value={courseTypeValue}
-              onChange={setCourseTypeValue}
-              className="text-black bg-peach hover:bg-peach"
-              placeholder="Select Course Type"
-            />
-          </div>
-
           {/* Course Code */}
           <div>
             <label

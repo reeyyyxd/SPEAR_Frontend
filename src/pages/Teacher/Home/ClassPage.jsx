@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
+import axios from "axios";
 
 const ClassPage = () => {
   const { authState, storeEncryptedId } = useContext(AuthContext);
@@ -22,49 +23,19 @@ const ClassPage = () => {
     const fetchClassDetails = async () => {
       try {
         const token = authState.token;
-
-        // Fetch class details by courseCode and section
-        const classResponse = await fetch(
+        const { data } = await axios.get(
           `http://localhost:8080/teacher/class/${courseCode}/${section}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
+        setClassDetails(data.classes);
+        storeEncryptedId("cid", data.classes.cid);
 
-        if (!classResponse.ok) throw new Error("Failed to fetch class details.");
+        const [{ data: totalUsersData }, { data: studentsData }] = await Promise.all([
+          axios.get(`http://localhost:8080/class/${data.classes.cid}/total-users`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`http://localhost:8080/class/${data.classes.classKey}/students`, { headers: { Authorization: `Bearer ${token}` } })
+        ]);
 
-        const classData = await classResponse.json();
-        setClassDetails(classData.classes);
-
-        // Store class ID (cid) in localStorage
-        storeEncryptedId("cid", classData.classes.cid);
-
-        // Fetch total users in class
-        const totalUsersResponse = await fetch(
-          `http://localhost:8080/class/${classData.classes.cid}/total-users`,
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const totalUsersData = await totalUsersResponse.json();
         setTotalUsers(totalUsersData?.[0]?.[1] || 0);
-
-        // Fetch students in class
-        const studentsResponse = await fetch(
-          `http://localhost:8080/class/${classData.classes.classKey}/students`,
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const studentsData = await studentsResponse.json();
         setStudents(studentsData || []);
       } catch (error) {
         console.error("Error fetching class data:", error);
@@ -72,39 +43,22 @@ const ClassPage = () => {
         setLoading(false);
       }
     };
-
     fetchClassDetails();
   }, [courseCode, section, authState, storeEncryptedId, navigate]);
 
   const handleKickStudent = async (email) => {
-    const confirmRemoval = window.confirm(`Are you sure you want to remove the student with email: ${email}?`);
-    if (!confirmRemoval) return;
-
+    if (!window.confirm(`Remove student with email: ${email}?`)) return;
     try {
-      const response = await fetch("http://localhost:8080/teacher/remove-student", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authState.token}`,
-        },
-        body: JSON.stringify({
-          classKey: classDetails.classKey,
-          email,
-        }),
-      });
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.message || "Failed to remove student.");
-      }
-
-      alert("Student removed successfully.");
-      setStudents((prevStudents) => prevStudents.filter((student) => student.email !== email));
-      setTotalUsers((prevTotal) => prevTotal - 1);
+      await axios.post(
+        "http://localhost:8080/teacher/remove-student",
+        { classKey: classDetails.classKey, email },
+        { headers: { Authorization: `Bearer ${authState.token}` } }
+      );
+      setStudents(students.filter((student) => student.email !== email));
+      setTotalUsers((prev) => prev - 1);
     } catch (error) {
       console.error("Error kicking student:", error);
-      alert("An error occurred while trying to remove the student. Please try again.");
+      alert("Error removing student. Try again.");
     }
   };
 

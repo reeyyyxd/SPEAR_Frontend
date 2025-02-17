@@ -4,6 +4,7 @@ import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import Guidelines from "../../../components/Statics/Guidelines";
 import MembersTable from "../../../components/Tables/MembersTable";
+import axios from "axios";
 
 const StudentClassPage = () => {
   const { authState, storeEncryptedId } = useContext(AuthContext);
@@ -15,14 +16,13 @@ const StudentClassPage = () => {
     const fetchClassDetails = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
+        const response = await axios.get(
           `http://localhost:8080/class/${courseCode}/${section}`
         );
-        const data = await response.json();
-
-        if (response.ok && data?.classes) {
-          setClassDetails(data.classes);
-          storeEncryptedId("cid", data.classes.cid);
+        
+        if (response.status === 200 && response.data?.classes) {
+          setClassDetails(response.data.classes);
+          storeEncryptedId("cid", response.data.classes.cid);
         } else {
           setClassDetails(null);
         }
@@ -67,7 +67,7 @@ const StudentClassPage = () => {
           </h1>
         </div>
 
-        <Guidelines />
+        {/* <Guidelines /> */}
 
         {/* Action Buttons */}
         <div className="actions text-end mt-8">
@@ -88,6 +88,13 @@ const StudentClassPage = () => {
             className="w-1/6 h-1/4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach"
           >
             Evaluate Peers
+          </Link>
+
+          <Link
+            to={`/team-formation/apply-to-teams`}
+            className="w-1/6 h-1/4 ml-4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach mx-2"
+          >
+            Apply Teams
           </Link>
         </div>
 

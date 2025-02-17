@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
+import axios from "axios";
 
 const TeamFormation = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
@@ -33,10 +34,9 @@ const TeamFormation = () => {
 
       console.log("Fetching project with teamId:", teamId);
 
-      const response = await fetch(
+      const response = await axios.get(
         `http://localhost:8080/proposals/class/${classId}/student/${authState.uid}`,
         {
-          method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${authState.token}`,
@@ -44,20 +44,15 @@ const TeamFormation = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch project details.");
-      }
+      console.log("Fetched Project Data:", response.data);
 
-      const projectData = await response.json();
-      console.log("Fetched Project Data:", projectData);
-
-      if (Array.isArray(projectData) && projectData.length > 0) {
-        setProposal(projectData[0]);
+      if (Array.isArray(response.data) && response.data.length > 0) {
+        setProposal(response.data[0]);
       } else {
         setError("Project data not found.");
       }
     } catch (err) {
-      setError(err.message || "Failed to fetch project details.");
+      setError(err.response?.data?.message || "Failed to fetch project details.");
       console.error("Error fetching project details:", err);
     } finally {
       setLoading(false);
@@ -68,6 +63,7 @@ const TeamFormation = () => {
   useEffect(() => {
     fetchProjectDetails();
   }, [teamId]);
+
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">

@@ -6,6 +6,7 @@ import AuthContext from "../../../services/AuthContext";
 import ClassCard from "./ClassCard";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
 
 const StudentDashboard = () => {
   const { authState } = useContext(AuthContext);
@@ -13,7 +14,7 @@ const StudentDashboard = () => {
   const [enrolledClasses, setEnrolledClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
-  const [studentName, setStudentName] = useState(""); 
+  const [studentName, setStudentName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [classesPerPage] = useState(6);
 
@@ -24,27 +25,25 @@ const StudentDashboard = () => {
         const token = localStorage.getItem("token");
 
         // Fetch enrolled classes
-        const classesResponse = await fetch(
+        const classesResponse = await axios.get(
           `http://localhost:8080/student/${authState.uid}/enrolled-classes`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
 
-        const classesData = await classesResponse.json();
-        setEnrolledClasses(classesData || []);
+        setEnrolledClasses(classesResponse.data || []);
 
         // Fetch student's name
-        const profileResponse = await fetch(
+        const profileResponse = await axios.get(
           `http://localhost:8080/user/profile/${authState.uid}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
 
-        const userProfile = await profileResponse.json();
-        if (userProfile) {
-          setStudentName(`${userProfile.firstname} ${userProfile.lastname}`);
+        if (profileResponse.data) {
+          setStudentName(`${profileResponse.data.firstname} ${profileResponse.data.lastname}`);
         }
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
