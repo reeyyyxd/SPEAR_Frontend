@@ -41,12 +41,12 @@ const PasswordModal = ({ userId, token, onClose }) => {
       alert("All fields must be filled!");
       return;
     }
-
+  
     if (passwordData.newPassword !== passwordData.confirmNewPassword) {
       alert("New password and confirm password do not match!");
       return;
     }
-
+  
     try {
       const response = await axios.put(
         `http://localhost:8080/user/update-password/${userId}`,
@@ -60,8 +60,8 @@ const PasswordModal = ({ userId, token, onClose }) => {
           },
         }
       );
-
-      if (response.status === 200) {
+  
+      if (response.status === 200 && response.data.statusCode === 200) {
         alert("Password updated successfully!");
         onClose();
       } else {
@@ -69,13 +69,20 @@ const PasswordModal = ({ userId, token, onClose }) => {
       }
     } catch (error) {
       console.error("Error updating password:", error);
-      if (error.response?.data?.message === "Current password is incorrect.") {
-        alert("The current password you entered is incorrect.");
+      
+      if (error.response) {
+        // Properly handling backend errors
+        if (error.response.status === 500 && error.response.data.message.includes("Current password is incorrect")) {
+          alert("The current password you entered is incorrect.");
+        } else {
+          alert(error.response.data.message || "Error updating password. Please try again.");
+        }
       } else {
-        alert("Error updating password. Please try again.");
+        alert("Error updating password. Please check your network connection.");
       }
     }
   };
+  
 
 
   return (
@@ -139,7 +146,6 @@ const AdminSettings = () => {
     email: "",
     firstname: "",
     lastname: "",
-    interests: "",
   });
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -163,8 +169,8 @@ const AdminSettings = () => {
         }
       );
 
-      const { email, firstname, lastname, interests } = response.data;
-      setUserData({ email, firstname, lastname, interests });
+      const { email, firstname, lastname } = response.data;
+      setUserData({ email, firstname, lastname });
     } catch (error) {
       console.error("Error fetching admin data:", error);
       alert("Error fetching admin data. Please try again.");
@@ -254,19 +260,6 @@ const AdminSettings = () => {
                 id="lastname"
                 name="lastname"
                 value={userData.lastname}
-                onChange={handleInputChange}
-                className="w-full border rounded-md p-3"
-              />
-            </div>
-            <div>
-              <label htmlFor="interests" className="block mb-2 font-medium">
-                Interests
-              </label>
-              <input
-                type="text"
-                id="interests"
-                name="interests"
-                value={userData.interests}
                 onChange={handleInputChange}
                 className="w-full border rounded-md p-3"
               />

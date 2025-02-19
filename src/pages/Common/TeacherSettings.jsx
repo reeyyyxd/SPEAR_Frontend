@@ -128,6 +128,14 @@ const PasswordModal = ({ userId, token, onClose, correctCurrentPassword }) => {
   );
 };
 
+const departmentsList = [
+  "College of Engineering and Architecture",
+  "College of Management, Business & Accountancy",
+  "College of Arts, Sciences & Education",
+  "College of Nursing & Allied Health Sciences",
+  "College of Computer Studies",
+  "College of Criminal Justice",
+];
 
 const Settings = () => {
   const { authState } = useContext(AuthContext);
@@ -136,6 +144,8 @@ const Settings = () => {
     firstname: "",
     lastname: "",
     interests: "",
+    department:"",
+    role:""
   });
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -158,8 +168,8 @@ const Settings = () => {
           },
         }
       );
-      const { email, firstname, lastname, interests } = response.data;
-      setUserData({ email, firstname, lastname, interests });
+      const { email, firstname, lastname, interests, department, role} = response.data;
+      setUserData({ email, firstname, lastname, interests, department, role });
     } catch (error) {
       console.error("Failed to fetch user data:", error);
       alert("Error fetching user data. Please try again.");
@@ -176,26 +186,41 @@ const Settings = () => {
 
   const handleSaveChanges = async () => {
     try {
+      const updatedUserData = {
+        email: userData.email,
+        firstname: userData.firstname,
+        lastname: userData.lastname,
+        interests: userData.interests || "N/A",
+        department: userData.department || "N/A",
+        role: userData.role || "TEACHER", // Always ensure role is included
+      };
+  
+      //console.log("Sending update request:", updatedUserData);
+  
       const response = await axios.put(
         `http://localhost:8080/teacher/update/${authState.uid}`,
-        userData,
+        updatedUserData,
         {
           headers: {
             Authorization: `Bearer ${authState.token}`,
+            "Content-Type": "application/json",
           },
         }
       );
-
+  
       if (response.status === 200) {
         alert("Profile updated successfully!");
+        window.location.reload();
       } else {
         alert(response.data.message || "Failed to update profile.");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Error updating profile. Please try again.");
+      alert(error.response?.data?.message || "Error updating profile. Please try again.");
     }
   };
+  
+  
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
@@ -255,7 +280,7 @@ const Settings = () => {
                 className="w-full border rounded-md p-3"
               />
             </div>
-            {/* change interest since it is now independent */}
+
             <div>
               <label htmlFor="interests" className="block mb-2 font-medium">
                 Interests
@@ -269,6 +294,26 @@ const Settings = () => {
                 className="w-full border rounded-md p-3"
               />
             </div>
+            <div>
+            <label htmlFor="department" className="block mb-2 font-medium">
+              Department
+            </label>
+            <select
+              id="department"
+              name="department"
+              value={userData.department}
+              onChange={handleInputChange}
+              className="w-full border rounded-md p-3 bg-white"
+            >
+              <option value="" disabled>Select a department</option>
+              {departmentsList.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+          </div>
+
           </div>
 
           <div className="flex justify-between mt-6">

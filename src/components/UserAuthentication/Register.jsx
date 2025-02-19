@@ -42,6 +42,8 @@ const Register = () => {
       lastname: formData.lastName,
       password: formData.password,
       role: "STUDENT",
+      interests: "N/A",  // ✅ Set interests to "N/A"
+      department: "N/A", // ✅ Set department to "N/A"
     };
   
     try {
@@ -75,6 +77,7 @@ const Register = () => {
       setIsLoading(false);
     }
   };
+  
   
   
   return (

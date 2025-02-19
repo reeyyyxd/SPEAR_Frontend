@@ -262,6 +262,12 @@ const router = createBrowserRouter([
     path: "*",
     element: <ErrorPage />,
   },
+  {
+    future: {
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+    },
+  }
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(

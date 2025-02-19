@@ -2,6 +2,15 @@ import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+const departmentsList = [
+  "College of Engineering and Architecture",
+  "College of Management, Business & Accountancy",
+  "College of Arts, Sciences & Education",
+  "College of Nursing & Allied Health Sciences",
+  "College of Computer Studies",
+  "College of Criminal Justice",
+];
+
 const AddUsersModal = ({ isOpen, onClose }) => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -11,15 +20,20 @@ const AddUsersModal = ({ isOpen, onClose }) => {
     firstName: "",
     lastName: "",
     password: "",
-    interests: "",
     role: "",
+    interests: "N/A",
+    department: "N/A",
   });
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
+
     setFormData((prevState) => ({
       ...prevState,
       [id]: value,
+      ...(id === "role" && value !== "TEACHER"
+        ? { interests: "N/A", department: "N/A" }
+        : {}),
     }));
   };
 
@@ -33,22 +47,28 @@ const AddUsersModal = ({ isOpen, onClose }) => {
       firstname: formData.firstName,
       lastname: formData.lastName,
       password: formData.password,
-      interests: formData.interests,
-      role: formData.role,
+      role: formData.role.toLowerCase(),
+      interests: formData.role === "TEACHER" ? formData.interests : "N/A",
+      department: formData.role === "TEACHER" ? formData.department : "N/A",
     };
 
     try {
       const response = await axios.post("http://localhost:8080/register", userData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
-      toast.success("User added successfully!");
-      onClose();
+      if (response.data.statusCode === 200) {
+        toast.success("User added successfully!");
+        onClose();
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000)
+      } else {
+        setError(response.data.message || "Failed to add user.");
+      }
     } catch (err) {
       console.error("Registration error:", err);
-      setError(err.response?.data?.message || "Failed to add user. Please try again.");
+      setError(err.response?.data?.message || "Error adding user. Try again.");
     } finally {
       setIsLoading(false);
     }
@@ -57,17 +77,13 @@ const AddUsersModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-      aria-hidden="true"
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="relative w-full max-w-md p-4 bg-white rounded-lg shadow-lg">
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="text-lg font-semibold text-gray-900">Add New User</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-900 hover:bg-gray-200 rounded-full w-8 h-8 flex justify-center items-center"
-            aria-label="Close modal"
           >
             <svg
               className="w-4 h-4"
@@ -77,31 +93,24 @@ const AddUsersModal = ({ isOpen, onClose }) => {
               stroke="currentColor"
               strokeWidth="2"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
+
         <form className="p-4" onSubmit={handleSubmit}>
-          {error && (
-            <div className="text-red-500 text-sm text-center mb-4">{error}</div>
-          )}
+          {error && <div className="text-red-500 text-sm text-center mb-4">{error}</div>}
+
           <div className="grid gap-4 mb-4">
             {/* University Email */}
             <div>
-              <label
-                className="block mb-2 text-sm font-medium text-gray-700"
-                htmlFor="email"
-              >
+              <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700">
                 University Email
               </label>
               <input
                 type="email"
                 id="email"
-                className="w-full p-2 rounded-md border border-gray-300"
+                className="w-full p-2 border rounded-md"
                 placeholder="Enter university email"
                 value={formData.email}
                 onChange={handleInputChange}
@@ -111,16 +120,13 @@ const AddUsersModal = ({ isOpen, onClose }) => {
 
             {/* First Name */}
             <div>
-              <label
-                htmlFor="firstName"
-                className="block mb-2 text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="firstName" className="block mb-2 text-sm font-medium text-gray-700">
                 First Name
               </label>
               <input
                 type="text"
                 id="firstName"
-                className="w-full p-2 border rounded-md focus:ring-teal-500 focus:border-teal-500"
+                className="w-full p-2 border rounded-md"
                 placeholder="Enter first name"
                 value={formData.firstName}
                 onChange={handleInputChange}
@@ -130,16 +136,13 @@ const AddUsersModal = ({ isOpen, onClose }) => {
 
             {/* Last Name */}
             <div>
-              <label
-                htmlFor="lastName"
-                className="block mb-2 text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="lastName" className="block mb-2 text-sm font-medium text-gray-700">
                 Last Name
               </label>
               <input
                 type="text"
                 id="lastName"
-                className="w-full p-2 border rounded-md focus:ring-teal-500 focus:border-teal-500"
+                className="w-full p-2 border rounded-md"
                 placeholder="Enter last name"
                 value={formData.lastName}
                 onChange={handleInputChange}
@@ -149,16 +152,13 @@ const AddUsersModal = ({ isOpen, onClose }) => {
 
             {/* Password */}
             <div>
-              <label
-                htmlFor="password"
-                className="block mb-2 text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">
                 Password
               </label>
               <input
                 type="password"
                 id="password"
-                className="w-full p-2 border rounded-md focus:ring-teal-500 focus:border-teal-500"
+                className="w-full p-2 border rounded-md"
                 placeholder="Enter password"
                 value={formData.password}
                 onChange={handleInputChange}
@@ -166,44 +166,58 @@ const AddUsersModal = ({ isOpen, onClose }) => {
               />
             </div>
 
-            {/* Interests */}
+            {/* Role */}
             <div>
-              <label
-                htmlFor="interests"
-                className="block mb-2 text-sm font-medium text-gray-700"
+              <label htmlFor="role" className="block mb-2 text-sm font-medium text-gray-700">
+                Role
+              </label>
+              <select
+                id="role"
+                className="w-full p-2 border rounded-md"
+                value={formData.role}
+                onChange={handleInputChange}
+                required
               >
+                <option value="" disabled>Select Role</option>
+                <option value="TEACHER">TEACHER</option>
+                <option value="ADMIN">ADMIN</option>
+              </select>
+            </div>
+
+            {/* Interests (Only for Teacher) */}
+            <div>
+              <label htmlFor="interests" className="block mb-2 text-sm font-medium text-gray-700">
                 Interests
               </label>
               <input
                 type="text"
                 id="interests"
-                className="w-full p-2 border rounded-md focus:ring-teal-500 focus:border-teal-500"
+                className="w-full p-2 border rounded-md"
                 placeholder="Enter interests"
                 value={formData.interests}
                 onChange={handleInputChange}
+                disabled={formData.role !== "TEACHER"}
               />
             </div>
 
-            {/* Role */}
+            {/* Department (Only for Teacher) */}
             <div>
-              <label
-                htmlFor="role"
-                className="block mb-2 text-sm font-medium text-gray-700"
-              >
-                Role
+              <label htmlFor="department" className="block mb-2 text-sm font-medium text-gray-700">
+                Department
               </label>
               <select
-                id="role"
-                className="w-full p-2 border rounded-md focus:ring-teal-500 focus:border-teal-500"
-                value={formData.role}
+                id="department"
+                className="w-full p-2 border rounded-md"
+                value={formData.department}
                 onChange={handleInputChange}
-                required
+                disabled={formData.role !== "TEACHER"}
               >
-                <option value="" disabled>
-                  Select Role
-                </option>
-                <option value="TEACHER">TEACHER</option>
-                <option value="ADMIN">ADMIN</option>
+                <option value="N/A" disabled>Select Department</option>
+                {departmentsList.map((dept, index) => (
+                  <option key={index} value={dept}>
+                    {dept}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -211,9 +225,7 @@ const AddUsersModal = ({ isOpen, onClose }) => {
           <button
             type="submit"
             className={`w-full p-2 text-white rounded-md ${
-              isLoading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-teal hover:bg-peach"
+              isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-teal hover:bg-teal-dark"
             }`}
             disabled={isLoading}
           >
