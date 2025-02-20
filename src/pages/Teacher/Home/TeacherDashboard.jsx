@@ -45,10 +45,12 @@ const TeacherDashboard = () => {
     
         setClasses(classesData || []);
       } catch (error) {
-        console.error(
-          "Error fetching dashboard data:",
-          error.response?.data || error.message
-        );
+        console.error("Error fetching dashboard data:", error.response?.data || error.message);
+    
+        // Ensure the error does not cause a bad user experience
+        if (error.response?.status === 500) {
+          setClasses([]); // Set empty classes to prevent further errors
+        }
       } finally {
         setLoading(false);
       }

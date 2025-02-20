@@ -1,0 +1,27 @@
+"Road Map of SPEAR"
+
+
+
+Users
+- So far done
+
+Classes
+- set many2many for the list of qualified advisers in the class - to test
+- if selected department, will display list of teachers - to test
+- has a button set to adviser -frontend padung pa
+- can set to withdraw -frontend padung pa
+- frontend change
+
+
+- beware of same classes (make a service of it) -done
+- add also max members in class settings - done
+
+Team
+- 
+
+
+
+
+
+
+--------Some Scraps--------

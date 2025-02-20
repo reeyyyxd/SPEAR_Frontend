@@ -13,7 +13,9 @@ const ClassSettings = () => {
     section: "",
     schoolYear: "",
     semester: "",
+    maxTeamSize: 5,
   });
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchClassData = async () => {
@@ -40,19 +42,64 @@ const ClassSettings = () => {
     const classId = getDecryptedId("cid");
     if (!classId) return console.error("Class ID is missing.");
 
+    // Validate section format
+    const sectionPattern = /^[a-zA-Z0-9-_]+$/;
+    if (!sectionPattern.test(classData.section)) {
+      setError("Invalid section format. Use only letters, numbers, '-' or '_'.");
+      return;
+    }
+
     try {
       await axios.put(`http://localhost:8080/teacher/updateClass/${classId}`, classData, {
         headers: { Authorization: `Bearer ${authState.token}`, "Content-Type": "application/json" },
       });
       alert("Class updated successfully!");
-      navigate(`/teacher/class/${classData.courseCode}`);
+      navigate(`/class-settings`);
     } catch (error) {
       console.error("Error updating class:", error);
       alert("Failed to update class. Please try again.");
     }
   };
 
-  const handleChange = (e) => setClassData({ ...classData, [e.target.id]: e.target.value });
+  const handleDeleteClass = async () => {
+    const classId = getDecryptedId("cid");
+    if (!classId) return console.error("Class ID is missing.");
+
+    const confirmDelete = window.confirm("Are you sure you want to delete this class? This action cannot be undone.");
+    if (!confirmDelete) return;
+
+    try {
+      const { data } = await axios.delete(`http://localhost:8080/teacher/deleteClass/${classId}`, {
+        headers: { Authorization: `Bearer ${authState.token}` },
+      });
+
+      if (data.statusCode === 200) {
+        alert("Class deleted successfully!");
+        navigate("/teacher-dashboard");
+      } else {
+        alert(data.message || "Failed to delete class.");
+      }
+    } catch (error) {
+      console.error("Error deleting class:", error);
+      alert("Failed to delete class. Please try again.");
+    }
+  };
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    
+    if (id === "section") {
+      // Validate section field in real-time
+      const sectionPattern = /^[a-zA-Z0-9-_]*$/;
+      if (!sectionPattern.test(value)) {
+        setError("Invalid section format. Use only letters, numbers, '-' or '_'.");
+      } else {
+        setError(null);
+      }
+    }
+
+    setClassData({ ...classData, [id]: value });
+  };
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
@@ -107,6 +154,7 @@ const ClassSettings = () => {
                 onChange={handleChange}
                 className="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal focus:border-teal"
               />
+              {error && <p className="text-red-500 text-sm">{error}</p>}
             </div>
 
             <div>
@@ -135,12 +183,35 @@ const ClassSettings = () => {
               />
             </div>
 
-            <div className="col-span-2">
+            {/* Max Team Size Field */}
+            <div>
+              <label htmlFor="maxTeamSize" className="block text-sm font-medium text-gray-700">
+                Max Team Size
+              </label>
+              <input
+                type="number"
+                id="maxTeamSize"
+                min="1"
+                max="20"
+                value={classData.maxTeamSize}
+                onChange={handleChange}
+                className="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal focus:border-teal"
+              />
+            </div>
+
+            <div className="col-span-2 flex justify-between">
               <button
                 type="submit"
                 className="bg-teal text-white px-6 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300"
               >
                 Update Class
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteClass}
+                className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-all duration-300"
+              >
+                Delete Class
               </button>
             </div>
           </form>

@@ -8,17 +8,24 @@ import axios from "axios";
 
 const semesterOptions = [
   { value: "1st Semester", label: "1st Semester" },
-  { value: "2nd Semeseter", label: "2nd Semester" },
+  { value: "2nd Semester", label: "2nd Semester" },
   { value: "Mid-Year", label: "Mid-Year" },
 ];
 
-const schoolYearOptions = [
-  { value: "2023-2024", label: "2023-2024" },
-  { value: "2024-2025", label: "2024-2025" },
-  { value: "2025-2026", label: "2025-2026" },
-  { value: "2026-2027", label: "2026-2027" },
-];
+const generateSchoolYears = () => {
+  const currentYear = new Date().getFullYear();
+  const years = [];
 
+  for (let i = 0; i < 5; i++) {
+    const startYear = currentYear + i;
+    const endYear = startYear + 1;
+    years.push({ value: `${startYear}-${endYear}`, label: `${startYear}-${endYear}` });
+  }
+
+  return years;
+};
+
+const schoolYearOptions = generateSchoolYears();
 
 const CreateClass = () => {
   const navigate = useNavigate();
@@ -35,47 +42,70 @@ const CreateClass = () => {
   const [schoolYear, setSchoolYear] = useState(null);
   const [semester, setSemester] = useState(null);
   const [courseDescription, setCourseDescription] = useState("");
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
-  const [feedback, setFeedback] = useState({ message: null, error: null });
+  const [invalidSection, setInvalidSection] = useState(false);
+
+  const handleSectionChange = (e) => {
+    const value = e.target.value;
+    const sectionPattern = /^[a-zA-Z0-9-_]*$/; // Allow letters, numbers, '-', '_'
+
+    setInvalidSection(!sectionPattern.test(value));
+    setSection(value);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!courseCode || !section || !schoolYear || !semester || !courseDescription) {
-      setFeedback({ error: "Please fill in all fields.", message: null });
+      alert("Please fill in all fields.");
       return;
     }
-  
-    const classData = {
-      courseCode,
-      section,
-      schoolYear: schoolYear.label,
-      semester: semester.label,
-      courseDescription,
-      createdBy: { uid: authState.uid },
-    };
-  
+
+    // Validate section format
+    const sectionPattern = /^[a-zA-Z0-9-_]+$/;
+    if (!sectionPattern.test(section)) {
+      alert("Invalid section format. Use only letters, numbers, '-' or '_'.");
+      return;
+    }
+
     try {
+      // Check for duplicate class
+      const checkResponse = await axios.get(
+        `http://localhost:8080/teacher/classes/check-duplicate?courseCode=${courseCode}&section=${section}&schoolYear=${schoolYear.label}`,
+        { headers: { Authorization: `Bearer ${authState.token}` } }
+      );
+
+      if (checkResponse.data.exists) {
+        alert("The class you entered already exists.");
+        return;
+      }
+
+      const classData = {
+        courseCode,
+        section,
+        schoolYear: schoolYear.label,
+        semester: semester.label,
+        courseDescription,
+        createdBy: { uid: authState.uid },
+      };
+
       const response = await axios.post(
         "http://localhost:8080/teacher/create-class",
         classData,
         { headers: { Authorization: `Bearer ${authState.token}` } }
       );
-  
-      setFeedback({ message: `Class created successfully! Class Key: ${response.data.classKey}`, error: null });
+
+      alert(`Class created successfully!\nClass Key: ${response.data.classKey}`);
       navigate("/teacher-dashboard");
     } catch (err) {
-      setFeedback({ error: err.response?.data?.message || "Failed to create class.", message: null });
+      alert(err.response?.data?.message || "Failed to create class.");
     }
   };
-  
+
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
-
-      <div className="flex justify-start mb-4">
+        <div className="flex justify-start mb-4">
           <button
             className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-all duration-300"
             onClick={() => navigate(-1)}
@@ -85,20 +115,14 @@ const CreateClass = () => {
         </div>
         <div className="header flex justify-between items-center mb-6">
           <h1 className="text-lg font-semibold flex justify-center items-center h-full">Create Class</h1>
-
           <Header />
         </div>
-
-        
 
         {/* Form */}
         <form className="grid grid-cols-2 gap-8" onSubmit={handleSubmit}>
           {/* Course Code */}
           <div>
-            <label
-              htmlFor="courseCode"
-              className="block text-sm font-medium mb-1"
-            >
+            <label htmlFor="courseCode" className="block text-sm font-medium mb-1">
               Course Code
             </label>
             <input
@@ -119,18 +143,19 @@ const CreateClass = () => {
             <input
               type="text"
               id="section"
-              className="w-full border border-gray-300 rounded-md p-2"
+              className={`w-full border rounded-md p-2 ${invalidSection ? "border-red-500" : "border-gray-300"}`}
               placeholder="Enter section"
               value={section}
-              onChange={(e) => setSection(e.target.value)}
+              onChange={handleSectionChange}
             />
+            <p className={`text-xs mt-1 ${invalidSection ? "text-red-500" : "text-gray-500"}`}>
+              To add multiple sections, please use "-" and "_" as indicators
+            </p>
           </div>
 
           {/* School Year */}
           <div>
-            <label className="block text-sm font-medium mb-1">
-              School Year
-            </label>
+            <label className="block text-sm font-medium mb-1">School Year</label>
             <Select
               options={schoolYearOptions}
               value={schoolYear}
@@ -154,17 +179,14 @@ const CreateClass = () => {
 
           {/* Course Description */}
           <div className="col-span-2">
-            <label
-              htmlFor="projectOverview"
-              className="block text-sm font-medium mb-1"
-            >
+            <label htmlFor="courseDescription" className="block text-sm font-medium mb-1">
               Course Description
             </label>
             <textarea
-              id="projectOverview"
+              id="courseDescription"
               rows="4"
               className="w-full border border-gray-300 rounded-md p-2"
-              placeholder="Provide an overview of the project"
+              placeholder="Provide an overview of the course"
               value={courseDescription}
               onChange={(e) => setCourseDescription(e.target.value)}
             />
@@ -172,18 +194,11 @@ const CreateClass = () => {
 
           {/* Submit Button */}
           <div className="col-span-2 flex justify-end mt-4">
-            <button
-              type="submit"
-              className="bg-teal text-white px-6 py-3 rounded-md"
-            >
+            <button type="submit" className="bg-teal text-white px-6 py-3 rounded-md">
               Create Class
             </button>
           </div>
         </form>
-
-        {/* Feedback Messages */}
-        {message && <div className="mt-2 text-green-500">{message}</div>}
-        {error && <div className="mt-2 text-red-500">{error}</div>}
       </div>
     </div>
   );
