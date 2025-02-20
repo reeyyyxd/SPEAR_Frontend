@@ -1,0 +1,6 @@
+cid,class_key,course_code,course_description,created_date,is_deleted,max_members,school_year,section,semester,created_by
+1,EWwKBM,CSIT321,"Applications Development and Emerging Technologies",2025-02-21,0,5,2025-2026,G1,"1st Semester",2
+2,wa4guC,CSIT321,"Applications Development and Emerging Technologies",2025-02-21,0,5,2025-2026,G2,"1st Semester",2
+3,bIL6zz,CSIT321,"Applications Development and Emerging Technologies",2025-02-21,1,5,2025-2026,G3_G4_G5,"1st Semester",2
+4,MKgLWU,IT332,"Capstone and Research 1",2025-02-21,0,5,2025-2026,G1-G2-G3-G4,"2nd Semester",4
+5,XhxxnM,IT411,"Capstone and Research 2",2025-02-21,0,5,2025-2026,G01,"2nd Semester",4
