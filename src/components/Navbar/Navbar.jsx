@@ -7,6 +7,8 @@ import settingsIcon from "../../assets/icons/settings-icon.svg";
 import logOutIcon from "../../assets/icons/log-out-icon.svg";
 import userIcon from "../../assets/icons/user-icon.svg";
 import notebook from "../../assets/icons/notebook.svg";
+import trashcanIcon from "../../assets/icons/trash-bin.png";
+import schedule from "../../assets/icons/schedule.png";
 
 const Navbar = ({ userRole }) => {
   const location = useLocation();
@@ -22,15 +24,18 @@ const Navbar = ({ userRole }) => {
       // { label: "Projects", path: "/approved-projects", icon: notebook },
       { label: "My Evaluations", path: "/manage-teams", icon: teamIcon },
       { label: "Settings", path: "/student-settings", icon: settingsIcon },
+      
     ],
     TEACHER: [
       { label: "Dashboard", path: "/teacher-dashboard", icon: dashboardIcon },
+      { label: "My Schedules", path: "/teacher-schedules", icon: schedule },
       { label: "Settings", path: "/teacher-settings", icon: settingsIcon },
     ],
     ADMIN: [
       { label: "Dashboard", path: "/admin-dashboard", icon: dashboardIcon },
       { label: "Manage Users", path: "/manage-users", icon: userIcon },
-      { label: "Settings", path: "/admin-settings", icon: userIcon },
+      { label: "Settings", path: "/admin-settings", icon: settingsIcon },
+      { label: "Recycle Bin", path: "/admin-recycle-bin", icon: trashcanIcon },
     ],
   };
 

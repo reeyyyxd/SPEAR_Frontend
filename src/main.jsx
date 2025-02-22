@@ -37,6 +37,8 @@ import StudentProposals from "./pages/Student/StudentProposals";
 import ManageTeams from "./pages/Student/TeamFormation/ManageTeams";
 import TeamApplication from "./pages/Student/TeamFormation/TeamApplication";
 import ManageTeamsPage from "./pages/Student/TeamFormation/ManageTeamsPage";
+import AdminRecycleBin from "./pages/Common/AdminRecycleBin"
+import TeacherSchecules from "./pages/Teacher/Home/TeacherSchedules";
 
 const router = createBrowserRouter([
   {
@@ -165,6 +167,14 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/teacher-schedules",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <TeacherSchecules />
+      </PrivateRoute>
+    ),
+  },
+  {
     path: "/teacher/create-class",
     element: (
       <PrivateRoute requiredRoles={["TEACHER"]}>
@@ -251,6 +261,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["ADMIN"]}>
         <ManageUsers />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/admin-recycle-bin",
+    element: (
+      <PrivateRoute requiredRoles={["ADMIN"]}>
+        <AdminRecycleBin />
       </PrivateRoute>
     ),
   },

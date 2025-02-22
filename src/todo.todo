@@ -10,18 +10,25 @@ Classes
 - if selected department, will display list of teachers - to test
 - has a button set to adviser -frontend padung pa
 - can set to withdraw -frontend padung pa
+- can set schedules for adviser to team
 - frontend change
 
 
 - beware of same classes (make a service of it) -done
 - add also max members in class settings - done
 
+Schedule***
+- fix the frontend, might add some backend later on (OR AM I?)
 Team
-- 
+-
 
 
 
 
 
+Role: Admin
+- Add recycle bin for the isDeleted =true
+- have the generated report for adviser = student, student = adviser (some are not)
+- make a permanent delete and restore(put function)
 
 --------Some Scraps--------
