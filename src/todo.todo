@@ -32,3 +32,5 @@ Role: Admin
 - make a permanent delete and restore(put function)
 
 --------Some Scraps--------
+- Schedule(modal to add) edit and delete are not functional, double check also the class inside the modal.
+- delete the admin (fucked it up)
