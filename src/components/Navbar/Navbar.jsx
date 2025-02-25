@@ -6,7 +6,6 @@ import teamIcon from "../../assets/icons/teams-icon.svg";
 import settingsIcon from "../../assets/icons/settings-icon.svg";
 import logOutIcon from "../../assets/icons/log-out-icon.svg";
 import userIcon from "../../assets/icons/user-icon.svg";
-import notebook from "../../assets/icons/notebook.svg";
 import trashcanIcon from "../../assets/icons/trash-bin.png";
 import schedule from "../../assets/icons/schedule.png";
 
@@ -21,7 +20,6 @@ const Navbar = ({ userRole }) => {
   const navItemsByRole = {
     STUDENT: [
       { label: "My Classes", path: "/student-dashboard", icon: dashboardIcon },
-      // { label: "Projects", path: "/approved-projects", icon: notebook },
       { label: "My Evaluations", path: "/manage-teams", icon: teamIcon },
       { label: "Settings", path: "/student-settings", icon: settingsIcon },
       

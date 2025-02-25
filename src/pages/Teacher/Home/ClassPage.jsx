@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
+import AdviserCandidateModal from "../../../components/Modals/AdviserCandidateModal";
 import axios from "axios";
 
 const ClassPage = () => {
@@ -13,6 +14,7 @@ const ClassPage = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAdviserModalOpen, setIsAdviserModalOpen] = useState(false);
 
   useEffect(() => {
     if (!authState.isAuthenticated) {
@@ -35,7 +37,7 @@ const ClassPage = () => {
           axios.get(`http://localhost:8080/class/${data.classes.classKey}/students`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
-        setTotalUsers(totalUsersData?.[0]?.[1] || 0);
+        setTotalUsers(totalUsersData || 0);
         setStudents(studentsData || []);
       } catch (error) {
         console.error("Error fetching class data:", error);
@@ -95,6 +97,20 @@ const ClassPage = () => {
             {classDetails.courseCode} - {classDetails.courseDescription} - {classDetails.section}
           </h1>
           <div className="flex space-x-4">
+          <button
+              className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
+              onClick={() => setIsAdviserModalOpen(true)}
+            >
+              View Candidate Advisers
+            </button>
+
+            {/* Show Modal when triggered */}
+            {isAdviserModalOpen && classDetails?.cid && (
+              <AdviserCandidateModal
+                onClose={() => setIsAdviserModalOpen(false)}
+                classId={classDetails.cid} // Passing classId
+              />
+            )}
             <button
               className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
               onClick={() => navigate(`/teacher/project-proposals`)}
@@ -136,6 +152,11 @@ const ClassPage = () => {
               </p>
             </div>
           </div>
+        {isAdviserModalOpen && (
+          <AdviserCandidateModal
+            onClose={() => setIsAdviserModalOpen(false)}
+          />
+        )}
         
 
         {/* Students Table */}

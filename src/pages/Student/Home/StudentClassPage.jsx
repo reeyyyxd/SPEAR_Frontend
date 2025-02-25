@@ -2,7 +2,6 @@ import React, { useEffect, useState, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
-import Guidelines from "../../../components/Statics/Guidelines";
 import MembersTable from "../../../components/Tables/MembersTable";
 import axios from "axios";
 
@@ -66,39 +65,6 @@ const StudentClassPage = () => {
             {classDetails.section}
           </h1>
         </div>
-
-        {/* <Guidelines /> */}
-
-        {/* Action Buttons */}
-        <div className="actions text-end mt-8">
-          <Link
-            to={`/team-formation/apply-to-teams`}
-            className="w-1/6 h-1/4 ml-4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach mx-2"
-          >
-            Apply Teams
-          </Link>
-          <Link
-            to="/team-formation/project-proposal"
-            className="w-1/6 h-1/4 bg-teal mx-4 text-white rounded-lg p-4 text-sm text-center hover:bg-peach"
-          >
-            Propose Project
-          </Link>
-          <Link
-            to={`/class/${courseCode}/evaluate-peers`}
-            className="w-1/6 h-1/4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach"
-          >
-            Evaluate Peers
-          </Link>
-
-          <Link
-            to={`/team-formation/apply-to-teams`}
-            className="w-1/6 h-1/4 ml-4 bg-teal text-white rounded-lg p-4 text-sm text-center hover:bg-peach mx-2"
-          >
-            Apply Teams
-          </Link>
-        </div>
-
-        {/* Members Table */}
         <MembersTable />
       </div>
     </div>
