@@ -3,7 +3,7 @@ import notifBell from "../../assets/icons/notification-icon.svg";
 import userProfile from "../../assets/imgs/osaka.jpg";
 import notificationContent from "../../statics/notification-content";
 import NotificationModal from "../Modals/NotificationModal";
-
+//might not be useful in the long run.... :(
 const Header = () => {
   const [isModalOpen, setModalOpen] = useState(false); // State to control modal visibility
 
@@ -23,11 +23,11 @@ const Header = () => {
         className="w-8 h-8 cursor-pointer"
         onClick={handleBellClick} // Open modal on click
       /> */}
-      <img
+      {/* <img
         src={userProfile}
         alt="user-profile"
         className="w-8 h-8 rounded-full"
-      />
+      /> */}
 
       {/* Notification Modal */}
       {/* <NotificationModal

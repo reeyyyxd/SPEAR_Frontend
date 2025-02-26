@@ -19,14 +19,10 @@ import PrivateRoute from "./services/PrivateRoute";
 import NotAuthorized from "./pages/Common/UnAuthorizedPage";
 import ManageUsers from "./components/UserManagment/ManageUsers";
 import ClassPage from "./pages/Teacher/Home/ClassPage";
-import TeamFormation from "./pages/Student/TeamFormation/TeamFormation";
 import StudentClassPage from "./pages/Student/Home/StudentClassPage";
-import ProjectProposalPage from "./pages/Student/TeamFormation/ProjectProposalPage";
-import ApplyTeamsPage from "./pages/Student/TeamFormation/ApplyTeamsPage";
 import TeacherTeams from "./pages/Teacher/Teams/TeacherTeams";
 import TeamDetails from "./pages/Teacher/Teams/TeamDetails";
 import TeacherEvaluations from "./pages/Teacher/Evaluation/TeacherEvaluations";
-import EvaluationPage from "./pages/Student/Home/EvaluationPage";
 import ErrorPage from "./pages/Common/ErrorPage";
 import TeacherQuestions from "./pages/Teacher/Evaluation/TeacherQuestions";
 import ClassSettings from "./pages/Teacher/Home/ClassSettings";
@@ -34,9 +30,6 @@ import TeacherSettings from "./pages/Common/TeacherSettings";
 import AdminSettings from "./pages/Common/AdminSettings";
 import StudentSettings from "./pages/Common/StudentSettings";
 import StudentProposals from "./pages/Student/StudentProposals";
-import ManageTeams from "./pages/Student/TeamFormation/ManageTeams";
-import TeamApplication from "./pages/Student/TeamFormation/TeamApplication";
-import ManageTeamsPage from "./pages/Student/TeamFormation/ManageTeamsPage";
 import AdminRecycleBin from "./pages/Common/AdminRecycleBin"
 import TeacherSchecules from "./pages/Teacher/Home/TeacherSchedules";
 
@@ -58,62 +51,6 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["STUDENT"]}>
         <StudentDashboard />
-      </PrivateRoute>
-    ),
-  },
-  {
-    path: "/class/:courseCode/evaluate-peers",
-    element: (
-      <PrivateRoute requiredRoles={["STUDENT"]}>
-        <EvaluationPage />
-      </PrivateRoute>
-    ),
-  },
-  {
-    path: "/manage-teams/:tid",
-    element: (
-      <PrivateRoute requiredRoles={["STUDENT"]}>
-        <ManageTeamsPage />
-      </PrivateRoute>
-    ),
-  },
-  {
-    path: "/team-formation/apply-team/:teamId/:pid",
-    element: (
-      <PrivateRoute requiredRoles={["STUDENT"]}>
-        <TeamFormation />
-      </PrivateRoute>
-    ),
-  },
-  {
-    path: "/team-formation/apply-team/:teamId/TeamApplication",
-    element: (
-      <PrivateRoute requiredRoles={["STUDENT"]}>
-        <TeamApplication />
-      </PrivateRoute>
-    ),
-  },
-  {
-    path: "/manage-teams",
-    element: (
-      <PrivateRoute requiredRoles={["STUDENT"]}>
-        <ManageTeams />
-      </PrivateRoute>
-    ),
-  },
-  {
-    path: "/team-formation/project-proposal",
-    element: (
-      <PrivateRoute requiredRoles={["STUDENT"]}>
-        <ProjectProposalPage />
-      </PrivateRoute>
-    ),
-  },
-  {
-    path: "/team-formation/apply-to-teams",
-    element: (
-      <PrivateRoute requiredRoles={["STUDENT"]}>
-        <ApplyTeamsPage />
       </PrivateRoute>
     ),
   },
