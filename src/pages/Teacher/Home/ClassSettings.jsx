@@ -17,13 +17,22 @@ const ClassSettings = () => {
   });
   const [error, setError] = useState(null);
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
+
   useEffect(() => {
     const fetchClassData = async () => {
       const classId = getDecryptedId("cid");
       if (!classId) return console.error("Class ID is missing.");
 
       try {
-        const { data } = await axios.get(`http://localhost:8080/class/${classId}`, {
+        const { data } = await axios.get(`http://${address}:8080/class/${classId}`, {
           headers: { Authorization: `Bearer ${authState.token}` },
         });
         setClassData(data);
@@ -50,7 +59,7 @@ const ClassSettings = () => {
     }
 
     try {
-      await axios.put(`http://localhost:8080/teacher/updateClass/${classId}`, classData, {
+      await axios.put(`http://${address}:8080/teacher/updateClass/${classId}`, classData, {
         headers: { Authorization: `Bearer ${authState.token}`, "Content-Type": "application/json" },
       });
       alert("Class updated successfully!");
@@ -69,7 +78,7 @@ const ClassSettings = () => {
     if (!confirmDelete) return;
 
     try {
-      const { data } = await axios.delete(`http://localhost:8080/teacher/deleteClass/${classId}`, {
+      const { data } = await axios.delete(`http://${address}:8080/teacher/deleteClass/${classId}`, {
         headers: { Authorization: `Bearer ${authState.token}` },
       });
 

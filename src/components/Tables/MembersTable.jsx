@@ -15,6 +15,15 @@ const MembersTable = () => {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [applyTeamId, setApplyTeamId] = useState(null);
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
+
   // Retrieve classId securely
   const classId = getDecryptedId("cid");
 
@@ -38,7 +47,7 @@ const MembersTable = () => {
         console.log(`Fetching teams with classId: ${classId} and uid: ${authState.uid}`);
 
         const response = await axios.get(
-          `http://localhost:8080/team/my/${classId}/${authState.uid}`,
+          `http://${address}:8080/team/my/${classId}/${authState.uid}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

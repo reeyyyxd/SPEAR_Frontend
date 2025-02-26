@@ -11,9 +11,17 @@ const TeacherTeams = () => {
   const [leaders, setLeaders] = useState({});
   const navigate = useNavigate();
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   const fetchLeaderName = async (leaderId) => {
     try {
-      const response = await axios.get(`http://localhost:8080/teams/leader/${leaderId}`, {
+      const response = await axios.get(`http://${address}:8080/teams/leader/${leaderId}`, {
         headers: { Authorization: `Bearer ${authState.token}` },
       });
       return response.data.leaderName || "N/A";
@@ -33,7 +41,7 @@ const TeacherTeams = () => {
       }
 
       try {
-        const response = await axios.get(`http://localhost:8080/teams/class/${classId}`, {
+        const response = await axios.get(`http://${address}:8080/teams/class/${classId}`, {
           headers: { Authorization: `Bearer ${authState.token}` },
         });
 

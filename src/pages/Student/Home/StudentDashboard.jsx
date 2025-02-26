@@ -18,6 +18,16 @@ const StudentDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [classesPerPage] = useState(6);
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
+
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
@@ -26,7 +36,7 @@ const StudentDashboard = () => {
 
         // Fetch enrolled classes
         const classesResponse = await axios.get(
-          `http://localhost:8080/student/${authState.uid}/enrolled-classes`,
+          `http://${address}:8080/student/${authState.uid}/enrolled-classes`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -36,7 +46,7 @@ const StudentDashboard = () => {
 
         // Fetch student's name
         const profileResponse = await axios.get(
-          `http://localhost:8080/user/profile/${authState.uid}`,
+          `http://${address}:8080/user/profile/${authState.uid}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -144,7 +154,7 @@ const StudentDashboard = () => {
         onEnroll={async (classKey) => {
           const token = localStorage.getItem("token");
           try {
-            const response = await fetch("http://localhost:8080/student/enroll", {
+            const response = await fetch(`http://${address}:8080/student/enroll`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -159,7 +169,7 @@ const StudentDashboard = () => {
 
               // Fetch updated enrolled classes
               const updatedClassesResponse = await fetch(
-                `http://localhost:8080/student/${authState.uid}/enrolled-classes`,
+                `http://${address}:8080/student/${authState.uid}/enrolled-classes`,
                 {
                   headers: { Authorization: `Bearer ${token}` },
                 }

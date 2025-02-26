@@ -13,12 +13,20 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
   
     try {
-      const response = await axios.post("http://localhost:8080/login", { email, password });
+      const response = await axios.post(`http://${address}:8080/login`, { email, password });
       const data = response.data;
   
       if (!data || !data.token || !data.role) {

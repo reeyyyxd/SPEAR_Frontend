@@ -23,6 +23,14 @@ const AdviserCandidateModal = ({ onClose, classId }) => {
     "None"
   ];
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   useEffect(() => {
     if (selectedDepartment) {
       fetchAdvisers(selectedDepartment);
@@ -38,7 +46,7 @@ const AdviserCandidateModal = ({ onClose, classId }) => {
 
     try {
       const response = await axios.get(
-        `http://localhost:8080/teacher/see-teachers/${encodeURIComponent(department)}`,
+        `http://${address}:8080/teacher/see-teachers/${encodeURIComponent(department)}`,
         {
           headers: { Authorization: `Bearer ${authState.token}` },
         }

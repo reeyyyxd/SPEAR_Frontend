@@ -11,6 +11,16 @@ const PasswordModal = ({ userId, token, onClose, correctCurrentPassword }) => {
     newPassword: "",
     confirmNewPassword: "",
   });
+
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
+
   const [showPassword, setShowPassword] = useState({
     currentPassword: false,
     newPassword: false,
@@ -48,7 +58,7 @@ const PasswordModal = ({ userId, token, onClose, correctCurrentPassword }) => {
   
     try {
       const response = await axios.put(
-        `http://localhost:8080/user/update-password/${userId}`,
+        `http://${address}:8080/user/update-password/${userId}`,
         {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
@@ -137,6 +147,13 @@ const departmentsList = [
   "College of Criminal Justice",
 ];
 
+const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
 const Settings = () => {
   const { authState } = useContext(AuthContext);
   const [userData, setUserData] = useState({
@@ -161,7 +178,7 @@ const Settings = () => {
   const fetchUserData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/get-teacher/${authState.uid}`,
+        `http://${address}:8080/get-teacher/${authState.uid}`,
         {
           headers: {
             Authorization: `Bearer ${authState.token}`,
@@ -198,7 +215,7 @@ const Settings = () => {
       //console.log("Sending update request:", updatedUserData);
   
       const response = await axios.put(
-        `http://localhost:8080/teacher/update/${authState.uid}`,
+        `http://${address}:8080/teacher/update/${authState.uid}`,
         updatedUserData,
         {
           headers: {

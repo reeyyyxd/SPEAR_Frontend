@@ -11,6 +11,16 @@ const PasswordModal = ({ userId, token, onClose }) => {
     newPassword: "",
     confirmNewPassword: "",
   });
+
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
+
   const [showPassword, setShowPassword] = useState({
     currentPassword: false,
     newPassword: false,
@@ -49,7 +59,7 @@ const PasswordModal = ({ userId, token, onClose }) => {
 
     try {
       const response = await axios.put(
-        `http://localhost:8080/user/update-password/${userId}`,
+        `http://${address}:8080/user/update-password/${userId}`,
         {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
@@ -139,8 +149,20 @@ const StudentSettings = () => {
     firstname: "",
     lastname: "",
   });
+
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
+  
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  
 
   useEffect(() => {
     if (!authState || !authState.uid) {
@@ -153,7 +175,7 @@ const StudentSettings = () => {
   const fetchStudentData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/get-student/${authState.uid}`,
+        `http://${address}:8080/get-student/${authState.uid}`,
         {
           headers: {
             Authorization: `Bearer ${authState.token}`,
@@ -180,7 +202,7 @@ const StudentSettings = () => {
   const handleSaveChanges = async () => {
     try {
       const response = await axios.put(
-        `http://localhost:8080/student/update/${authState.uid}`,
+        `http://${address}:8080/student/update/${authState.uid}`,
         userData,
         {
           headers: {

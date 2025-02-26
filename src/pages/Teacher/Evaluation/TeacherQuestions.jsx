@@ -13,10 +13,19 @@ const TeacherQuestions = () => {
   const [editQuestion, setEditQuestion] = useState(null);
   const navigate = useNavigate();
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
+
   const fetchQuestions = async () => {
     try {
       const evaluationId = getDecryptedId("eid");
-      const response = await axios.get(`http://localhost:8080/get-questions-by-evaluation/${evaluationId}`);
+      const response = await axios.get(`http://${address}:8080/get-questions-by-evaluation/${evaluationId}`);
       setQuestions(response.data);
     } catch (error) {
       console.error("Error fetching questions:", error);
@@ -29,7 +38,7 @@ const TeacherQuestions = () => {
       const classId = getDecryptedId("cid");
       const evaluationId = getDecryptedId("eid");
       const response = await axios.post(
-        `http://localhost:8080/teacher/create-question/${classId}/${evaluationId}`,
+        `http://${address}:8080/teacher/create-question/${classId}/${evaluationId}`,
         { questionText: newQuestion }
       );
       alert("Question created successfully!");
@@ -54,7 +63,7 @@ const TeacherQuestions = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:8080/teacher/update-question/${qid}`,
+        `http://${address}:8080/teacher/update-question/${qid}`,
         { questionText: editQuestion.questionText }
       );
 
@@ -77,7 +86,7 @@ const TeacherQuestions = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:8080/teacher/delete-question/${questionId}`);
+      await axios.delete(`http://${address}:8080/teacher/delete-question/${questionId}`);
       setQuestions((prev) => prev.filter((q) => q.questionId !== questionId));
       alert("Delete success!");
       window.location.reload();

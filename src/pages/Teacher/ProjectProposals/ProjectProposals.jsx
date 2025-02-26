@@ -15,6 +15,14 @@ const ProjectProposals = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [selectedProposalId, setSelectedProposalId] = useState(null);
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   useEffect(() => {
     if (!authState.isAuthenticated) {
       navigate("/login");
@@ -32,7 +40,7 @@ const ProjectProposals = () => {
     const fetchProposals = async () => {
       try {
         const { data } = await axios.get(
-          `http://localhost:8080/proposals/class/with-features/${cid}`,
+          `http://${address}:8080/proposals/class/with-features/${cid}`,
           { headers: { Authorization: `Bearer ${authState.token}` } }
         );
         setProposals(data || []);
@@ -51,7 +59,7 @@ const ProjectProposals = () => {
           proposals.map(async (proposal) => {
             if (proposal.adviserId) {
               const { data } = await axios.get(
-                `http://localhost:8080/proposals/${proposal.pid}/adviser`,
+                `http://${address}:8080/proposals/${proposal.pid}/adviser`,
                 { headers: { Authorization: `Bearer ${authState.token}` } }
               );
               adviserMap[proposal.pid] = data.adviserFullName || "N/A";
@@ -70,7 +78,7 @@ const ProjectProposals = () => {
   const handleApprove = async (proposalId) => {
     try {
       await axios.put(
-        `http://localhost:8080/teacher/status-proposal/${proposalId}`,
+        `http://${address}:8080/teacher/status-proposal/${proposalId}`,
         { status: "APPROVED", reason: null },
         { headers: { Authorization: `Bearer ${authState.token}` } }
       );
@@ -88,7 +96,7 @@ const ProjectProposals = () => {
   const handleReject = async () => {
     try {
       await axios.put(
-        `http://localhost:8080/teacher/status-proposal/${selectedProposalId}`,
+        `http://${address}:8080/teacher/status-proposal/${selectedProposalId}`,
         { status: "DENIED", reason: rejectReason },
         { headers: { Authorization: `Bearer ${authState.token}` } }
       );

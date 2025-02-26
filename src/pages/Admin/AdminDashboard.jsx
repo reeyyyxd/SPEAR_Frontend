@@ -10,13 +10,21 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null); 
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   // Fetch proposals by status
   const fetchProposals = async (selectedStatus) => {
     setIsLoading(true);
     setError(null);
   
     try {
-      const response = await axios.get(`http://localhost:8080/proposals/status/${selectedStatus}`, {
+      const response = await axios.get(`http://${address}:8080/proposals/status/${selectedStatus}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,

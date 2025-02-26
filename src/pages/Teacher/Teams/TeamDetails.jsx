@@ -11,6 +11,14 @@ const TeamDetails = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   useEffect(() => {
     const fetchTeamDetails = async () => {
       const teamId = getDecryptedId("tid");
@@ -22,13 +30,13 @@ const TeamDetails = () => {
 
       try {
         // Fetch team details including leader, features, and project description
-        const { data } = await axios.get(`http://localhost:8080/teams/${teamId}`, {
+        const { data } = await axios.get(`http://${address}:8080/teams/${teamId}`, {
           headers: { Authorization: `Bearer ${authState.token}` },
         });
 
         // Fetch leader's name
         const leaderResponse = await axios.get(
-          `http://localhost:8080/teams/leader/${data.leaderId}`,
+          `http://${address}:8080/teams/leader/${data.leaderId}`,
           { headers: { Authorization: `Bearer ${authState.token}` } }
         );
 
@@ -37,7 +45,7 @@ const TeamDetails = () => {
 
         // Fetch team members
         const membersResponse = await axios.get(
-          `http://localhost:8080/teams/${teamId}/members`,
+          `http://${address}:8080/teams/${teamId}/members`,
           { headers: { Authorization: `Bearer ${authState.token}` } }
         );
 

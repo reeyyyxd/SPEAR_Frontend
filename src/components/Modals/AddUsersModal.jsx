@@ -11,6 +11,16 @@ const departmentsList = [
   "College of Criminal Justice",
 ];
 
+const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
+
+
 const AddUsersModal = ({ isOpen, onClose }) => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,7 +63,7 @@ const AddUsersModal = ({ isOpen, onClose }) => {
     };
 
     try {
-      const response = await axios.post("http://localhost:8080/register", userData, {
+      const response = await axios.post(`http://${address}:8080/register`, userData, {
         headers: { "Content-Type": "application/json" },
       });
 

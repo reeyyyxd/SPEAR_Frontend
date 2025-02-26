@@ -16,6 +16,14 @@ const TeacherDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const classesPerPage = 6;
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   useEffect(() => {
     if (!authState.isAuthenticated) {
       navigate("/login");
@@ -29,7 +37,7 @@ const TeacherDashboard = () => {
     
         // Fetch teacher profile
         const { data: userProfile } = await axios.get(
-          `http://localhost:8080/user/profile/${authState.uid}`,
+          `http://${address}:8080/user/profile/${authState.uid}`,
           { headers }
         );
     
@@ -39,7 +47,7 @@ const TeacherDashboard = () => {
     
         // Fetch classes created by the teacher
         const { data: classesData } = await axios.get(
-          `http://localhost:8080/teacher/classes-created/${authState.uid}`,
+          `http://${address}:8080/teacher/classes-created/${authState.uid}`,
           { headers }
         );
     

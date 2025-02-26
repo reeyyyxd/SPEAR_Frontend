@@ -12,6 +12,14 @@ const semesterOptions = [
   { value: "Mid-Year", label: "Mid-Year" },
 ];
 
+const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
 const generateSchoolYears = () => {
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -70,7 +78,7 @@ const CreateClass = () => {
     try {
       // Check for duplicate class
       const checkResponse = await axios.get(
-        `http://localhost:8080/teacher/classes/check-duplicate?courseCode=${courseCode}&section=${section}&schoolYear=${schoolYear.label}`,
+        `http://${address}:8080/teacher/classes/check-duplicate?courseCode=${courseCode}&section=${section}&schoolYear=${schoolYear.label}`,
         { headers: { Authorization: `Bearer ${authState.token}` } }
       );
 
@@ -89,7 +97,7 @@ const CreateClass = () => {
       };
 
       const response = await axios.post(
-        "http://localhost:8080/teacher/create-class",
+        `http://${address}:8080/teacher/create-class`,
         classData,
         { headers: { Authorization: `Bearer ${authState.token}` } }
       );

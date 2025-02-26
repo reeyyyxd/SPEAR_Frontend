@@ -18,6 +18,15 @@ const TeacherEvaluations = () => {
     period: "",
   });
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
+
   // On component mount, fetch evaluations
   useEffect(() => {
     fetchEvaluations();
@@ -41,7 +50,7 @@ const TeacherEvaluations = () => {
 const fetchEvaluations = async () => {
   try {
     const classId = getDecryptedId("cid");
-    const response = await axios.get(`http://localhost:8080/teacher/class/${classId}/evaluations`);
+    const response = await axios.get(`http://${address}:8080/teacher/class/${classId}/evaluations`);
     const sanitizedData = response.data.map((evaluation) => ({
       ...evaluation,
       dateOpen: evaluation.dateOpen || "",
@@ -59,7 +68,7 @@ const handleCreateEvaluation = async () => {
 
   try {
     const classId = getDecryptedId("cid");
-    const url = `http://localhost:8080/teacher/create-evaluation/${classId}`;
+    const url = `http://${address}:8080/teacher/create-evaluation/${classId}`;
 
     const body = cleanEvaluationData(newEvaluation);
 
@@ -121,7 +130,7 @@ const handleDeleteEvaluation = async (eid) => {
 
   if (window.confirm("Are you sure you want to delete this evaluation?")) {
     try {
-      await axios.delete(`http://localhost:8080/teacher/delete-evaluation/${eid}`);
+      await axios.delete(`http://${address}:8080/teacher/delete-evaluation/${eid}`);
       alert("Evaluation deleted successfully!");
       fetchEvaluations();
     } catch (error) {
@@ -139,7 +148,7 @@ const handleEditEvaluation = async () => {
   }
   try {
     const response = await axios.put(
-      `http://localhost:8080/teacher/update-evaluation/${eid}`,
+      `http://${address}:8080/teacher/update-evaluation/${eid}`,
       newEvaluation
     );  
     alert("Evaluation updated successfully!");
@@ -191,10 +200,10 @@ const handleEditEvaluation = async () => {
     }
     try {
       const [details, submissions, results, responses] = await Promise.all([
-        axios.get(`http://localhost:8080/evaluation/${eid}/details`),
-        axios.get(`http://localhost:8080/submissions/by-evaluation/${eid}`),
-        axios.get(`http://localhost:8080/teacher/by-evaluation/${eid}`),
-        axios.get(`http://localhost:8080/responses/get-evaluation/${eid}`),
+        axios.get(`http://${address}:8080/evaluation/${eid}/details`),
+        axios.get(`http://${address}:8080/submissions/by-evaluation/${eid}`),
+        axios.get(`http://${address}:8080/teacher/by-evaluation/${eid}`),
+        axios.get(`http://${address}:8080/responses/get-evaluation/${eid}`),
       ]);
   
       const exportData = {

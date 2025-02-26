@@ -12,6 +12,14 @@ const UpdateUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
     role: user?.role || "",
   });
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -21,7 +29,7 @@ const UpdateUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
     e.preventDefault();
     try {
       const response = await axios.put(
-        `http://localhost:8080/admin/update/${user.uid}`,
+        `http://${address}:8080/admin/update/${user.uid}`,
         formData,
         {
           headers: {

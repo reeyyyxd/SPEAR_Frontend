@@ -18,6 +18,15 @@ const TeacherSchedules = () => {
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [scheduleToDelete, setScheduleToDelete] = useState(null);
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
+
   useEffect(() => {
     if (authState?.isAuthenticated) {
       fetchSchedules();
@@ -35,7 +44,7 @@ const TeacherSchedules = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:8080/teacher/get-my-schedule/${authState.uid}`,
+        `http://${address}:8080/teacher/get-my-schedule/${authState.uid}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -68,7 +77,7 @@ const TeacherSchedules = () => {
     if (!scheduleToDelete) return;
 
     try {
-      await axios.delete(`http://localhost:8080/teacher/delete-schedule/${scheduleToDelete}`, {
+      await axios.delete(`http://${address}:8080/teacher/delete-schedule/${scheduleToDelete}`, {
         headers: {
           Authorization: `Bearer ${authState.token}`,
         },

@@ -15,6 +15,14 @@ const TeacherEditSchedule = ({ schedule, closeModal, fetchSchedules }) => {
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   // Fetch qualified classes for the dropdown
   useEffect(() => {
     const fetchQualifiedAdviserClasses = async () => {
@@ -25,7 +33,7 @@ const TeacherEditSchedule = ({ schedule, closeModal, fetchSchedules }) => {
 
       try {
         const response = await axios.get(
-          `http://localhost:8080/teacher/${authState.uid}/qualified-adviser-classes`,
+          `http://${address}:8080/teacher/${authState.uid}/qualified-adviser-classes`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -58,7 +66,7 @@ const TeacherEditSchedule = ({ schedule, closeModal, fetchSchedules }) => {
 
     try {
       await axios.put(
-        `http://localhost:8080/teacher/update-schedule/${schedule.schedid}`,
+        `http://${address}:8080/teacher/update-schedule/${schedule.schedid}`,
         { ...updatedSchedule, teacherId: authState.uid },
         {
           headers: {

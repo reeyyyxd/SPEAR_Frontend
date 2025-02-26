@@ -11,12 +11,20 @@ const StudentClassPage = () => {
   const [classDetails, setClassDetails] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   useEffect(() => {
     const fetchClassDetails = async () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `http://localhost:8080/class/${courseCode}/${section}`
+          `http://${address}:8080/class/${courseCode}/${section}`
         );
         
         if (response.status === 200 && response.data?.classes) {

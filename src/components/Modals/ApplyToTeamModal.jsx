@@ -9,6 +9,14 @@ const ApplyToTeamModal = ({ teamId, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -16,7 +24,7 @@ const ApplyToTeamModal = ({ teamId, onClose }) => {
 
     try {
       const response = await axios.post(
-        `http://localhost:8080/student/apply`,
+        `http://${address}:8080/student/apply`,
         {
           teamId,
           uid: authState.uid, // User ID from auth state

@@ -11,6 +11,15 @@ const ProjectProposalPage = () => {
   const [projectOverview, setProjectOverview] = useState("");
   const [features, setFeatures] = useState([{ title: "", description: "" }]);
   const navigate = useNavigate();
+  
+
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,7 +49,7 @@ const ProjectProposalPage = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/student/create-proposal",
+        `http://${address}:8080/student/create-proposal`,
         proposalData,
         {
           headers: {

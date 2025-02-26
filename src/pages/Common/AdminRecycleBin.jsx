@@ -11,6 +11,14 @@ const AdminRecycleBin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   // Fetch deleted data based on selected category
   const fetchDeletedData = async (selectedCategory) => {
     setIsLoading(true);
@@ -18,7 +26,7 @@ const AdminRecycleBin = () => {
     
     try {
       // Placeholder API URL (Replace when you provide the actual API)
-      const response = await axios.get(`http://localhost:8080/recycle-bin/${selectedCategory}`, {
+      const response = await axios.get(`http://${address}:8080/recycle-bin/${selectedCategory}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,

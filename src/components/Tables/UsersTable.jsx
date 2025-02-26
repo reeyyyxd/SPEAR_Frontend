@@ -5,6 +5,14 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import deleteIcon from "../../assets/icons/delete-icon.svg";
 
+const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
 const UsersTable = ({ users, onUserDeleted }) => {
   const usersPerPage = 10;
 
@@ -32,7 +40,7 @@ const UsersTable = ({ users, onUserDeleted }) => {
     }
 
     try {
-      const response = await axios.delete(`http://localhost:8080/admin/delete/${userEmail}`, {
+      const response = await axios.delete(`http://${address}:8080/admin/delete/${userEmail}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,

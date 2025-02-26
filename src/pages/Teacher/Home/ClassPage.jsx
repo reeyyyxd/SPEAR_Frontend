@@ -16,6 +16,15 @@ const ClassPage = () => {
   const [loading, setLoading] = useState(true);
   const [isAdviserModalOpen, setIsAdviserModalOpen] = useState(false);
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
+
   useEffect(() => {
     if (!authState.isAuthenticated) {
       navigate("/login");
@@ -26,15 +35,15 @@ const ClassPage = () => {
       try {
         const token = authState.token;
         const { data } = await axios.get(
-          `http://localhost:8080/teacher/class/${courseCode}/${section}`,
+          `http://${address}:8080/teacher/class/${courseCode}/${section}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setClassDetails(data.classes);
         storeEncryptedId("cid", data.classes.cid);
 
         const [{ data: totalUsersData }, { data: studentsData }] = await Promise.all([
-          axios.get(`http://localhost:8080/class/${data.classes.cid}/total-users`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`http://localhost:8080/class/${data.classes.classKey}/students`, { headers: { Authorization: `Bearer ${token}` } })
+          axios.get(`http://${address}:8080/class/${data.classes.cid}/total-users`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`http://${address}:8080/class/${data.classes.classKey}/students`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         setTotalUsers(totalUsersData || 0);
@@ -52,7 +61,7 @@ const ClassPage = () => {
     if (!window.confirm(`Remove student with email: ${email}?`)) return;
     try {
       await axios.post(
-        "http://localhost:8080/teacher/remove-student",
+        `http://${address}:8080/teacher/remove-student`,
         { classKey: classDetails.classKey, email },
         { headers: { Authorization: `Bearer ${authState.token}` } }
       );

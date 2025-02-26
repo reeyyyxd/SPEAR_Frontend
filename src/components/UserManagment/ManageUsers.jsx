@@ -11,10 +11,18 @@ const ManageUsers = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [users, setUsers] = useState([]);
 
+  const address = getIpAddress();
+
+  function getIpAddress() {
+      const hostname = window.location.hostname;
+      const indexOfColon = hostname.indexOf(':');
+      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   // Fetch active users from API
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/admin/users/active", {
+      const response = await axios.get(`http://${address}:8080/admin/users/active`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
