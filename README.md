@@ -14,4 +14,4 @@ ROADMAP
 
 
 # hinay2x lang, ma kompleto lge ni. :)
-# God help us all.
+God help us all.
