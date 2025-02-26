@@ -11,3 +11,7 @@ Currently, two official plugins are available:
 ---------
 ROADMAP
 -COMPLETE STUDENT SIDE!
+
+
+# hinay2x lang, ma kompleto lge ni. :)
+# God help us all.
