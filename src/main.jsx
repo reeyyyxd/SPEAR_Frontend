@@ -29,7 +29,6 @@ import ClassSettings from "./pages/Teacher/Home/ClassSettings";
 import TeacherSettings from "./pages/Common/TeacherSettings";
 import AdminSettings from "./pages/Common/AdminSettings";
 import StudentSettings from "./pages/Common/StudentSettings";
-import StudentProposals from "./pages/Student/StudentProposals";
 import AdminRecycleBin from "./pages/Common/AdminRecycleBin"
 import TeacherSchecules from "./pages/Teacher/Home/TeacherSchedules";
 
@@ -59,14 +58,6 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["STUDENT"]}>
         <StudentClassPage />
-      </PrivateRoute>
-    ),
-  },
-  {
-    path: "/approved-projects",
-    element: (
-      <PrivateRoute requiredRoles={["STUDENT"]}>
-        <StudentProposals />
       </PrivateRoute>
     ),
   },
