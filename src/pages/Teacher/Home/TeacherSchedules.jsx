@@ -10,6 +10,7 @@ import TeacherEditSchedule from "../../../components/Modals/TeacherEditSchedule"
 const TeacherSchedules = () => {
   const { authState } = useContext(AuthContext);
   const [schedules, setSchedules] = useState([]);
+  const [qualifiedClasses, setQualifiedClasses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -26,10 +27,10 @@ const TeacherSchedules = () => {
       return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
 
-
   useEffect(() => {
     if (authState?.isAuthenticated) {
       fetchSchedules();
+      fetchQualifiedClasses();
     }
   }, [authState]);
 
@@ -52,11 +53,10 @@ const TeacherSchedules = () => {
           },
         }
       );
-
       setSchedules(response.data || []);
     } catch (err) {
       console.error("Error fetching schedules:", err);
-      toast.error("Failed to load schedules.");
+      // toast.error("Failed to load schedules.");
       setError(err.response?.data?.message || "Failed to load schedules.");
     } finally {
       setIsLoading(false);
@@ -93,6 +93,19 @@ const TeacherSchedules = () => {
     }
   };
 
+
+
+  const fetchQualifiedClasses = async () => {
+    try {
+      const response = await axios.get(`http://${address}:8080/teacher/qualified-classes/${authState.uid}`, {
+        headers: { Authorization: `Bearer ${authState.token}` },
+      });
+      setQualifiedClasses(response.data || []);
+    } catch (error) {
+      console.error("Error fetching qualified classes:", error);
+    }
+  };
+
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={"TEACHER"} />
@@ -102,8 +115,43 @@ const TeacherSchedules = () => {
           <Header />
         </div>
 
+        <div className="mb-6">
+          <h2 className="text-md font-semibold mb-2">Qualified Advisory Classes</h2>
+          <div className="overflow-x-auto border border-gray-300 rounded-lg">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-200">
+                <tr>
+                  <th className="px-6 py-2 text-start text-md font-medium">Course Code</th>
+                  <th className="px-6 py-2 text-start text-md font-medium">Course Description</th>
+                  <th className="px-6 py-2 text-start text-md font-medium">Class Creator</th>
+
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {qualifiedClasses.length ? (
+                  qualifiedClasses.map((classItem) => (
+                    <tr key={classItem.classId}>  
+                      {/* subject to be changed */}
+                      <td className="px-6 py-2">{classItem.courseCode}</td>
+                      <td className="px-6 py-2">{classItem.courseDescription}</td>
+                      <td className="px-6 py-2">{classItem.classCreator}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="2" className="text-center py-4 text-gray-500">No advisory classes assigned.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div className="flex justify-end mb-4">
-          <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={() => setIsAddModalOpen(true)}>
+          <button
+            className="bg-green-500 text-white px-4 py-2 rounded"
+            onClick={() => setIsAddModalOpen(true)}
+          >
             + Add Schedule
           </button>
         </div>
@@ -113,36 +161,14 @@ const TeacherSchedules = () => {
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
         ) : (
-          <ScheduleTable schedules={schedules} onEdit={handleEdit} onDelete={requestDelete} />
+          <ScheduleTable schedules={schedules} />
         )}
 
         {isAddModalOpen && (
-          <TeacherAddSchedule closeModal={() => setIsAddModalOpen(false)} fetchSchedules={fetchSchedules} />
-        )}
-
-        {isEditModalOpen && selectedSchedule && (
-          <TeacherEditSchedule
-            schedule={selectedSchedule}
-            closeModal={() => setIsEditModalOpen(false)}
-            fetchSchedules={fetchSchedules}
+          <TeacherAddSchedule 
+            closeModal={() => setIsAddModalOpen(false)} 
+            fetchSchedules={fetchSchedules} 
           />
-        )}
-
-        {isConfirmDeleteOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-              <h2 className="text-lg font-semibold mb-4 text-red-600">Confirm Deletion</h2>
-              <p className="mb-4">Are you sure you want to delete this schedule? This action cannot be undone.</p>
-              <div className="flex justify-end space-x-3">
-                <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={() => setIsConfirmDeleteOpen(false)}>
-                  Cancel
-                </button>
-                <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onClick={confirmDelete}>
-                  Yes, Delete
-                </button>
-              </div>
-            </div>
-          </div>
         )}
       </div>
     </div>

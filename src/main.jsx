@@ -31,6 +31,7 @@ import AdminSettings from "./pages/Common/AdminSettings";
 import StudentSettings from "./pages/Common/StudentSettings";
 import AdminRecycleBin from "./pages/Common/AdminRecycleBin"
 import TeacherSchecules from "./pages/Teacher/Home/TeacherSchedules";
+import AdviserCandidate from "./pages/Teacher/Home/AdviserCandidate";
 
 const router = createBrowserRouter([
   {
@@ -45,6 +46,8 @@ const router = createBrowserRouter([
     path: "/register",
     element: <Register />,
   },
+
+  //student side
   {
     path: "/student-dashboard",
     element: (
@@ -62,19 +65,22 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/teacher/evaluations",
+    path: "/student-settings",
     element: (
-      <PrivateRoute requiredRoles={["TEACHER"]}>
-        <TeacherEvaluations />
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <StudentSettings />
       </PrivateRoute>
     ),
   },
 
+  //teacher side
+
+
   {
-    path: "/settings",
+    path: "/teacher/evaluations",
     element: (
-      <PrivateRoute requiredRoles={["ADMIN"]}>
-        <Settings />
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <TeacherEvaluations />
       </PrivateRoute>
     ),
   },
@@ -152,6 +158,24 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/teacher/adviser-candidate",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <AdviserCandidate />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/teacher/questions/:eid",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <TeacherQuestions />
+      </PrivateRoute>
+    ),
+  },
+
+  //admin side
+  {
     path: "/admin-settings",
     element: (
       <PrivateRoute requiredRoles={["ADMIN"]}>
@@ -160,19 +184,10 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/student-settings",
+    path: "/settings",
     element: (
-      <PrivateRoute requiredRoles={["STUDENT"]}>
-        <StudentSettings />
-      </PrivateRoute>
-    ),
-  },
-
-  {
-    path: "/teacher/questions/:eid",
-    element: (
-      <PrivateRoute requiredRoles={["TEACHER"]}>
-        <TeacherQuestions />
+      <PrivateRoute requiredRoles={["ADMIN"]}>
+        <Settings />
       </PrivateRoute>
     ),
   },
@@ -200,6 +215,8 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
+
+//other utilites 
   {
     path: "/notAuthorized",
     element: <NotAuthorized />,

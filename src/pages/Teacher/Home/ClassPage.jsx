@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
-import AdviserCandidateModal from "../../../components/Modals/AdviserCandidateModal";
 import axios from "axios";
 
 const ClassPage = () => {
@@ -102,24 +101,16 @@ const ClassPage = () => {
             Back
           </button>
         <div className="header flex justify-between items-center mb-6">
-          <h1 className="text-lg font-semibold">
+         <h1 className="text-lg font-semibold">
             {classDetails.courseCode} - {classDetails.courseDescription} - {classDetails.section}
           </h1>
-          <div className="flex space-x-4">
-          <button
+            <div className="flex space-x-4">
+            <button
               className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
-              onClick={() => setIsAdviserModalOpen(true)}
+              onClick={() => navigate("/teacher/adviser-candidate")}
             >
-              View Candidate Advisers
+             Advisories
             </button>
-
-            {/* Show Modal when triggered */}
-            {isAdviserModalOpen && classDetails?.cid && (
-              <AdviserCandidateModal
-                onClose={() => setIsAdviserModalOpen(false)}
-                classId={classDetails.cid} // Passing classId
-              />
-            )}
             <button
               className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
               onClick={() => navigate(`/teacher/project-proposals`)}
