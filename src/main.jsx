@@ -32,6 +32,17 @@ import StudentSettings from "./pages/Common/StudentSettings";
 import AdminRecycleBin from "./pages/Common/AdminRecycleBin"
 import TeacherSchecules from "./pages/Teacher/Home/TeacherSchedules";
 import AdviserCandidate from "./pages/Teacher/Home/AdviserCandidate";
+import StudentTeamSettings from "./pages/Student/TeamFormation/StudentTeamSettings";
+
+import EvaluationStatus from "./pages/Student/Evaluation/EvaluationStatus";
+import Evaluations from "./pages/Student/Evaluation/Evaluations";
+import StudentEvaluation from "./pages/Student/Evaluation/StudentEvaluation";
+import ViewProjectProposal from "./pages/Student/ProjectProposal/ViewProjectProposal";
+import ApplyTeam from "./pages/Student/TeamFormation/ApplyTeam";
+import TeamApplications from "./pages/Student/TeamFormation/TeamApplications";
+import EvaluationTeacher from "./pages/Teacher/Evaluation/EvaluationTeacher";
+import TeacherEvaluationStatus from "./pages/Teacher/Evaluation/TeacherEvaluationStatus";
+import QuestionTemplates from "./pages/Teacher/Evaluation/QuestionTemplates"; 
 
 const router = createBrowserRouter([
   {
@@ -72,7 +83,62 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
-
+  {
+    path: "/student/evaluations",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <Evaluations />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/student/evaluation-status",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <EvaluationStatus />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/student/student-evaluation",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <StudentEvaluation />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/student/view-project-proposal",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <ViewProjectProposal />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/student/apply-team",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <ApplyTeam />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/student/team-applications",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <TeamApplications />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/student-team-settings/:classId/:teamId/:userId",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <StudentTeamSettings />
+      </PrivateRoute>
+    ),
+  },
   //teacher side
 
 
@@ -173,6 +239,31 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
+  {
+    path:"/teacher/question-templates",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <QuestionTemplates />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path:"/teacher/evaluation-teacher",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <EvaluationTeacher />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path:"/teacher/teacher-evaluation-status",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <TeacherEvaluationStatus />
+      </PrivateRoute>
+    ),
+  },
+
 
   //admin side
   {

@@ -22,9 +22,9 @@ const TeacherSchedules = () => {
   const address = getIpAddress();
 
   function getIpAddress() {
-      const hostname = window.location.hostname;
-      const indexOfColon = hostname.indexOf(':');
-      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+    const hostname = window.location.hostname;
+    const indexOfColon = hostname.indexOf(":");
+    return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
 
   useEffect(() => {
@@ -56,10 +56,24 @@ const TeacherSchedules = () => {
       setSchedules(response.data || []);
     } catch (err) {
       console.error("Error fetching schedules:", err);
-      // toast.error("Failed to load schedules.");
       setError(err.response?.data?.message || "Failed to load schedules.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchQualifiedClasses = async () => {
+    try {
+      const response = await axios.get(
+        `http://${address}:8080/teacher/${authState.uid}/qualified-adviser-classes`,
+        {
+          headers: { Authorization: `Bearer ${authState.token}` },
+        }
+      );
+
+      setQualifiedClasses(response.data || []);
+    } catch (error) {
+      console.error("Error fetching qualified classes:", error);
     }
   };
 
@@ -93,19 +107,6 @@ const TeacherSchedules = () => {
     }
   };
 
-
-
-  const fetchQualifiedClasses = async () => {
-    try {
-      const response = await axios.get(`http://${address}:8080/teacher/qualified-classes/${authState.uid}`, {
-        headers: { Authorization: `Bearer ${authState.token}` },
-      });
-      setQualifiedClasses(response.data || []);
-    } catch (error) {
-      console.error("Error fetching qualified classes:", error);
-    }
-  };
-
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={"TEACHER"} />
@@ -115,6 +116,7 @@ const TeacherSchedules = () => {
           <Header />
         </div>
 
+        {/* Qualified Advisory Classes Table */}
         <div className="mb-6">
           <h2 className="text-md font-semibold mb-2">Qualified Advisory Classes</h2>
           <div className="overflow-x-auto border border-gray-300 rounded-lg">
@@ -124,22 +126,22 @@ const TeacherSchedules = () => {
                   <th className="px-6 py-2 text-start text-md font-medium">Course Code</th>
                   <th className="px-6 py-2 text-start text-md font-medium">Course Description</th>
                   <th className="px-6 py-2 text-start text-md font-medium">Class Creator</th>
-
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {qualifiedClasses.length ? (
                   qualifiedClasses.map((classItem) => (
-                    <tr key={classItem.classId}>  
-                      {/* subject to be changed */}
+                    <tr key={classItem.cid}>
                       <td className="px-6 py-2">{classItem.courseCode}</td>
                       <td className="px-6 py-2">{classItem.courseDescription}</td>
-                      <td className="px-6 py-2">{classItem.classCreator}</td>
+                      <td className="px-6 py-2">{classItem.firstname} {classItem.lastname}</td>    
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="2" className="text-center py-4 text-gray-500">No advisory classes assigned.</td>
+                    <td colSpan="3" className="text-center py-4 text-gray-500">
+                      No advisory classes assigned.
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -148,10 +150,7 @@ const TeacherSchedules = () => {
         </div>
 
         <div className="flex justify-end mb-4">
-          <button
-            className="bg-green-500 text-white px-4 py-2 rounded"
-            onClick={() => setIsAddModalOpen(true)}
-          >
+          <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={() => setIsAddModalOpen(true)}>
             + Add Schedule
           </button>
         </div>
@@ -161,14 +160,31 @@ const TeacherSchedules = () => {
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
         ) : (
-          <ScheduleTable schedules={schedules} />
+          <ScheduleTable schedules={schedules} onEdit={handleEdit} onDelete={requestDelete} />
         )}
 
         {isAddModalOpen && (
-          <TeacherAddSchedule 
-            closeModal={() => setIsAddModalOpen(false)} 
-            fetchSchedules={fetchSchedules} 
+          <TeacherAddSchedule closeModal={() => setIsAddModalOpen(false)} fetchSchedules={fetchSchedules} />
+        )}
+
+        {isEditModalOpen && (
+          <TeacherEditSchedule
+            schedule={selectedSchedule}
+            closeModal={() => setIsEditModalOpen(false)}
+            fetchSchedules={fetchSchedules}
           />
+        )}
+
+        {isConfirmDeleteOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+            <div className="bg-white p-6 rounded-lg">
+              <p>Are you sure you want to delete this schedule?</p>
+              <div className="flex justify-end space-x-2 mt-4">
+                <button className="bg-gray-500 text-white px-3 py-1 rounded" onClick={() => setIsConfirmDeleteOpen(false)}>Cancel</button>
+                <button className="bg-red-600 text-white px-3 py-1 rounded" onClick={confirmDelete}>Delete</button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
@@ -186,31 +202,31 @@ const ScheduleTable = ({ schedules, onEdit, onDelete }) => (
           <th className="px-6 py-2 text-start text-md font-medium">Actions</th>
         </tr>
       </thead>
-      <tbody className="divide-y divide-gray-200">
-        {schedules.length ? (
-          schedules.map((schedule) => (
-            <tr key={schedule.schedid} className="hover:bg-gray-100">
-              <td className="px-6 py-2">{schedule.day}</td>
-              <td className="px-6 py-2">{schedule.time}</td>
-              <td className="px-6 py-2">{schedule.className} - {schedule.courseDescription}</td>
-              <td className="px-6 py-2 flex space-x-2">
-                <button className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-blue-600" onClick={() => onEdit(schedule)}>
-                  Edit
-                </button>
-                <button
-                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                  onClick={() => onDelete(schedule.schedid)}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))
-        ) : (
-          <tr>
-            <td colSpan="4" className="text-center py-4 text-gray-500">No schedules available.</td>
+      <tbody>
+        {schedules.map((schedule) => (
+          <tr key={schedule.schedid} className="hover:bg-gray-100 transition">
+            <td className="px-6 py-2">{schedule.day}</td>
+            <td className="px-6 py-2">{schedule.time}</td>
+            <td className="px-6 py-2">{schedule.className} - {schedule.courseDescription}</td>
+            <td className="px-6 py-2 flex space-x-2">
+              {/* Purple Edit Button */}
+              <button
+                onClick={() => onEdit(schedule)}
+                className="bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700 transition"
+              >
+               Edit
+              </button>
+
+              {/* Red Delete Button */}
+              <button
+                onClick={() => onDelete(schedule.schedid)}
+                className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 transition"
+              >
+               Delete
+              </button>
+            </td>
           </tr>
-        )}
+        ))}
       </tbody>
     </table>
   </div>

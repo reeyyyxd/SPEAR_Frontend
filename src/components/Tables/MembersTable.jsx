@@ -1,36 +1,36 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../services/AuthContext";
-import FormTeamModal from "../Modals/FormTeamModal";
-import ApplyToTeamModal from "../Modals/ApplyToTeamModal";
+import AddTeamMembersModal from "../Modals/AddTeamMembersModal";
 import axios from "axios";
 
 const MembersTable = () => {
-  const { authState, getDecryptedId } = useContext(AuthContext);
+  const { authState, getDecryptedId, storeEncryptedId } = useContext(AuthContext);
   const navigate = useNavigate();
   const [teamDetails, setTeamDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showFormTeamModal, setShowFormTeamModal] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState(null);
-  const [applyTeamId, setApplyTeamId] = useState(null);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
 
   const address = getIpAddress();
 
   function getIpAddress() {
-      const hostname = window.location.hostname;
-      const indexOfColon = hostname.indexOf(':');
-      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+    const hostname = window.location.hostname;
+    const indexOfColon = hostname.indexOf(":");
+    return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
 
-
-  // Retrieve classId securely
+  // Retrieve required IDs
   const classId = getDecryptedId("cid");
+  const userId = authState.uid;
+  
+  // Get teamId from LocalStorage or API response
+  const [teamId, setTeamId] = useState(getDecryptedId("tid") || authState.teamId || null);
 
   useEffect(() => {
     const fetchTeamDetails = async () => {
-      if (!classId) {
-        console.error("Class ID is missing. Unable to fetch team details.");
+      if (!classId || !userId) {
+        console.error("Class ID or User ID is missing. Unable to fetch team details.");
         setLoading(false);
         return;
       }
@@ -44,22 +44,27 @@ const MembersTable = () => {
           return;
         }
 
-        console.log(`Fetching teams with classId: ${classId} and uid: ${authState.uid}`);
-
         const response = await axios.get(
-          `http://${address}:8080/team/my/${classId}/${authState.uid}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          `http://${address}:8080/team/my/${classId}/${userId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        if (response.status === 200) {
+        if (response.status === 200 && response.data) {
           setTeamDetails(response.data);
+
+          // Extract `tid` from API response
+          const latestTeamId = response.data.tid;
+          if (latestTeamId) {
+            setTeamId(latestTeamId);
+            storeEncryptedId("tid", latestTeamId); // Store securely in AuthContext
+            localStorage.setItem("tid", latestTeamId); // Store in LocalStorage
+          }
         } else {
+          console.warn("No team data received.");
           setTeamDetails(null);
         }
       } catch (error) {
-        console.error("Error fetching team details:", error);
+        console.error("Error fetching team details:", error.response?.data || error.message);
         setTeamDetails(null);
       } finally {
         setLoading(false);
@@ -69,25 +74,30 @@ const MembersTable = () => {
     fetchTeamDetails();
   }, [authState.uid, classId]);
 
-  // Handle opening the Apply to Team Modal
-  const handleOpenApplyModal = (teamId) => {
-    setApplyTeamId(teamId);
+  const handleTeamSettingsClick = () => {
+    let latestTeamId = getDecryptedId("tid") || teamId;
+  
+    if (!classId || !latestTeamId || !userId) {
+      console.error("Missing parameters for navigation:", { classId, latestTeamId, userId });
+      return;
+    }
+  
+    // Store `teamId` securely before navigating
+    storeEncryptedId("tid", latestTeamId);
+    localStorage.setItem("tid", latestTeamId);
+  
+    navigate(`/student-team-settings/${classId}/${latestTeamId}/${userId}`);
   };
 
-  // Handle closing the Apply to Team Modal
-  const handleCloseApplyModal = () => {
-    setApplyTeamId(null);
+  const handleAddMembersClick = () => {
+    setIsAddMemberModalOpen(true);
   };
 
-  const handleFormTeamClick = (projectId) => {
-    setSelectedProjectId(projectId);
-    setShowFormTeamModal(true);
-  };
 
-  const TABLE_HEAD = ["Group Name", "Recruitment Status", "Leader", "Adviser", "Project Details", "Actions"];
+  const TABLE_HEAD = ["Group Name", "Recruitment Status", "Leader", "Members", "Adviser & Schedule", " ", " "];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-300 shadow-md mt-16 p-4">
+    <div className="overflow-hidden rounded-2xl border border-gray-300 shadow-md mt-16 p-6">
       {/* Back Button */}
       <button
         onClick={() => navigate(-1)}
@@ -98,14 +108,32 @@ const MembersTable = () => {
 
       <h2 className="text-lg font-semibold text-teal mb-4">Your Team</h2>
 
+      <button
+        onClick={() => setIsAddMemberModalOpen(true)}
+        className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-green-700 transition"
+      >
+        Add Members
+      </button>
+
+      {isAddMemberModalOpen && (
+        <AddTeamMembersModal
+          isOpen={isAddMemberModalOpen}
+          onClose={() => setIsAddMemberModalOpen(false)}
+          teamId={teamId}
+          classId={classId}
+        />
+      )}
+
       {loading ? (
         <p className="text-center text-gray-500 p-4">Loading...</p>
       ) : teamDetails ? (
-        <table className="w-full table-auto text-left">
+           
+        
+        <table className="w-full table-auto text-left border-collapse">
           <thead className="bg-teal text-white">
             <tr>
-              {TABLE_HEAD.map((head) => (
-                <th key={head} className="p-4 text-sm font-semibold">
+              {TABLE_HEAD.map((head, index) => (
+                <th key={`${head}-${index}`} className="p-4 text-sm font-semibold border-b border-gray-300">
                   {head}
                 </th>
               ))}
@@ -113,35 +141,56 @@ const MembersTable = () => {
           </thead>
           <tbody className="bg-gray-100">
             <tr className="hover:bg-peach hover:text-white">
-              <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.groupName}</td>
+              <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.groupName || "N/A"}</td>
               <td className="p-4 border-b border-gray-300 text-sm">
-                {teamDetails.recruitmentOpen ? (
-                  <button
-                    onClick={() => handleOpenApplyModal(teamDetails.tid)}
-                    className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-700 transition"
-                  >
-                    Apply
-                  </button>
-                ) : (
-                  <span className="text-gray-500">Recruitment Closed</span>
-                )}
+                <span
+                  className={`font-semibold ${
+                    teamDetails.recruitmentOpen ? "text-green-600" : "text-red-500"
+                  }`}
+                >
+                  {teamDetails.recruitmentOpen ? "Open" : "Closed"}
+                </span>
               </td>
-              <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.leaderId}</td>
-              <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.adviserId}</td>
+              <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.leaderName || "N/A"}</td>
+              <td className="p-4 border-b border-gray-300 text-sm">
+              {teamDetails.members && teamDetails.members.length > 0 ? (
+                <ul className="list-disc ml-4">
+                {teamDetails.members.map((member) => (
+                  <li key={member.id || member.uid || Math.random()}>{member.name}</li>  
+                ))}
+              </ul>
+              ) : (
+                "No Members"
+              )}
+            </td>
+              {/* Adviser & Schedule Column */}
+              <td className="p-4 border-b border-gray-300 text-sm">
+                <p>
+                  <strong>Adviser:</strong> {teamDetails.adviserId ? teamDetails.adviserId : "N/A"}
+                </p>
+                <p>
+                  <strong>Schedule:</strong> {teamDetails.scheduleId ? teamDetails.scheduleId : "Not Assigned"}
+                </p>
+              </td>
+              {/* Project Details Column */}
               <td className="p-4 border-b border-gray-300 text-sm">
                 <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="bg-teal text-white py-2 px-4 rounded-lg hover:bg-peach"
+                  onClick={() => setIsProjectModalOpen(true)}
+                  className="bg-teal text-white py-2 px-4 rounded-lg hover:bg-peach transition"
                 >
-                  View Details
+                  Project Proposals
                 </button>
               </td>
+              {/* Actions Button - Redirects to StudentTeamSettings */}
               <td className="p-4 border-b border-gray-300 text-sm">
                 <button
-                  onClick={() => handleFormTeamClick(teamDetails.projectId)}
-                  className="bg-teal text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+                  onClick={handleTeamSettingsClick}
+                  className={`bg-teal text-white px-4 py-2 rounded-md transition ${
+                    !teamId ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
+                  }`}
+                  disabled={!teamId}
                 >
-                  Form Team
+                  Team Settings
                 </button>
               </td>
             </tr>
@@ -151,12 +200,13 @@ const MembersTable = () => {
         <p className="text-gray-500 p-4">
           You have currently no team.{" "}
           <button
-            onClick={() => setShowFormTeamModal(true)}
+            onClick={handleTeamSettingsClick}
             className="text-teal underline"
+            disabled={!teamId}
           >
             Create a Team
-          </button>
-          {" "}or{" "}
+          </button>{" "}
+          or{" "}
           <button
             onClick={() => navigate("/team-formation/apply-to-teams")}
             className="text-teal underline"
@@ -165,183 +215,8 @@ const MembersTable = () => {
           </button>
         </p>
       )}
-
-      {/* Apply to Team Modal */}
-      {applyTeamId && (
-        <ApplyToTeamModal teamId={applyTeamId} onClose={handleCloseApplyModal} />
-      )}
-
-      {/* Project Details Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-lg font-semibold text-teal mb-4">Project Details</h2>
-            <p className="mb-4">{teamDetails?.projectDescription || "No project details available."}</p>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="bg-gray-400 text-white py-2 px-4 rounded-lg mr-2 hover:bg-gray-600"
-            >
-              Close
-            </button>
-            <button
-              onClick={() => console.log("Leave class functionality")}
-              className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-700"
-            >
-              Leave Class
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Form Team Modal */}
-      {showFormTeamModal && (
-        <FormTeamModal
-          onClose={() => setShowFormTeamModal(false)}
-          projectId={selectedProjectId}
-          classId={classId}
-          leaderId={authState.uid}
-        />
-      )}
     </div>
   );
 };
 
 export default MembersTable;
-
-//feyke (when there is team)
-// import React, { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-
-// const MembersTable = () => {
-//   const navigate = useNavigate();
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-//   const [isRecruitmentModalOpen, setIsRecruitmentModalOpen] = useState(false);
-//   const [declineReason, setDeclineReason] = useState("");
-
-//   // Simulating logged-in user ID (Replace this with auth context)
-//   const currentUserId = "John Doe"; // Example: Replace with actual logged-in user ID
-
-//   // Static sample data
-//   const teamDetails = {
-//     groupName: "Team Alpha",
-//     leaderId: "John Doe", // The user who created the team
-//     adviserId: "Dr. Smith",
-//     projectDescription: "AI-based smart assistant for customer support.",
-//     projectId: "P001",
-//     schedule: "Mondays & Wednesdays, 3:00 PM - 5:00 PM",
-//     members: ["Alice Johnson", "Bob Williams", "Charlie Brown"],
-//     features: ["Natural Language Processing", "Voice Recognition", "Data Analysis"],
-//     recruitmentOpen: true,
-//     pendingApplications: [
-//       { id: 1, name: "Eve Adams" },
-//       { id: 2, name: "Michael Lee" },
-//     ],
-//   };
-
-//   const isLeader = currentUserId === teamDetails.leaderId;
-
-//   const handleAcceptApplication = (applicant) => {
-//     console.log(`Accepted ${applicant.name} into the team.`);
-//   };
-
-//   const handleDeclineApplication = (applicant) => {
-//     console.log(`Declined ${applicant.name} with reason: ${declineReason}`);
-//   };
-
-//   const handleLeaveTeam = () => {
-//     console.log("Leave team functionality triggered");
-//   };
-
-//   const TABLE_HEAD = ["Team Name", "Leader", "Members", "Adviser", "Official Project", "Schedule", "Recruitment", "Actions"];
-
-//   return (
-//     <div className="overflow-hidden rounded-2xl border border-gray-300 shadow-md mt-16 p-4">
-//       {/* Back Button */}
-//       <button
-//         onClick={() => navigate(-1)}
-//         className="bg-gray-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-700 transition"
-//       >
-//         Back
-//       </button>
-
-//       <h2 className="text-lg font-semibold text-teal mb-4">Your Team</h2>
-
-//       <table className="w-full table-auto text-left">
-//         <thead className="bg-teal text-white">
-//           <tr>
-//             {TABLE_HEAD.map((head) => (
-//               <th key={head} className="p-4 text-sm font-semibold">
-//                 {head}
-//               </th>
-//             ))}
-//           </tr>
-//         </thead>
-//         <tbody className="bg-gray-100">
-//           <tr className="hover:bg-peach hover:text-white">
-//             <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.groupName}</td>
-//             <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.leaderId}</td>
-//             <td className="p-4 border-b border-gray-300 text-sm">
-//               {teamDetails.members.join(", ")}
-//             </td>
-//             <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.adviserId}</td>
-//             <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.projectDescription}</td>
-//             <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.schedule}</td>
-//             <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.recruitmentOpen ? "Open" : "Closed"}</td>
-//             <td className="p-4 border-b border-gray-300 text-sm">
-//               {isLeader && (
-//                 <button
-//                   onClick={() => setIsRecruitmentModalOpen(true)}
-//                   className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 mb-2"
-//                 >
-//                   View Applications
-//                 </button>
-//               )}
-//             </td>
-//           </tr>
-//         </tbody>
-//       </table>
-
-//       {/* Recruitment Modal */}
-//       {isRecruitmentModalOpen && (
-//         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-//           <div className="bg-white p-6 rounded-lg shadow-lg">
-//             <h2 className="text-lg font-semibold text-teal mb-4">Pending Applications</h2>
-//             <ul className="mb-4">
-//               {teamDetails.pendingApplications.map((applicant) => (
-//                 <li key={applicant.id} className="text-gray-700 mb-2">
-//                   {applicant.name}
-//                   <button
-//                     onClick={() => handleAcceptApplication(applicant)}
-//                     className="bg-green-500 text-white py-1 px-3 rounded-lg ml-2 hover:bg-green-700"
-//                   >
-//                     Accept
-//                   </button>
-//                   <button
-//                     onClick={() => handleDeclineApplication(applicant)}
-//                     className="bg-red-500 text-white py-1 px-3 rounded-lg ml-2 hover:bg-red-700"
-//                   >
-//                     Decline
-//                   </button>
-//                   <input
-//                     type="text"
-//                     placeholder="Reason for decline"
-//                     onChange={(e) => setDeclineReason(e.target.value)}
-//                     className="ml-2 border border-gray-300 p-1 rounded"
-//                   />
-//                 </li>
-//               ))}
-//             </ul>
-//             <button
-//               onClick={() => setIsRecruitmentModalOpen(false)}
-//               className="bg-gray-400 text-white py-2 px-4 rounded-lg hover:bg-gray-600"
-//             >
-//               Close
-//             </button>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default MembersTable;

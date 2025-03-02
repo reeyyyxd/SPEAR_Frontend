@@ -8,7 +8,9 @@ import logOutIcon from "../../assets/icons/log-out-icon.svg";
 import userIcon from "../../assets/icons/user-icon.svg";
 import trashcanIcon from "../../assets/icons/trash-bin.png";
 import schedule from "../../assets/icons/schedule.png";
-
+import teamapplication from "../../assets/icons/team-appliication.png";
+import teacheradviser from "../../assets/icons/my-adviser.png";
+ 
 const Navbar = ({ userRole }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -20,6 +22,7 @@ const Navbar = ({ userRole }) => {
   const navItemsByRole = {
     STUDENT: [
       { label: "My Classes", path: "/student-dashboard", icon: dashboardIcon },
+      { label: "My Team Applications", path: "/student-applications", icon: teamapplication},
       { label: "My Evaluations", path: "/manage-teams", icon: teamIcon },
       { label: "Settings", path: "/student-settings", icon: settingsIcon },
       
@@ -27,6 +30,7 @@ const Navbar = ({ userRole }) => {
     TEACHER: [
       { label: "Dashboard", path: "/teacher-dashboard", icon: dashboardIcon },
       { label: "My Schedules", path: "/teacher-schedules", icon: schedule },
+      { label: "My Advisories", path: "/teacher-advisories", icon: teacheradviser },
       { label: "Settings", path: "/teacher-settings", icon: settingsIcon },
     ],
     ADMIN: [
