@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../services/AuthContext";
 import AddTeamMembersModal from "../Modals/AddTeamMembersModal";
+import FormTeamModal from "../Modals/FormTeamModal";
 import axios from "axios";
 
 const MembersTable = () => {
@@ -11,6 +12,7 @@ const MembersTable = () => {
   const [loading, setLoading] = useState(true);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [isFormTeamModalOpen, setIsFormTeamModalOpen] = useState(false);
 
   const address = getIpAddress();
 
@@ -27,14 +29,59 @@ const MembersTable = () => {
   // Get teamId from LocalStorage or API response
   const [teamId, setTeamId] = useState(getDecryptedId("tid") || authState.teamId || null);
 
-  useEffect(() => {
-    const fetchTeamDetails = async () => {
-      if (!classId || !userId) {
-        console.error("Class ID or User ID is missing. Unable to fetch team details.");
+  const fetchTeamDetails = async () => {
+    if (!classId || !userId) {
+      console.error("Class ID or User ID is missing.");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = authState.token;
+      if (!token) {
+        console.error("Auth token is missing.");
         setLoading(false);
         return;
       }
 
+      const response = await axios.get(
+        `http://${address}:8080/team/my/${classId}/${userId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.status === 200 && response.data) {
+        setTeamDetails(response.data);
+        const latestTeamId = response.data.tid;
+        if (latestTeamId) {
+          setTeamId(latestTeamId);
+          storeEncryptedId("tid", latestTeamId);
+          localStorage.setItem("tid", latestTeamId);
+        }
+      } else {
+        console.warn("No team data received.");
+        setTeamDetails(null);
+      }
+    } catch (error) {
+      //console.error("Error fetching team details:", error.response?.data || error.message);
+      setTeamDetails(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTeamDetails();
+  }, [authState.uid, classId]);
+
+  useEffect(() => {
+    const fetchTeamDetails = async () => {
+      if (!classId || !userId) {
+        console.error("Class ID or User ID is missing.");
+        setLoading(false);
+        return;
+      }
+    
       setLoading(true);
       try {
         const token = authState.token;
@@ -43,28 +90,28 @@ const MembersTable = () => {
           setLoading(false);
           return;
         }
-
+    
         const response = await axios.get(
           `http://${address}:8080/team/my/${classId}/${userId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-
+    
         if (response.status === 200 && response.data) {
           setTeamDetails(response.data);
-
-          // Extract `tid` from API response
           const latestTeamId = response.data.tid;
           if (latestTeamId) {
             setTeamId(latestTeamId);
-            storeEncryptedId("tid", latestTeamId); // Store securely in AuthContext
-            localStorage.setItem("tid", latestTeamId); // Store in LocalStorage
+            storeEncryptedId("tid", latestTeamId);
+            localStorage.setItem("tid", latestTeamId);
           }
         } else {
-          console.warn("No team data received.");
+          // Suppress warnings by not logging anything
           setTeamDetails(null);
         }
       } catch (error) {
-        console.error("Error fetching team details:", error.response?.data || error.message);
+        if (error.response?.status !== 404) { // Only log actual errors, not "not found"
+          //console.error("Error fetching team details:", error.response?.data || error.message);
+        }
         setTeamDetails(null);
       } finally {
         setLoading(false);
@@ -108,12 +155,14 @@ const MembersTable = () => {
 
       <h2 className="text-lg font-semibold text-teal mb-4">Your Team</h2>
 
-      <button
-        onClick={() => setIsAddMemberModalOpen(true)}
-        className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-green-700 transition"
-      >
-        Add Members
-      </button>
+      {teamDetails && (
+        <button
+          onClick={() => setIsAddMemberModalOpen(true)}
+          className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-green-700 transition"
+        >
+          Add Members 
+        </button>
+      )}
 
       {isAddMemberModalOpen && (
         <AddTeamMembersModal
@@ -152,17 +201,20 @@ const MembersTable = () => {
                 </span>
               </td>
               <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.leaderName || "N/A"}</td>
+
+              {/* Members Column */}
               <td className="p-4 border-b border-gray-300 text-sm">
-              {teamDetails.members && teamDetails.members.length > 0 ? (
-                <ul className="list-disc ml-4">
-                {teamDetails.members.map((member) => (
-                  <li key={member.id || member.uid || Math.random()}>{member.name}</li>  
-                ))}
-              </ul>
-              ) : (
-                "No Members"
-              )}
-            </td>
+                {teamDetails.memberNames && teamDetails.memberNames.length > 0 ? (
+                  <ul className="list-disc ml-4">
+                    {teamDetails.memberNames.map((member, index) => (
+                      <li key={index}>{member}</li>  
+                    ))}
+                  </ul>
+                ) : (
+                  "No Members"
+                )}
+              </td>
+              
               {/* Adviser & Schedule Column */}
               <td className="p-4 border-b border-gray-300 text-sm">
                 <p>
@@ -197,15 +249,22 @@ const MembersTable = () => {
           </tbody>
         </table>
       ) : (
-        <p className="text-gray-500 p-4">
+        <div className="text-gray-500 p-4">
           You have currently no team.{" "}
           <button
-            onClick={handleTeamSettingsClick}
+            onClick={() => setIsFormTeamModalOpen(true)}
             className="text-teal underline"
-            disabled={!teamId}
           >
             Create a Team
-          </button>{" "}
+          </button>
+          
+          {/* Form Team Modal */}
+          {isFormTeamModalOpen && (
+            <FormTeamModal
+              onClose={() => setIsFormTeamModalOpen(false)}
+              refreshTeamData={fetchTeamDetails}
+            />
+          )}{" "}
           or{" "}
           <button
             onClick={() => navigate("/team-formation/apply-to-teams")}
@@ -213,7 +272,7 @@ const MembersTable = () => {
           >
             Apply to a Team
           </button>
-        </p>
+          </div>
       )}
     </div>
   );

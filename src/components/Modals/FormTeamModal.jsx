@@ -21,7 +21,7 @@ const FormTeamModal = ({ onClose }) => {
     setIsSubmitting(true);
     setError(null);
 
-    const classId = getDecryptedId("cid"); // Retrieve classId from encrypted storage
+    const classId = getDecryptedId("cid"); 
 
     if (!classId) {
       console.error("Class ID is missing. Cannot create a team.");
@@ -32,11 +32,11 @@ const FormTeamModal = ({ onClose }) => {
 
     const payload = {
       groupName: groupName.trim(),
-      leaderId: authState.uid, // Ensure leaderId is included
-      classId: classId, // Now retrieving it correctly
+      leaderId: authState.uid,
+      classId: classId,
     };
 
-    console.log("Sending payload:", payload); // Debugging output
+    console.log("Sending payload:", payload);
 
     try {
       const response = await axios.post(
@@ -46,19 +46,19 @@ const FormTeamModal = ({ onClose }) => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${authState.token}`,
-          },
-        }
-      );
+        },
+      });
 
       alert("Team successfully created!");
-      onClose(); // Close the modal
+      onClose();
+      window.location.href = window.location.href; // Ensures page reload while keeping route
     } catch (err) {
       setError(err.response?.data?.error || "Failed to create team. Please try again.");
       console.error("Error creating team:", err.response?.data || err.message);
     } finally {
       setIsSubmitting(false);
     }
-  };
+};
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
@@ -77,7 +77,7 @@ const FormTeamModal = ({ onClose }) => {
             required
           />
 
-          {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+          {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
 
           {/* Buttons */}
           <div className="flex justify-end space-x-2">

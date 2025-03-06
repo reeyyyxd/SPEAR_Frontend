@@ -44,6 +44,7 @@ const Navbar = ({ userRole }) => {
   const navItems = navItemsByRole[userRole] || [];
 
   const handleLogOut = () => {
+    // Remove all session-related data
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("refreshToken");
@@ -54,6 +55,11 @@ const Navbar = ({ userRole }) => {
     localStorage.removeItem("eid");
     localStorage.removeItem("qid");
     navigate("/login");
+  
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
+    
   };
 
   useEffect(() => {
