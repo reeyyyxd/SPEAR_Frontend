@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AuthContext from "../../../services/AuthContext";
 import axios from "axios";
 import Navbar from "../../../components/Navbar/Navbar";
-import { FiArrowLeft, FiEdit3, FiUserMinus } from "react-icons/fi";
+import { FiArrowLeft, FiEdit3, FiUserMinus, FiChevronDown} from "react-icons/fi";
 
 const StudentTeamSettings = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
@@ -19,6 +19,16 @@ const StudentTeamSettings = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [adviser, setAdviser] = useState("");
   const [schedule, setSchedule] = useState("");
+  const [advisers, setAdvisers] = useState([]);
+  const [adviserLoading, setAdviserLoading] = useState(false);
+  const [selectedAdviser, setSelectedAdviser] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [schedules, setSchedules] = useState([]);
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [showAdviserDropdown, setShowAdviserDropdown] = useState(false);
+  const [showScheduleDropdown, setShowScheduleDropdown] = useState(false);
+  const [error, setError] = useState("");
+
   
   const address = getIpAddress();
 
@@ -34,15 +44,26 @@ const StudentTeamSettings = () => {
       return;
     }
 
+   
+
+
     const fetchTeamDetails = async () => {
       try {
         const response = await axios.get(`http://${address}:8080/team/my/${classId}/${userId}`);
         if (response.status === 200 && response.data) {
-          setTeamDetails(response.data);
-          setGroupName(response.data.groupName || "");
-          setRecruitmentOpen(response.data.recruitmentOpen);
-          setAdviser(response.data.adviser || "No adviser assigned");
-          setSchedule(response.data.schedule || "No schedule assigned");
+          const teamData = response.data;
+          setTeamDetails(teamData);
+          setGroupName(teamData.groupName || "");
+          setRecruitmentOpen(teamData.recruitmentOpen);
+
+          if (teamData.adviserId) {
+            setSelectedAdviser(teamData.adviserId);
+            fetchSchedules(teamData.adviserId);
+          }
+
+          if (teamData.scheduleId) {
+            setSelectedSchedule(teamData.scheduleId);
+          }
         }
       } catch (error) {
         console.error("Error fetching team details:", error);
@@ -54,6 +75,95 @@ const StudentTeamSettings = () => {
 
     fetchTeamDetails();
   }, [classId, userId]);
+
+  const fetchAdvisers = async () => {
+    setShowAdviserDropdown((prev) => !prev);
+    setError("");
+
+    if (advisers.length > 0) return;
+
+    try {
+      const response = await axios.get(`http://${address}:8080/class/${classId}/qualified-teachers`);
+      if (response.status === 200) {
+        setAdvisers(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching advisers:", error);
+      setError("Failed to fetch advisers.");
+    }
+  };
+
+  const fetchSchedules = async (adviserId) => {
+    setError("");
+    setShowScheduleDropdown(false);
+    setSchedules([]);
+
+    if (!adviserId || !classId) {
+      console.error("Invalid adviser ID or class ID");
+      setError("Invalid adviser or class information.");
+      return;
+    }
+
+    try {
+      const response = await axios.get(`http://${address}:8080/adviser/${adviserId}/available-schedules/${classId}`);
+      if (response.status === 200 && response.data.length > 0) {
+        setSchedules(response.data);
+      } else {
+        setSchedules([]);
+        setError("No schedules available for this adviser.");
+      }
+    } catch (error) {
+      console.error("Error fetching schedules:", error);
+      setError(error.response?.data?.message || "Failed to fetch schedules.");
+    }
+  };
+
+  const formatTime = (timeString) => {
+    if (!timeString) return "N/A";
+  
+    const [hour, minute] = timeString.split(":");
+    let formattedHour = parseInt(hour, 10);
+    const ampm = formattedHour >= 12 ? "PM" : "AM";
+  
+    if (formattedHour > 12) formattedHour -= 12;
+    if (formattedHour === 0) formattedHour = 12;
+  
+    return `${formattedHour}:${minute} ${ampm}`;
+  };
+
+  const assignAdviserAndSchedule = async () => {
+    if (!selectedAdviser || !selectedSchedule || !teamDetails?.tid) return;
+  
+    setIsUpdating(true);
+    setError("");
+  
+    try {
+      const response = await axios.put(
+        `http://${address}:8080/team/${teamDetails.tid}/assign-adviser-schedule`,
+        {
+          adviserId: selectedAdviser,
+          scheduleId: selectedSchedule,
+          requesterId: userId,  // Ensure requesterId is passed
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+  
+      alert(response.data.message);
+      setTeamDetails((prev) => ({
+        ...prev,
+        adviserId: selectedAdviser,
+        scheduleId: selectedSchedule,
+      }));
+    } catch (error) {
+      console.error("Error assigning adviser and schedule:", error);
+      setError(error.response?.data?.error || "Failed to assign.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
 
   const toggleRecruitment = async () => {
     if (!teamDetails?.tid) return;
@@ -113,10 +223,13 @@ const StudentTeamSettings = () => {
       });
   
       alert(response.data.message);
-      navigate("/student-dashboard"); // Redirect user to another page after leaving
+  
+      // Refresh UI after leaving the team
+      window.location.reload();
+  
     } catch (error) {
-      console.error("Error leaving team:", error.response?.data?.message || error.message);
-      alert(error.response?.data?.message || "Failed to leave the team.");
+      console.error("Error leaving team:", error.response?.data?.error || error.message);
+      alert(error.response?.data?.error || "Failed to leave the team.");
     }
   };
   
@@ -136,6 +249,9 @@ const StudentTeamSettings = () => {
         console.error("Error deleting team:", error.response?.data?.message || error.message);
         alert(error.response?.data?.message || "Failed to delete the team.");
     }
+
+   
+    
 };
 
   return (
@@ -149,8 +265,8 @@ const StudentTeamSettings = () => {
         >
           <FiArrowLeft /> Back
         </button>
-  
         <h2 className="text-xl font-semibold text-teal-700 mb-6">Team Settings</h2>
+
   
         {teamDetails ? (
           <div>
@@ -178,7 +294,7 @@ const StudentTeamSettings = () => {
             <div className="mb-6">
               <p><strong>Team Leader:</strong> {teamDetails.leaderName || "Unknown Leader"}</p>
             </div>
-  
+
             {/* Team Members */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-2">Team Members</h3>
@@ -210,34 +326,106 @@ const StudentTeamSettings = () => {
                 <p className="text-gray-600">No members in the team.</p>
               )}
             </div>
+
+            <div className="mb-4 p-4 border rounded-md bg-gray-50">
+            <h3 className="text-lg font-semibold mb-2">Current Adviser & Schedule</h3>
+            <p className="text-gray-700"><strong>Adviser:</strong> {teamDetails?.adviserName || "Not Assigned"}</p>
+            <p className="text-gray-700"><strong>Schedule:</strong> 
+              {teamDetails?.scheduleDay && teamDetails?.scheduleTime
+                ? `${teamDetails.scheduleDay}, ${teamDetails.scheduleTime}`
+                : "Not Assigned"}
+            </p>
+          </div>
+
   
-            {/* Adviser & Schedule Section */}
-            <div className="mb-6 border p-4 rounded-md bg-gray-100">
-              <h3 className="text-lg font-semibold">Team Adviser & Schedule</h3>
-              <div className="mt-2">
-                <label className="block font-medium">Assigned Adviser:</label>
-                <input
-                  type="text"
-                  value={adviser}
-                  onChange={(e) => setAdviser(e.target.value)}
-                  className="border p-2 w-full rounded-md"
-                />
-              </div>
-              <div className="mt-2">
-                <label className="block font-medium">Schedule:</label>
-                <select
-                  value={schedule}
-                  onChange={(e) => setSchedule(e.target.value)}
-                  className="border p-2 w-full rounded-md"
-                >
-                  <option value="">Select Schedule</option>
-                  <option value="Morning">Morning</option>
-                  <option value="Afternoon">Afternoon</option>
-                  <option value="Evening">Evening</option>
-                </select>
-              </div>
+          {/* Adviser & Schedule Section */}
+        <div className="mb-6 border p-4 rounded-md bg-gray-100 relative">
+          <h3 className="text-lg font-semibold">Assign or Change Adviser & Schedule</h3>
+
+          {/* Adviser Selection */}
+          <div className="mt-2">
+            <label className="block font-medium mb-1">Select Adviser:</label>
+            <button
+              onClick={fetchAdvisers}
+              className="bg-white border border-gray-300 text-gray-800 px-3 py-2 rounded-md w-full text-left flex justify-between items-center"
+            >
+              {selectedAdviser
+                ? advisers.find((a) => a.uid === selectedAdviser)?.firstname + " " + advisers.find((a) => a.uid === selectedAdviser)?.lastname
+                : "Select an Adviser"}
+              <FiChevronDown className="ml-2 transition-transform duration-200" />
+            </button>
+
+            {showAdviserDropdown && advisers.length > 0 && (
+              <ul className="absolute z-10 bg-white border border-gray-300 rounded-md mt-1 w-full shadow-lg max-h-48 overflow-auto text-gray-900">
+                {advisers.map((adv) => (
+                  <li
+                    key={adv.uid}
+                    className="p-3 hover:bg-blue-100 cursor-pointer transition"
+                    onClick={() => {
+                      setSelectedAdviser(adv.uid);
+                      setShowAdviserDropdown(false);
+                      fetchSchedules(adv.uid);
+                    }}
+                  >
+                    {adv.firstname} {adv.lastname} - {adv.interests}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Schedule Selection */}
+          {selectedAdviser && (
+            <div className="mt-4">
+              <label className="block font-medium mb-1">Select Schedule:</label>
+              <button
+                onClick={() => setShowScheduleDropdown((prev) => !prev)}
+                className="bg-white border border-gray-300 text-gray-800 px-3 py-2 rounded-md w-full text-left flex justify-between items-center"
+              >
+                {selectedSchedule
+                  ? schedules.find((s) => s.schedid === selectedSchedule)?.day + " - " +
+                    formatTime(schedules.find((s) => s.schedid === selectedSchedule)?.startTime) + " - " +
+                    formatTime(schedules.find((s) => s.schedid === selectedSchedule)?.endTime)
+                  : schedules.length > 0 
+                    ? "Select a Schedule" 
+                    : "No Available Schedules"}
+                <FiChevronDown className="ml-2 transition-transform duration-200" />
+              </button>
+
+              {showScheduleDropdown && schedules.length > 0 && (
+               <ul className="absolute z-10 bg-white border border-gray-300 rounded-md mt-1 w-full shadow-lg max-h-48 overflow-auto text-gray-900">
+               {schedules.map((sched) => (
+                 <li
+                   key={sched.schedid}
+                   className="p-3 hover:bg-blue-100 cursor-pointer transition"
+                   onClick={() => {
+                     setSelectedSchedule(sched.schedid);
+                     setShowScheduleDropdown(false);
+                   }}
+                 >
+                   {sched.day} - {formatTime(sched.startTime)} - {formatTime(sched.endTime)}
+                 </li>
+               ))}
+             </ul>
+              )}
             </div>
+          )}
+
+          {/* Assign Button */}
+          <button
+            onClick={assignAdviserAndSchedule}
+            className={`mt-3 px-4 py-2 w-full rounded-lg transition ${
+              isUpdating || !selectedAdviser || !selectedSchedule
+                ? "bg-gray-400 text-white cursor-not-allowed"
+                : "bg-green-500 text-white hover:bg-green-600"
+            }`}
+            disabled={isUpdating || !selectedAdviser || !selectedSchedule}
+          >
+            {isUpdating ? "Assigning..." : "Assign Adviser & Schedule"}
+          </button>
+        </div>
   
+
             {/* Recruitment Status */}
             <div className="mb-6">
               <p className="font-medium">

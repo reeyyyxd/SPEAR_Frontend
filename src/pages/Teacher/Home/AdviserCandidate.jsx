@@ -54,13 +54,14 @@ const AdviserCandidate = () => {
 
   const fetchTeachersByDepartment = async (department) => {
     try {
+      const encodedDepartment = encodeURIComponent(department);
       const response = await axios.get(
-        `http://${address}:8080/teacher/see-teachers/${department}`,
+        `http://${address}:8080/teacher/see-teachers/${encodedDepartment}`,
         {
           headers: { Authorization: `Bearer ${authState.token}` },
         }
       );
-
+  
       setTeachers(response.data);
     } catch (error) {
       console.error("Error fetching teachers:", error);

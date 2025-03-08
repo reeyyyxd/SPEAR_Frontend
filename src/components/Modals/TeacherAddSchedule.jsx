@@ -5,7 +5,13 @@ import AuthContext from "../../services/AuthContext";
 
 const TeacherAddSchedule = ({ closeModal, fetchSchedules }) => {
   const { authState } = useContext(AuthContext);
-  const [newSchedule, setNewSchedule] = useState({ day: "", time: "", classId: "" });
+  const [newSchedule, setNewSchedule] = useState({
+    day: "",
+    startTime: "",
+    endTime: "",
+    classId: "",
+  });
+
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
@@ -17,6 +23,8 @@ const TeacherAddSchedule = ({ closeModal, fetchSchedules }) => {
       const indexOfColon = hostname.indexOf(':');
       return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
+
+  const dayOptions = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
 
   // Fetch qualified adviser classes
   useEffect(() => {
@@ -54,15 +62,23 @@ const TeacherAddSchedule = ({ closeModal, fetchSchedules }) => {
   };
 
   const handleCreateSchedule = async () => {
-    if (!newSchedule.day || !newSchedule.time || !newSchedule.classId) {
+    if (!newSchedule.day || !newSchedule.startTime || !newSchedule.endTime || !newSchedule.classId) {
       toast.error("All fields are required.");
       return;
     }
-
+  
     try {
+      const payload = {
+        day: newSchedule.day.toUpperCase(),  // ✅ Convert to uppercase for Enum compatibility
+        startTime: newSchedule.startTime + ":00",  // Ensure LocalTime format (HH:mm:ss)
+        endTime: newSchedule.endTime + ":00",
+        classId: newSchedule.classId,
+        teacherId: authState.uid
+      };
+  
       await axios.post(
         `http://${address}:8080/teacher/create-schedule`,
-        { ...newSchedule, teacherId: authState.uid },
+        payload,
         {
           headers: {
             "Content-Type": "application/json",
@@ -70,40 +86,54 @@ const TeacherAddSchedule = ({ closeModal, fetchSchedules }) => {
           },
         }
       );
-
+  
       toast.success("Schedule created successfully!");
       closeModal();
       fetchSchedules();
     } catch (err) {
+      console.error("Error creating schedule:", err.response?.data || err.message);
       toast.error("Failed to create schedule. Please try again.");
     }
   };
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-lg font-semibold mb-4">Add New Schedule</h2>
 
-        {/* Day Input */}
+        {/* Day Dropdown */}
         <label className="block mb-2">Day:</label>
-        <input
-          type="text"
+        <select
           name="day"
           value={newSchedule.day}
           onChange={handleInputChange}
           className="w-full p-2 border border-gray-300 rounded mb-3"
-          placeholder="Enter day (e.g., Monday)"
-        />
+        >
+          <option value="">Select a Day</option>
+          {dayOptions.map((day) => (
+            <option key={day} value={day}>
+              {day}
+            </option>
+          ))}
+        </select>
 
-        {/* Time Input */}
-        <label className="block mb-2">Time:</label>
+        {/* Start Time Input */}
+        <label className="block mb-2">Start Time:</label>
         <input
-          type="text"
-          name="time"
-          value={newSchedule.time}
+          type="time"
+          name="startTime"
+          value={newSchedule.startTime}
           onChange={handleInputChange}
           className="w-full p-2 border border-gray-300 rounded mb-3"
-          placeholder="Enter time (e.g., 10:00 AM - 12:00 PM)"
+        />
+
+        {/* End Time Input */}
+        <label className="block mb-2">End Time:</label>
+        <input
+          type="time"
+          name="endTime"
+          value={newSchedule.endTime}
+          onChange={handleInputChange}
+          className="w-full p-2 border border-gray-300 rounded mb-3"
         />
 
         {/* Class Selection Dropdown */}

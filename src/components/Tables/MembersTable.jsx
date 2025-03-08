@@ -218,10 +218,12 @@ const MembersTable = () => {
               {/* Adviser & Schedule Column */}
               <td className="p-4 border-b border-gray-300 text-sm">
                 <p>
-                  <strong>Adviser:</strong> {teamDetails.adviserId ? teamDetails.adviserId : "N/A"}
+                  <strong>Adviser:</strong> {teamDetails.adviserName ? teamDetails.adviserName : "N/A"}
                 </p>
                 <p>
-                  <strong>Schedule:</strong> {teamDetails.scheduleId ? teamDetails.scheduleId : "Not Assigned"}
+                <strong>Schedule:</strong> {teamDetails.scheduleDay && teamDetails.scheduleTime 
+                ? `${teamDetails.scheduleDay}, ${teamDetails.scheduleTime}` 
+                : "Not Assigned"}
                 </p>
               </td>
               {/* Project Details Column */}
@@ -267,7 +269,7 @@ const MembersTable = () => {
           )}{" "}
           or{" "}
           <button
-            onClick={() => navigate("/team-formation/apply-to-teams")}
+            onClick={() => navigate("/student/team-formation/apply-team")}
             className="text-teal underline"
           >
             Apply to a Team

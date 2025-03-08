@@ -34,6 +34,7 @@ import TeacherSchecules from "./pages/Teacher/Home/TeacherSchedules";
 import AdviserCandidate from "./pages/Teacher/Home/AdviserCandidate";
 import StudentTeamSettings from "./pages/Student/TeamFormation/StudentTeamSettings";
 
+import TeacherAdvisories from "./pages/Teacher/Teams/TeacherAdvisories";
 import EvaluationStatus from "./pages/Student/Evaluation/EvaluationStatus";
 import Evaluations from "./pages/Student/Evaluation/Evaluations";
 import StudentEvaluation from "./pages/Student/Evaluation/StudentEvaluation";
@@ -116,7 +117,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/student/apply-team",
+    path: "/student/team-formation/apply-team",
     element: (
       <PrivateRoute requiredRoles={["STUDENT"]}>
         <ApplyTeam />
@@ -260,6 +261,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["TEACHER"]}>
         <TeacherEvaluationStatus />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path:"/teacher/teacher-advisories",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <TeacherAdvisories />
       </PrivateRoute>
     ),
   },

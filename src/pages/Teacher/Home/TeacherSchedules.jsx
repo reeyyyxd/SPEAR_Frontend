@@ -33,6 +33,7 @@ const TeacherSchedules = () => {
       fetchQualifiedClasses();
     }
   }, [authState]);
+  
 
   const fetchSchedules = async () => {
     if (!authState?.uid || !authState?.token) {
@@ -107,6 +108,21 @@ const TeacherSchedules = () => {
     }
   };
 
+  const formatTime = (timeString) => {
+    if (!timeString) return "N/A";
+  
+    const [hour, minute] = timeString.split(":");
+    let formattedHour = parseInt(hour, 10);
+    const ampm = formattedHour >= 12 ? "PM" : "AM";
+  
+    if (formattedHour > 12) formattedHour -= 12;
+    if (formattedHour === 0) formattedHour = 12;
+  
+    return `${formattedHour}:${minute} ${ampm}`;
+  };
+
+ 
+
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={"TEACHER"} />
@@ -160,7 +176,7 @@ const TeacherSchedules = () => {
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
         ) : (
-          <ScheduleTable schedules={schedules} onEdit={handleEdit} onDelete={requestDelete} />
+          <ScheduleTable schedules={schedules} onEdit={handleEdit} onDelete={requestDelete} formatTime={formatTime} />
         )}
 
         {isAddModalOpen && (
@@ -191,7 +207,7 @@ const TeacherSchedules = () => {
   );
 };
 
-const ScheduleTable = ({ schedules, onEdit, onDelete }) => (
+const ScheduleTable = ({ schedules, onEdit, onDelete, formatTime }) => (
   <div className="overflow-x-auto border border-gray-300 rounded-lg">
     <table className="min-w-full divide-y divide-gray-200">
       <thead className="bg-teal font-medium text-white">
@@ -206,7 +222,11 @@ const ScheduleTable = ({ schedules, onEdit, onDelete }) => (
         {schedules.map((schedule) => (
           <tr key={schedule.schedid} className="hover:bg-gray-100 transition">
             <td className="px-6 py-2">{schedule.day}</td>
-            <td className="px-6 py-2">{schedule.time}</td>
+            <td className="px-6 py-2">
+              {schedule.startTime && schedule.endTime
+                ? `${formatTime(schedule.startTime)} - ${formatTime(schedule.endTime)}`
+                : "No Time Set"}
+            </td>
             <td className="px-6 py-2">{schedule.className} - {schedule.courseDescription}</td>
             <td className="px-6 py-2 flex space-x-2">
               {/* Purple Edit Button */}

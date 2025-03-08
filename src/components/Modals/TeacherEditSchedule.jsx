@@ -6,8 +6,9 @@ import AuthContext from "../../services/AuthContext";
 const TeacherEditSchedule = ({ schedule, closeModal, fetchSchedules }) => {
   const { authState } = useContext(AuthContext);
   const [updatedSchedule, setUpdatedSchedule] = useState({
-    day: schedule.day,
-    time: schedule.time,
+    day: schedule.day, // DayOfWeek enum
+    startTime: schedule.startTime, // New field
+    endTime: schedule.endTime, // New field
     classId: schedule.classId,
   });
 
@@ -18,10 +19,12 @@ const TeacherEditSchedule = ({ schedule, closeModal, fetchSchedules }) => {
   const address = getIpAddress();
 
   function getIpAddress() {
-      const hostname = window.location.hostname;
-      const indexOfColon = hostname.indexOf(':');
-      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+    const hostname = window.location.hostname;
+    const indexOfColon = hostname.indexOf(":");
+    return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
+
+  const dayOptions = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
 
   // Fetch qualified classes for the dropdown
   useEffect(() => {
@@ -59,7 +62,7 @@ const TeacherEditSchedule = ({ schedule, closeModal, fetchSchedules }) => {
   };
 
   const handleUpdateSchedule = async () => {
-    if (!updatedSchedule.day || !updatedSchedule.time || !updatedSchedule.classId) {
+    if (!updatedSchedule.day || !updatedSchedule.startTime || !updatedSchedule.endTime || !updatedSchedule.classId) {
       toast.error("All fields are required.");
       return;
     }
@@ -67,7 +70,7 @@ const TeacherEditSchedule = ({ schedule, closeModal, fetchSchedules }) => {
     try {
       await axios.put(
         `http://${address}:8080/teacher/update-schedule/${schedule.schedid}`,
-        { ...updatedSchedule, teacherId: authState.uid },
+        { ...updatedSchedule, teacherId: authState.uid }, // Ensure correct API structure
         {
           headers: {
             "Content-Type": "application/json",
@@ -89,22 +92,38 @@ const TeacherEditSchedule = ({ schedule, closeModal, fetchSchedules }) => {
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-lg font-semibold mb-4">Edit Schedule</h2>
 
-        {/* Day Input */}
+        {/* Day Dropdown */}
         <label className="block mb-2">Day:</label>
-        <input
-          type="text"
+        <select
           name="day"
           value={updatedSchedule.day}
           onChange={handleInputChange}
           className="w-full p-2 border border-gray-300 rounded mb-3"
+        >
+          <option value="">Select a Day</option>
+          {dayOptions.map((day) => (
+            <option key={day} value={day}>
+              {day}
+            </option>
+          ))}
+        </select>
+
+        {/* Start Time Input */}
+        <label className="block mb-2">Start Time:</label>
+        <input
+          type="time"
+          name="startTime"
+          value={updatedSchedule.startTime}
+          onChange={handleInputChange}
+          className="w-full p-2 border border-gray-300 rounded mb-3"
         />
 
-        {/* Time Input */}
-        <label className="block mb-2">Time:</label>
+        {/* End Time Input */}
+        <label className="block mb-2">End Time:</label>
         <input
-          type="text"
-          name="time"
-          value={updatedSchedule.time}
+          type="time"
+          name="endTime"
+          value={updatedSchedule.endTime}
           onChange={handleInputChange}
           className="w-full p-2 border border-gray-300 rounded mb-3"
         />
