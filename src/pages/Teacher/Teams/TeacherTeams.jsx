@@ -8,28 +8,15 @@ const TeacherTeams = () => {
   const { authState, getDecryptedId, storeEncryptedId } = useContext(AuthContext);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [leaders, setLeaders] = useState({});
   const navigate = useNavigate();
 
   const address = getIpAddress();
 
   function getIpAddress() {
-      const hostname = window.location.hostname;
-      const indexOfColon = hostname.indexOf(':');
-      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+    const hostname = window.location.hostname;
+    const indexOfColon = hostname.indexOf(":");
+    return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
-
-  const fetchLeaderName = async (leaderId) => {
-    try {
-      const response = await axios.get(`http://${address}:8080/teams/leader/${leaderId}`, {
-        headers: { Authorization: `Bearer ${authState.token}` },
-      });
-      return response.data.leaderName || "N/A";
-    } catch (error) {
-      console.error("Error fetching leader's name:", error);
-      return "N/A";
-    }
-  };
 
   useEffect(() => {
     const fetchTeamsByClass = async () => {
@@ -45,21 +32,7 @@ const TeacherTeams = () => {
           headers: { Authorization: `Bearer ${authState.token}` },
         });
 
-        const data = response.data;
-
-        const leaderPromises = data.map(async (team) => ({
-          tid: team.tid,
-          leaderName: await fetchLeaderName(team.leaderId),
-        }));
-
-        const leaderData = await Promise.all(leaderPromises);
-        const leaderMap = leaderData.reduce((map, leader) => {
-          map[leader.tid] = leader.leaderName;
-          return map;
-        }, {});
-
-        setLeaders(leaderMap);
-        setTeams(data || []);
+        setTeams(response.data || []);
       } catch (error) {
         console.error("Error fetching teams data:", error);
       } finally {
@@ -86,63 +59,78 @@ const TeacherTeams = () => {
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState?.role} />
-      <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
+      <div className="main-content bg-white text-gray-900 md:px-20 lg:px-28 pt-8 md:pt-12">
+        
         {/* Back Button */}
         <div className="flex justify-start mb-4">
           <button
-            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
+            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
             onClick={() => navigate(-1)}
           >
             Back
           </button>
         </div>
 
-        <h1 className="text-lg font-semibold mb-6 text-center">Teams</h1>
+        <h1 className="text-2xl font-bold mb-6 text-gray-800 text-center">Teams</h1>
+
         <div className="bg-gray-100 shadow-md rounded-lg p-6">
           {teams.length > 0 ? (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr className="bg-teal-500">
-                  <th
-                    className="px-6 py-3 text-left text-sm font-bold"
-                    style={{ color: "#1a1a1a" }} // Darker font color
-                  >
-                    Group Name
-                  </th>
-                  <th
-                    className="px-6 py-3 text-left text-sm font-bold"
-                    style={{ color: "#1a1a1a" }} // Darker font color
-                  >
-                    Leader
-                  </th>
-                  <th
-                    className="px-6 py-3 text-left text-sm font-bold"
-                    style={{ color: "#1a1a1a" }} // Darker font color
-                  >
-                    Recruitment Status
-                  </th>
-                  <th
-                    className="px-6 py-3 text-left text-sm font-bold"
-                    style={{ color: "#1a1a1a" }} // Darker font color
-                  >
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-gray-300">
+             <thead>
+              <tr className="bg-teal-500 text-black"> {/* Changed text color to black */}
+                <th className="px-6 py-3 text-left text-sm font-bold">Group Name</th>
+                <th className="px-6 py-3 text-left text-sm font-bold">Leader</th>
+                <th className="px-6 py-3 text-left text-sm font-bold">Members</th>
+                <th className="px-6 py-3 text-left text-sm font-bold">Recruitment Status</th>
+                <th className="px-6 py-3 text-left text-sm font-bold">Adviser & Schedule</th>
+                <th className="px-6 py-3 text-left text-sm font-bold">Action</th>
+              </tr>
+            </thead>
+              <tbody className="bg-white divide-y divide-gray-300">
                 {teams.map((team) => (
-                  <tr key={team.tid}>
+                  <tr key={team.tid} className="hover:bg-gray-100">
+                    {/* Group Name */}
                     <td className="px-6 py-4 text-sm text-gray-900">{team.groupName}</td>
+
+                    {/* Leader Name (No API call, using direct data) */}
+                    <td className="px-6 py-4 text-sm text-gray-900">{team.leaderName || "N/A"}</td>
+
+                    {/* Members */}
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      {leaders[team.tid] || "N/A"}
+                      {team.memberNames.length > 0 ? (
+                        <ul className="list-disc list-inside">
+                          {team.memberNames.map((member, index) => (
+                            <li key={index}>{member}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-gray-500">No Members</p>
+                      )}
                     </td>
+
+                    {/* Recruitment Status */}
+                    <td className="px-6 py-4 text-sm font-bold">
+                      <span
+                        className={`px-3 py-1 rounded-lg ${
+                          team.recruitmentOpen ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                        }`}
+                      >
+                        {team.recruitmentOpen ? "Open" : "Closed"}
+                      </span>
+                    </td>
+
+                    {/* Adviser & Schedule */}
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      {team.recruitmentOpen ? "Open" : "Closed"}
+                      <p className="font-semibold">{team.adviserName || "No Adviser Assigned"}</p>
+                      <p>{team.scheduleDay !== "No Day Set" ? `${team.scheduleDay}` : "No Schedule"}</p>
+                      <p>{team.scheduleTime !== "No Time Set" ? `${team.scheduleTime}` : ""}</p>
                     </td>
+
+                    {/* View Details Button */}
                     <td className="px-6 py-4 text-sm text-gray-900">
                       <button
                         className="bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
-                        onClick={() => handleTeamClick(team.tid)} // Extract, encrypt, and store tid
+                        onClick={() => handleTeamClick(team.tid)}
                       >
                         View Details
                       </button>

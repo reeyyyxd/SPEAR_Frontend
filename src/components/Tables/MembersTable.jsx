@@ -56,7 +56,6 @@ const MembersTable = () => {
         if (latestTeamId) {
           setTeamId(latestTeamId);
           storeEncryptedId("tid", latestTeamId);
-          localStorage.setItem("tid", latestTeamId);
         }
       } else {
         console.warn("No team data received.");
@@ -102,7 +101,6 @@ const MembersTable = () => {
           if (latestTeamId) {
             setTeamId(latestTeamId);
             storeEncryptedId("tid", latestTeamId);
-            localStorage.setItem("tid", latestTeamId);
           }
         } else {
           // Suppress warnings by not logging anything
@@ -131,7 +129,6 @@ const MembersTable = () => {
   
     // Store `teamId` securely before navigating
     storeEncryptedId("tid", latestTeamId);
-    localStorage.setItem("tid", latestTeamId);
   
     navigate(`/student-team-settings/${classId}/${latestTeamId}/${userId}`);
   };

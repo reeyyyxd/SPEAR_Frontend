@@ -185,9 +185,23 @@ const AddTeamMembersModal = ({ isOpen, onClose, teamId, classId }) => {
               ))}
             </ul>
             <div className="flex justify-between mt-3">
-              <button onClick={prevPage} disabled={currentPage === 1} className="bg-blue-500 text-white px-3 py-1 rounded-lg disabled:bg-gray-400">Prev</button>
+              <button 
+                onClick={prevPage} 
+                disabled={currentPage === 1} 
+                className="bg-blue-500 text-black px-3 py-1 rounded-lg disabled:bg-gray-400"
+              >
+                Prev
+              </button>
+              
               <span className="text-sm">Page {currentPage} of {Math.ceil(filteredStudents.length / studentsPerPage)}</span>
-              <button onClick={nextPage} disabled={currentPage === Math.ceil(filteredStudents.length / studentsPerPage)} className="bg-blue-500 text-white px-3 py-1 rounded-lg disabled:bg-gray-400">Next</button>
+              
+              <button 
+                onClick={nextPage} 
+                disabled={currentPage === Math.ceil(filteredStudents.length / studentsPerPage)} 
+                className="bg-blue-500 text-black px-3 py-1 rounded-lg disabled:bg-gray-400"
+              >
+                Next
+              </button>
             </div>
           </>
         ) : (
