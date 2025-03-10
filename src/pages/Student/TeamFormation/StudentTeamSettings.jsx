@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AuthContext from "../../../services/AuthContext";
 import axios from "axios";
 import Navbar from "../../../components/Navbar/Navbar";
-import { FiArrowLeft, FiEdit3, FiUserMinus, FiChevronDown} from "react-icons/fi";
+import { FiArrowLeft, FiEdit3, FiUserMinus, FiChevronDown, FiUserCheck} from "react-icons/fi";
 
 const StudentTeamSettings = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
@@ -249,9 +249,30 @@ const StudentTeamSettings = () => {
         console.error("Error deleting team:", error.response?.data?.message || error.message);
         alert(error.response?.data?.message || "Failed to delete the team.");
     }
+};
 
-   
-    
+
+const transferLeadership = async (newLeaderId) => {
+  if (!teamDetails?.tid) return;
+
+  if (!window.confirm("Are you sure you want to transfer leadership?")) {
+    return;
+  }
+
+  try {
+    const response = await axios.put(
+      `http://${address}:8080/team/${teamDetails.tid}/transfer-leadership`,
+      {
+        requesterId: userId,
+        newLeaderId: newLeaderId,
+      }
+    );
+    alert(response.data.message);
+    window.location.reload();
+  } catch (error) {
+    console.error("Error transferring leadership:", error);
+    alert(error.response?.data?.message || "Failed to transfer leadership.");
+  }
 };
 
   return (
@@ -309,14 +330,22 @@ const StudentTeamSettings = () => {
                   <tbody>
                     {teamDetails.memberNames.map((member, index) => (
                       <tr key={teamDetails.memberIds[index]} className="hover:bg-gray-100">
-                        <td className="border border-gray-300 px-4 py-2">{member}</td>
-                        <td className="border border-gray-300 px-4 py-2 text-center">
-                          <button
-                            onClick={() => kickMember(teamDetails.memberIds[index])}
-                            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-700 transition flex items-center gap-1"
-                          >
-                            <FiUserMinus /> Kick
-                          </button>
+                        <td className="border border-gray-300 px-4 py-3 text-gray-800">{member}</td>
+                        <td className="border border-gray-300 px-4 py-3">
+                          <div className="flex flex-wrap gap-2 justify-center">
+                            <button
+                              onClick={() => kickMember(teamDetails.memberIds[index])}
+                              className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-700 transition flex items-center gap-2"
+                            >
+                              <FiUserMinus /> Kick
+                            </button>
+                            <button
+                              onClick={() => transferLeadership(teamDetails.memberIds[index])}
+                              className="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition flex items-center gap-2"
+                            >
+                              <FiUserCheck /> Transfer Leadership
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
