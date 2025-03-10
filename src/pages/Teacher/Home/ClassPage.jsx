@@ -113,15 +113,15 @@ const ClassPage = () => {
             </button>
             <button
               className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
-              onClick={() => navigate(`/teacher/project-proposals`)}
-            >
-              View Project Proposals
-            </button>
-            <button
-              className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
               onClick={() => navigate(`/teacher/teams`)}
             >
               View Teams
+            </button>
+            <button
+              className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
+              onClick={() => navigate(`/teacher/project-proposals`)}
+            >
+              View Project Proposals
             </button>
             <button
               className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"

@@ -23,7 +23,7 @@ const ProjectProposalPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     const storedClassId = getDecryptedId("cid");
     if (!storedClassId) {
       toast.error(
