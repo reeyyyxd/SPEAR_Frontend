@@ -33,6 +33,7 @@ import AdminRecycleBin from "./pages/Common/AdminRecycleBin"
 import TeacherSchecules from "./pages/Teacher/Home/TeacherSchedules";
 import AdviserCandidate from "./pages/Teacher/Home/AdviserCandidate";
 import StudentTeamSettings from "./pages/Student/TeamFormation/StudentTeamSettings";
+import ProjectProposalPage from "./pages/Student/ProjectProposal/ProjectProposalPage"; 
 
 import TeacherAdvisories from "./pages/Teacher/Teams/TeacherAdvisories";
 import EvaluationStatus from "./pages/Student/Evaluation/EvaluationStatus";
@@ -140,6 +141,15 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
+  {
+    path: "/student/project-proposal",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <ProjectProposalPage />
+      </PrivateRoute>
+    ),
+  },
+  
   //teacher side
 
 

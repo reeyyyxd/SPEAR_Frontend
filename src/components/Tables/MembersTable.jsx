@@ -226,7 +226,7 @@ const MembersTable = () => {
               {/* Project Details Column */}
               <td className="p-4 border-b border-gray-300 text-sm">
                 <button
-                  onClick={() => setIsProjectModalOpen(true)}
+                  onClick={() => navigate(`/student/view-project-proposal`)} // Navigate to the Project Proposal Page
                   className="bg-teal text-white py-2 px-4 rounded-lg hover:bg-peach transition"
                 >
                   Project Proposals

@@ -80,7 +80,15 @@ const ProjectProposalPage = () => {
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
-        <h1 className="text-3xl font-semibold my-6">Project Proposal</h1>
+        <h1 className="text-3xl font-semibold my-6">Propose New Project</h1>
+
+        <button
+        onClick={() => navigate(-1)}
+        className="bg-gray-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-700 transition"
+      >
+        Back
+      </button>
+      
         <form className="space-y-10" onSubmit={handleSubmit}>
           <div>
             <label className="block text-base font-medium text-teal">
