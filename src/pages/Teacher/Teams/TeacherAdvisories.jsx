@@ -2,12 +2,14 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
+import ViewProposalAdviserModal from "../../../components/Modals/ViewProposalsAdviserModal";
 import axios from "axios";
 
 const TeacherAdvisories = () => {
-  const { authState } = useContext(AuthContext);
+  const { authState, storeEncryptedId } = useContext(AuthContext);
   const [advisoryTeams, setAdvisoryTeams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const address = getIpAddress();
@@ -44,6 +46,11 @@ const TeacherAdvisories = () => {
     fetchAdvisoryTeams();
   }, [authState]);
 
+  const handleViewProposals = (teamId) => {
+    storeEncryptedId("tid", teamId);
+    setIsModalOpen(true); 
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -51,6 +58,8 @@ const TeacherAdvisories = () => {
       </div>
     );
   }
+
+  
 
   return (
             <div className="grid grid-cols-[256px_1fr] min-h-screen">
@@ -113,8 +122,8 @@ const TeacherAdvisories = () => {
                     {/* View Project Proposals Button */}
                     <td className="px-6 py-4 text-sm text-gray-900">
                       <button
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
-                        onClick={() => navigate(`/project-proposals/${team.tid}`)}
+                        className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
+                        onClick={() => handleViewProposals(team.tid)}
                       >
                         View Proposals
                       </button>
@@ -128,7 +137,9 @@ const TeacherAdvisories = () => {
           )}
         </div>
       </div>
+      {isModalOpen && <ViewProposalAdviserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
     </div>
+    
   );
 };
 

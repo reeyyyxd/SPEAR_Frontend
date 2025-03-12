@@ -12,23 +12,23 @@ const ProjectProposalPage = () => {
   const [features, setFeatures] = useState([{ title: "", description: "" }]);
   const navigate = useNavigate();
   
-
+  // Get the required IDs
+  const storedClassId = getDecryptedId("cid");
+  const teamId = getDecryptedId("tid"); // Get the Team ID
+  
   const address = getIpAddress();
 
   function getIpAddress() {
-      const hostname = window.location.hostname;
-      const indexOfColon = hostname.indexOf(':');
-      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+    const hostname = window.location.hostname;
+    const indexOfColon = hostname.indexOf(":");
+    return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const storedClassId = getDecryptedId("cid");
     if (!storedClassId) {
-      toast.error(
-        "Class ID not found. Please return to the class page and try again."
-      );
+      toast.error("Class ID not found. Please return to the class page and try again.");
       return;
     }
 
@@ -37,6 +37,7 @@ const ProjectProposalPage = () => {
       projectName: projectTitle.trim(),
       description: projectOverview.trim(),
       classId: parseInt(storedClassId, 10),
+      teamId: teamId ? parseInt(teamId, 10) : null, // Include team ID if available
       features: features
         .filter((feature) => feature.title.trim() && feature.description.trim())
         .map((feature) => ({
@@ -60,7 +61,7 @@ const ProjectProposalPage = () => {
       );
 
       toast.success("Proposal submitted successfully!");
-      navigate("/student-dashboard");
+      navigate("/student/view-project-proposal");
     } catch (error) {
       console.error("Error submitting proposal:", error);
       toast.error(error.response?.data?.message || "Failed to submit the proposal.");
@@ -75,19 +76,19 @@ const ProjectProposalPage = () => {
     setFeatures(features.filter((_, i) => i !== index));
   };
 
-
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
+      <button
+          onClick={() => navigate(-1)}
+          className="bg-gray-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-700 transition"
+        >
+          Back
+        </button>
         <h1 className="text-3xl font-semibold my-6">Propose New Project</h1>
 
-        <button
-        onClick={() => navigate(-1)}
-        className="bg-gray-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-700 transition"
-      >
-        Back
-      </button>
+        
       
         <form className="space-y-10" onSubmit={handleSubmit}>
           <div>
@@ -121,7 +122,7 @@ const ProjectProposalPage = () => {
             <button
               type="button"
               onClick={handleAddFeature}
-              className=" text-white bg-teal px-4 py-2 my-4 rounded-md border hover:bg-teal-dark transition"
+              className="text-white bg-teal px-4 py-2 my-4 rounded-md border hover:bg-teal-dark transition"
             >
               Add Feature
             </button>
