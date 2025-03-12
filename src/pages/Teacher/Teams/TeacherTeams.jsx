@@ -2,12 +2,15 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
+import OfficialProjectModal from "../../../components/Modals/OfficialProjectModal";
 import axios from "axios";
 
 const TeacherTeams = () => {
-  const { authState, getDecryptedId, storeEncryptedId } = useContext(AuthContext);
+  const { authState, getDecryptedId } = useContext(AuthContext);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState(null);
   const navigate = useNavigate();
 
   const address = getIpAddress();
@@ -22,7 +25,7 @@ const TeacherTeams = () => {
     const fetchTeamsByClass = async () => {
       const classId = getDecryptedId("cid");
       if (!classId) {
-        console.error("Class ID is not available. Please ensure it's stored.");
+        console.error("Class ID is not available.");
         setLoading(false);
         return;
       }
@@ -43,10 +46,16 @@ const TeacherTeams = () => {
     fetchTeamsByClass();
   }, [authState, getDecryptedId]);
 
-  const handleTeamClick = (teamId) => {
-    storeEncryptedId("tid", teamId);
-    navigate(`/team-details`);
+  const handleViewProject = (teamId) => {
+    setSelectedTeamId(teamId);
+    setIsModalOpen(true);
   };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedTeamId(null);
+    window.location.reload();
+};
 
   if (loading) {
     return (
@@ -76,23 +85,23 @@ const TeacherTeams = () => {
         <div className="bg-gray-100 shadow-md rounded-lg p-6">
           {teams.length > 0 ? (
             <table className="min-w-full divide-y divide-gray-300">
-             <thead>
-              <tr className="bg-teal-500 text-black"> {/* Changed text color to black */}
-                <th className="px-6 py-3 text-left text-sm font-bold">Group Name</th>
-                <th className="px-6 py-3 text-left text-sm font-bold">Leader</th>
-                <th className="px-6 py-3 text-left text-sm font-bold">Members</th>
-                <th className="px-6 py-3 text-left text-sm font-bold">Recruitment Status</th>
-                <th className="px-6 py-3 text-left text-sm font-bold">Adviser & Schedule</th>
-                <th className="px-6 py-3 text-left text-sm font-bold">Action</th>
-              </tr>
-            </thead>
+              <thead>
+                <tr className="bg-teal-500 text-black">
+                  <th className="px-6 py-3 text-left text-sm font-bold">Group Name</th>
+                  <th className="px-6 py-3 text-left text-sm font-bold">Leader</th>
+                  <th className="px-6 py-3 text-left text-sm font-bold">Members</th>
+                  <th className="px-6 py-3 text-left text-sm font-bold">Recruitment Status</th>
+                  <th className="px-6 py-3 text-left text-sm font-bold">Adviser & Schedule</th>
+                  <th className="px-6 py-3 text-left text-sm font-bold">Action</th>
+                </tr>
+              </thead>
               <tbody className="bg-white divide-y divide-gray-300">
                 {teams.map((team) => (
                   <tr key={team.tid} className="hover:bg-gray-100">
                     {/* Group Name */}
                     <td className="px-6 py-4 text-sm text-gray-900">{team.groupName}</td>
 
-                    {/* Leader Name (No API call, using direct data) */}
+                    {/* Leader Name */}
                     <td className="px-6 py-4 text-sm text-gray-900">{team.leaderName || "N/A"}</td>
 
                     {/* Members */}
@@ -130,7 +139,7 @@ const TeacherTeams = () => {
                     <td className="px-6 py-4 text-sm text-gray-900">
                       <button
                         className="bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
-                        onClick={() => handleTeamClick(team.tid)}
+                        onClick={() => handleViewProject(team.tid)}
                       >
                         View Details
                       </button>
@@ -144,6 +153,12 @@ const TeacherTeams = () => {
           )}
         </div>
       </div>
+
+      <OfficialProjectModal 
+        isOpen={isModalOpen} 
+        onClose={closeModal} 
+        teamId={selectedTeamId}
+      />
     </div>
   );
 };

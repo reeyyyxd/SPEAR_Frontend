@@ -8,7 +8,6 @@ const ProjectProposals = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
   const navigate = useNavigate();
   const [proposals, setProposals] = useState([]);
-  const [advisers, setAdvisers] = useState({});
   const [loading, setLoading] = useState(true);
   const [classId, setClassId] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -18,9 +17,9 @@ const ProjectProposals = () => {
   const address = getIpAddress();
 
   function getIpAddress() {
-      const hostname = window.location.hostname;
-      const indexOfColon = hostname.indexOf(':');
-      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+    const hostname = window.location.hostname;
+    const indexOfColon = hostname.indexOf(":");
+    return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
 
   useEffect(() => {
@@ -40,11 +39,10 @@ const ProjectProposals = () => {
     const fetchProposals = async () => {
       try {
         const { data } = await axios.get(
-          `http://${address}:8080/proposals/class/with-features/${cid}`,
+          `http://${address}:8080/teacher/proposals/${cid}`, // Fixed API endpoint
           { headers: { Authorization: `Bearer ${authState.token}` } }
         );
         setProposals(data || []);
-        fetchAdvisers(data);
       } catch (error) {
         console.error("Error fetching project proposals:", error);
       } finally {
@@ -52,30 +50,16 @@ const ProjectProposals = () => {
       }
     };
 
-    const fetchAdvisers = async (proposals) => {
-      try {
-        const adviserMap = {};
-        await Promise.all(
-          proposals.map(async (proposal) => {
-            if (proposal.adviserId) {
-              const { data } = await axios.get(
-                `http://${address}:8080/proposals/${proposal.pid}/adviser`,
-                { headers: { Authorization: `Bearer ${authState.token}` } }
-              );
-              adviserMap[proposal.pid] = data.adviserFullName || "N/A";
-            }
-          })
-        );
-        setAdvisers(adviserMap);
-      } catch (error) {
-        console.error("Error fetching adviser names:", error);
-      }
-    };
-
     fetchProposals();
   }, [authState, navigate, getDecryptedId]);
 
   const handleApprove = async (proposalId) => {
+    const proposal = proposals.find((p) => p.pid === proposalId);
+    if (proposal?.status === "APPROVED") {
+      alert("This proposal is already approved.");
+      return;
+    }
+  
     try {
       await axios.put(
         `http://${address}:8080/teacher/status-proposal/${proposalId}`,
@@ -84,8 +68,8 @@ const ProjectProposals = () => {
       );
       alert("Proposal approved successfully.");
       setProposals((prev) =>
-        prev.map((proposal) =>
-          proposal.pid === proposalId ? { ...proposal, status: "APPROVED", reason: null } : proposal
+        prev.map((p) =>
+          p.pid === proposalId ? { ...p, status: "APPROVED", reason: null } : p
         )
       );
     } catch (error) {
@@ -94,6 +78,12 @@ const ProjectProposals = () => {
   };
 
   const handleReject = async () => {
+    const proposal = proposals.find((p) => p.pid === selectedProposalId);
+    if (proposal?.status === "DENIED") {
+      alert("This proposal has already been rejected.");
+      return;
+    }
+  
     try {
       await axios.put(
         `http://${address}:8080/teacher/status-proposal/${selectedProposalId}`,
@@ -102,8 +92,8 @@ const ProjectProposals = () => {
       );
       alert("Proposal rejected successfully.");
       setProposals((prev) =>
-        prev.map((proposal) =>
-          proposal.pid === selectedProposalId ? { ...proposal, status: "DENIED", reason: rejectReason } : proposal
+        prev.map((p) =>
+          p.pid === selectedProposalId ? { ...p, status: "DENIED", reason: rejectReason } : p
         )
       );
       setShowModal(false);
@@ -129,7 +119,7 @@ const ProjectProposals = () => {
       <div className="flex justify-start mb-4">
           <button
             className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
-            onClick={() => navigate(-1)} // Go back to the previous page
+            onClick={() => navigate(-1)}
           >
             Back
           </button>
@@ -143,32 +133,67 @@ const ProjectProposals = () => {
               {/* Table Header */}
               <thead className="sticky top-0 bg-teal text-white z-20 shadow-lg">
                 <tr className="bg-teal-500 text-white">
+                  <th className="px-6 py-3 text-center text-sm font-bold text-white">Team Name</th>
                   <th className="px-6 py-3 text-center text-sm font-bold text-white">Project Name</th>
                   <th className="px-6 py-3 text-center text-sm font-bold text-white">Description</th>
                   <th className="px-6 py-3 text-center text-sm font-bold text-white">Features</th>
-                  <th className="px-6 py-3 text-center text-sm font-bold text-white">Adviser</th>
+                  <th className="px-6 py-3 text-center text-sm font-bold text-white">Created By</th>
                   <th className="px-6 py-3 text-center text-sm font-bold text-white">Status</th>
                   <th className="px-6 py-3 text-center text-sm font-bold text-white">Reason</th>
                   <th className="px-6 py-3 text-center text-sm font-bold text-white">Action</th>
                 </tr>
               </thead>
-  
+
               {/* Table Body */}
               <tbody className="bg-white divide-y divide-gray-200">
                 {proposals.map((proposal) => (
                   <tr key={proposal.pid}>
-                    <td className="px-6 py-4 text-center text-sm text-gray-900">{proposal.projectName}</td>
-                    <td className="px-6 py-4 text-center text-sm text-gray-900">{proposal.description}</td>
+                    {/* Team Name */}
                     <td className="px-6 py-4 text-center text-sm text-gray-900">
-                      {proposal.features.map((feature, index) => (
-                        <div key={index}>
-                          <strong>{feature.featureTitle}:</strong> {feature.featureDescription}
-                        </div>
-                      ))}
+                      {proposal.teamName || "N/A"}
                     </td>
-                    <td className="px-6 py-4 text-center text-sm text-gray-900">{advisers[proposal.pid] || "N/A"}</td>
-                    <td className="px-6 py-4 text-center text-sm text-gray-900">{proposal.status}</td>
-                    <td className="px-6 py-4 text-center text-sm text-gray-900">{proposal.reason || "N/A"}</td>
+                    
+                    {/* Project Name */}
+                    <td className="px-6 py-4 text-center text-sm text-gray-900">
+                      {proposal.projectName}
+                    </td>
+
+                    {/* Description */}
+                    <td className="px-6 py-4 text-center text-sm text-gray-900">
+                      {proposal.description}
+                    </td>
+
+                    {/* Features */}
+                    <td className="px-6 py-4 text-center text-sm text-gray-900">
+                      {proposal.features.length > 0 ? (
+                        <ul className="list-disc list-inside">
+                          {proposal.features.map((feature, index) => (
+                            <li key={index}>
+                              <strong>{feature.featureTitle}:</strong> {feature.featureDescription}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        "No features"
+                      )}
+                    </td>
+
+                    {/* Created By */}
+                    <td className="px-6 py-4 text-center text-sm text-gray-900">
+                      {proposal.proposedByName || "N/A"}
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-6 py-4 text-center text-sm text-gray-900">
+                      {proposal.status}
+                    </td>
+
+                    {/* Reason */}
+                    <td className="px-6 py-4 text-center text-sm text-gray-900">
+                      {proposal.reason || "N/A"}
+                    </td>
+
+                    {/* Actions */}
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-center space-x-2">
                         <button
@@ -210,16 +235,10 @@ const ProjectProposals = () => {
               placeholder="Enter reason for rejection"
             ></textarea>
             <div className="flex justify-end mt-4">
-              <button
-                onClick={() => setShowModal(false)}
-                className="mr-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700 transition-all"
-              >
+              <button onClick={() => setShowModal(false)} className="mr-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700 transition-all">
                 Cancel
               </button>
-              <button
-                onClick={handleReject}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700 transition-all"
-              >
+              <button onClick={handleReject} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700 transition-all">
                 Submit
               </button>
             </div>
@@ -228,7 +247,6 @@ const ProjectProposals = () => {
       )}
     </div>
   );
-  
 };
 
 export default ProjectProposals;

@@ -21,7 +21,6 @@ import ManageUsers from "./components/UserManagment/ManageUsers";
 import ClassPage from "./pages/Teacher/Home/ClassPage";
 import StudentClassPage from "./pages/Student/Home/StudentClassPage";
 import TeacherTeams from "./pages/Teacher/Teams/TeacherTeams";
-import TeamDetails from "./pages/Teacher/Teams/TeamDetails";
 import TeacherEvaluations from "./pages/Teacher/Evaluation/TeacherEvaluations";
 import ErrorPage from "./pages/Common/ErrorPage";
 import TeacherQuestions from "./pages/Teacher/Evaluation/TeacherQuestions";
@@ -198,15 +197,6 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["TEACHER"]}>
         <ClassPage />
-      </PrivateRoute>
-    ),
-  },
-
-  {
-    path: "/team-details",
-    element: (
-      <PrivateRoute requiredRoles={["TEACHER"]}>
-        <TeamDetails />
       </PrivateRoute>
     ),
   },
