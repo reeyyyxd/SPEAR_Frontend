@@ -12,11 +12,21 @@ const TeacherEvaluations = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const [newEvaluation, setNewEvaluation] = useState({
+    evaluationType: "",
     availability: "",
     dateOpen: "",
     dateClose: "",
-    period: "",
+    period: "Prelims",
   });
+
+  useEffect(() => {
+    if (showModal) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+  }, [showModal]);
+
 
   const address = getIpAddress();
 
@@ -26,8 +36,6 @@ const TeacherEvaluations = () => {
       return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
 
-
-  // On component mount, fetch evaluations
   useEffect(() => {
     fetchEvaluations();
   }, []);
@@ -63,6 +71,10 @@ const fetchEvaluations = async () => {
   }
 };
 
+//create dont affect the fetch please :(
+
+
+
 const handleCreateEvaluation = async () => {
   if (!validateEvaluation()) return;
 
@@ -70,40 +82,59 @@ const handleCreateEvaluation = async () => {
     const classId = getDecryptedId("cid");
     const url = `http://${address}:8080/teacher/create-evaluation/${classId}`;
 
-    const body = cleanEvaluationData(newEvaluation);
+    const body = cleanEvaluationData({
+      ...newEvaluation,
+      evaluationType: newEvaluation.evaluationType || "STUDENT_TO_STUDENT",  
+      period: newEvaluation.period || "Prelims",  
+    });
 
-    const response = await axios.post(url, body);
+    const response = await axios.post(url, body, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (!response.data || !response.data.eid) {
+      throw new Error("Invalid server response. No evaluation data returned.");
+    }
 
     alert(response.data.message || "Evaluation created successfully!");
-    window.location.reload();
-    setEvaluations((prev) => {
-      if (!response.data || !response.data.evaluation) {
-        console.error("data.evaluation is undefined. Skipping update.");
-        return prev;
-      }
-    
-      const { dateOpen = "N/A", dateClose = "N/A", ...rest } = response.data.evaluation;
-    
-      return [
-        ...prev,
-        {
-          ...rest,
-          dateOpen,
-          dateClose,
-          availability: calculateAvailability(dateOpen, dateClose),
-        },
-      ];
-    });
+
+    // Ensure response data is correctly structured
+    const newEval = {
+      ...response.data,
+      dateOpen: response.data.dateOpen || "N/A",
+      dateClose: response.data.dateClose || "N/A",
+      availability: calculateAvailability(
+        response.data.dateOpen,
+        response.data.dateClose
+      ),
+    };
+
+    setEvaluations((prev) => [...prev, newEval]);
 
     setShowModal(false);
     setNewEvaluation({
+      evaluationType: "STUDENT_TO_STUDENT", // Default value
       availability: "",
       dateOpen: "",
       dateClose: "",
-      period: "",
+      period: "Prelims",
     });
+
   } catch (error) {
-    setError(error.response?.data?.message || "Error creating evaluation.");
+    console.error("Error creating evaluation:", error);
+    
+    if (error.response) {
+      console.error("Server responded with:", error.response.status);
+      console.error("Response data:", error.response.data);
+      setError(error.response?.data?.error || `Server Error: ${error.response.status}`);
+    } else if (error.request) {
+      console.error("No response received from server.");
+      setError("No response from server. Please check your connection.");
+    } else {
+      console.error("Error setting up the request:", error.message);
+      setError("Unexpected error. Please try again.");
+    }
   }
 };
 
@@ -182,14 +213,12 @@ const handleEditEvaluation = async () => {
     return true;
   };
   
-  
-  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewEvaluation((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: value || "",
     }));
   };
 
@@ -256,43 +285,47 @@ const handleEditEvaluation = async () => {
   
   
   return (
-<div className="grid grid-cols-[256px_1fr] min-h-screen">
-  <Navbar userRole="TEACHER" />
-  <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
-    {/* Header with Back and Create Evaluation buttons */}
-    <div className="flex flex-col mb-6">
-      <div className="flex justify-between mb-4">
-        <button
-          className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
-          onClick={() => navigate(-1)}
-        >
-          Back
-        </button>
-        <button
-          className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300"
-          onClick={() => {
-            setShowModal(true);
-            setNewEvaluation({
-              availability: "",
-              dateOpen: "",
-              dateClose: "",
-              period: "",
-            });
-          }}
-        >
-          Create Evaluation
-        </button>
+  <div className="grid grid-cols-[256px_1fr] min-h-screen">
+    <Navbar userRole="TEACHER" />
+    
+    <div className="p-8 bg-white shadow-md rounded-md w-full">
+      {/* Header with Back and Create Evaluation buttons */}
+      <div className="flex flex-col mb-6">
+      <div className="flex justify-between items-center mb-6">
+          <button
+            className="bg-[#323c47] text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-all"
+            onClick={() => navigate(-1)}
+          >
+            Back
+          </button>
+
+          <button
+            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300"
+            onClick={() => {
+              setShowModal(true);
+              setNewEvaluation({
+                evaluationType: "",
+                availability: "",
+                dateOpen: "",
+                dateClose: "",
+                period: "",
+              });
+            }}
+          >
+            Create Evaluation
+          </button>
+        </div>
+
+        {/* Evaluation title */}
+        <h1 className="text-lg font-semibold text-teal text-center mb-6">Evaluations</h1>
       </div>
 
-      {/* Evaluation title */}
-      <h1 className="text-lg font-semibold text-teal text-center mb-6">Evaluations</h1>
-    </div>
-
-    {/* Table with evaluations */}
-    <div className="overflow-y-auto max-h-96 rounded-lg shadow-md">
-    <table className="min-w-full border border-gray-300">
-      <thead className="sticky top-0 bg-teal text-white z-20 shadow-lg">
+      {/* Table with evaluations */}
+      <div className="overflow-y-auto max-h-96 rounded-lg shadow-md">
+       <table className="min-w-full border border-gray-300">
+       <thead className="sticky top-0 bg-[#323c47] text-white shadow-md">
         <tr>
+          <th className="px-4 py-2 text-left text-sm font-semibold">Evaluation Type</th>
           <th className="px-4 py-2 text-left text-sm font-semibold">Period</th>
           <th className="px-4 py-2 text-left text-sm font-semibold">Date Open</th>
           <th className="px-4 py-2 text-left text-sm font-semibold">Date Close</th>
@@ -304,6 +337,7 @@ const handleEditEvaluation = async () => {
       <tbody>
         {evaluations.map((evalItem, index) => (
           <tr key={index} className="border-b">
+            <td className="px-4 py-2">{evalItem.evaluationType || "N/A"}</td>
             <td className="px-4 py-2">{evalItem.period || "N/A"}</td>
             <td className="px-4 py-2">{evalItem.dateOpen || "N/A"}</td>
             <td className="px-4 py-2">{evalItem.dateClose || "N/A"}</td>
@@ -348,73 +382,104 @@ const handleEditEvaluation = async () => {
       </tbody>
     </table>
 
-    {showModal && (
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-          <h2 className="text-lg font-bold mb-4">
-            {newEvaluation.eid ? "Edit Evaluation" : "Create Evaluation"}
-          </h2>
-          {error && (
-            <div className="mb-4 text-red-500 text-sm">{error}</div>
-          )}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Date Open
-            </label>
-            <input
-              type="date"
-              name="dateOpen"
-              value={newEvaluation.dateOpen}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 px-3 py-2 rounded-lg"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Date Close
-            </label>
-            <input
-              type="date"
-              name="dateClose"
-              value={newEvaluation.dateClose}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 px-3 py-2 rounded-lg"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Period
-            </label>
-            <input
-              type="text"
-              name="period"
-              value={newEvaluation.period}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 px-3 py-2 rounded-lg"
-              placeholder="Enter period (e.g., Prelims)"
-            />
-          </div>
-          <div className="flex justify-end space-x-4">
-            <button
-              className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
-              onClick={() => setShowModal(false)}
-            >
-              Cancel
-            </button>
-            <button
-              className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark"
-              onClick={newEvaluation.eid ? handleEditEvaluation : handleCreateEvaluation}
-            >
-              {newEvaluation.eid ? "Update" : "Create"}
-            </button>
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+            <h2 className="text-lg font-bold mb-4">
+              {newEvaluation.eid ? "Edit Evaluation" : "Create Evaluation"}
+            </h2>
+            {error && (
+              <div className="mb-4 text-red-500 text-sm">{error}</div>
+            )}
+
+            <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Evaluation Type
+                </label>
+                <select
+                  name="evaluationType"
+                  value={newEvaluation.evaluationType}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 px-3 py-2 rounded-lg"
+                >
+                  <option value="">Select Evaluation Type</option>
+                  <option value="STUDENT_TO_STUDENT">Student to Student</option>
+                  <option value="STUDENT_TO_ADVISER">Student to Adviser</option>
+                  <option value="ADVISER_TO_STUDENT">Adviser to Student</option>
+                </select>
+              </div>
+
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date Open
+              </label>
+              <input
+                type="date"
+                name="dateOpen"
+                value={newEvaluation.dateOpen}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 px-3 py-2 rounded-lg"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date Close
+              </label>
+              <input
+                type="date"
+                name="dateClose"
+                value={newEvaluation.dateClose}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 px-3 py-2 rounded-lg"
+              />
+            </div>
+
+
+            <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Period
+                </label>
+                <select
+                  name="period"
+                  value={newEvaluation.period}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 px-3 py-2 rounded-lg"
+                >
+                  <option value="Prelims">Prelims</option>
+                  <option value="Midterms">Midterms</option>
+                  <option value="Pre-Finals">Pre-Finals</option>
+                  <option value="Finals">Finals</option>
+                </select>
+              </div>
+
+            <div className="flex justify-end space-x-4">
+              <button
+                className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark"
+                onClick={() => {
+                  if (newEvaluation?.eid) {
+                    handleEditEvaluation();
+                  } else {
+                    handleCreateEvaluation();
+                  }
+                }}
+              >
+                {newEvaluation?.eid ? "Update" : "Create"}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
+    </div>
   </div>
-</div>
-</div>
-  );
-};
+  </div>
+    );
+  };
 
 export default TeacherEvaluations;
