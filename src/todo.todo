@@ -1,29 +1,32 @@
 "Road Map of SPEAR"
 
+Evaluation Pages:
+    Student Flow
+        1st - Evaluations.jsx
+            (select the evauation)
+        2nd - EvaluationStatus.jsx
+            (views the members and adviser also their statuses)
+        3rd - StudentEvaluation.jsx
+            (this is where the magic happens, if theres adviser, include. if not leave it or put "no adviser")
+        
+    Teacher
+        (Evaluation)
+        1st - EvaluationTeacher.jsx
+              (select the evaluation)
+        2nd - TeacherEvaluations.jsx
+              (views the team and members that you are currently assigned as adviser)
+        3rd - TeacherEvaluationStatus.jsx
+              (this is where the magic happens.)
+       
+        (Questions)
+        -QuestionTemplate.jsx
+        ()
+        -TeacherQuestions.jsx
+        (CRUD for Evaluations)
 
-
-Users
-- So far done
-
-Classes
-- set many2many for the list of qualified advisers in the class - to test
-- if selected department, will display list of teachers - to test
-- has a button set to adviser -frontend padung pa
-- can set to withdraw -frontend padung pa
-- can set schedules for adviser to team
-- frontend change
-
-
-- beware of same classes (make a service of it) -done
-- add also max members in class settings - done
-
-Schedule***
-- fix the frontend, might add some backend later on (OR AM I?)
-Team
--
-
-
-
+    Admin
+    *To be continued*
+    -can download Teacher-Student or Student-Teacher(?????)
 
 
 Role: Admin
@@ -32,9 +35,8 @@ Role: Admin
 - make a permanent delete and restore(put function)
 
 --------Some Scraps--------
-- Schedule(modal to add) edit and delete are not functional, double check also the class inside the modal.
+- Schedule(modal to add) edit and delete are not functional, double check also the class inside the modal. -done
 - delete the admin (fucked it up)
-- apply teams (continuation)
+- apply teams (continuation) - done
 
 - static-o-meter (teams, project proposal, evaluations, questions)
--  when non capstone = put the departments to no advisory so proceed

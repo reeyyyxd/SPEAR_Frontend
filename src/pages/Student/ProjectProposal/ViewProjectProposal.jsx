@@ -265,7 +265,7 @@ const ViewProjectProposal = () => {
                   <tr
                   key={proposal.pid}
                   className={`border p-3 text-center ${
-                    proposal.pid === officialProjectId ? "bg-yellow-200 font-bold" : index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                    proposal.pid === officialProjectId ? "bg-gray-400 text-white" : index % 2 === 0 ? "bg-gray-100" : "bg-white"
                   }`}
                 >
                   <td className="text-center border p-3">

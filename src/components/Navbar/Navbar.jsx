@@ -23,7 +23,7 @@ const Navbar = ({ userRole }) => {
     STUDENT: [
       { label: "My Classes", path: "/student-dashboard", icon: dashboardIcon },
       { label: "My Team Applications", path: "/student/team-applications", icon: teamapplication},
-      { label: "My Evaluations", path: "/manage-teams", icon: teamIcon },
+      { label: "Team Evaluations", path: "/student/evaluations", icon: teamIcon },
       { label: "Settings", path: "/student-settings", icon: settingsIcon },
       
     ],
@@ -31,6 +31,7 @@ const Navbar = ({ userRole }) => {
       { label: "Dashboard", path: "/teacher-dashboard", icon: dashboardIcon },
       { label: "My Schedules", path: "/teacher-schedules", icon: schedule },
       { label: "My Advisories", path: "/teacher/teacher-advisories", icon: teacheradviser },
+      { label: "My Evaluations", path: "/teacher/evaluation-teacher", icon: teamIcon },
       { label: "Settings", path: "/teacher-settings", icon: settingsIcon },
     ],
     ADMIN: [

@@ -2,7 +2,7 @@ import React from 'react'
 
 const Evaluations = () => {
   return (
-    <div>Evaluations</div>
+    <div>Evaluations for students</div>
   )
 }
 
