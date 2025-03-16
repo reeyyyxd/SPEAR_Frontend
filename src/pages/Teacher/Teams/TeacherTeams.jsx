@@ -6,7 +6,7 @@ import OfficialProjectModal from "../../../components/Modals/OfficialProjectModa
 import axios from "axios";
 
 const TeacherTeams = () => {
-  const { authState, getDecryptedId } = useContext(AuthContext);
+  const { authState, getDecryptedId, storeEncryptedId } = useContext(AuthContext);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,7 +46,20 @@ const TeacherTeams = () => {
     fetchTeamsByClass();
   }, [authState, getDecryptedId]);
 
-  const handleViewProject = (teamId) => {
+  const handleViewProject = (teamId, projectId) => {
+    if (!teamId) {
+      console.error("Invalid team ID.");
+      return;
+    }
+  
+    // Store encrypted team ID
+    storeEncryptedId("tid", teamId);
+  
+    // Store encrypted project ID only if it exists
+    if (projectId) {
+      storeEncryptedId("pid", projectId);
+    }
+  
     setSelectedTeamId(teamId);
     setIsModalOpen(true);
   };
@@ -137,12 +150,12 @@ const TeacherTeams = () => {
 
                     {/* View Details Button */}
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      <button
-                        className="bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
-                        onClick={() => handleViewProject(team.tid)}
-                      >
-                        View Details
-                      </button>
+                    <button
+                      className="bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
+                      onClick={() => handleViewProject(team.tid, team.projectId)}
+                    >
+                      View Details
+                    </button>
                     </td>
                   </tr>
                 ))}

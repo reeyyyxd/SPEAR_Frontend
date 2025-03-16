@@ -154,21 +154,20 @@ export const AuthProvider = ({ children }) => {
   };
   
   // Store and encrypt additional IDs (cid, pid, fid, tid, etc.)
-  const storeEncryptedId = (key, id) => {
-    if (!id) {
-      console.error(`Invalid ID provided for key "${key}". ID:`, id);
-      return; // Exit the function if the ID is invalid
-    }
-    const encryptedId = encrypt(id.toString());
-    localStorage.setItem(key, encryptedId);
-  };
-  
+const storeEncryptedId = (key, id) => {
+  if (!id) {
+    console.error(`Invalid ID provided for key "${key}". ID:`, id);
+    return; // Exit the function if the ID is invalid
+  }
+  const encryptedId = encrypt(id.toString());
+  localStorage.setItem(key, encryptedId);
+};
 
-  // Retrieve and decrypt additional IDs
-  const getDecryptedId = (key) => {
-    const encryptedId = localStorage.getItem(key);
-    return encryptedId ? decrypt(encryptedId) : null;
-  };
+// Retrieve and decrypt additional IDs
+const getDecryptedId = (key) => {
+  const encryptedId = localStorage.getItem(key);
+  return encryptedId ? decrypt(encryptedId) : null;
+};
 
   return (
     <AuthContext.Provider
