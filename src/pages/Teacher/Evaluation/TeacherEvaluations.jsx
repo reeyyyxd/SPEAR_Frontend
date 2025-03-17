@@ -404,8 +404,8 @@ const handleEditEvaluation = async () => {
                 >
                   <option value="">Select Evaluation Type</option>
                   <option value="STUDENT_TO_STUDENT">Student to Student</option>
-                  <option value="STUDENT_TO_ADVISER">Student to Adviser</option>
-                  <option value="ADVISER_TO_STUDENT">Adviser to Student</option>
+                  <option value="STUDENT_TO_ADVISER">Student to Adviser (Applicable to Teams that have Advisories)</option>
+                  <option value="ADVISER_TO_STUDENT">Adviser to Student (Applicable to Teams that have Advisories)</option>
                 </select>
               </div>
 

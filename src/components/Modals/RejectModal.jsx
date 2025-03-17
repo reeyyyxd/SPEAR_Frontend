@@ -19,7 +19,7 @@ const RejectModal = ({ onClose, onSubmit, rejectReason, setRejectReason }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-[500px] animate-fadeIn z-50">
         <h2 className="text-xl font-bold mb-4 text-gray-800">Reject Application</h2>
         
         {/* Show Confirmation Prompt Instead */}
@@ -29,7 +29,7 @@ const RejectModal = ({ onClose, onSubmit, rejectReason, setRejectReason }) => {
             <p className="text-gray-600 text-sm">This action cannot be undone.</p>
 
             {/* Confirmation Buttons */}
-            <div className="flex justify-end gap-2 mt-4">
+            <div className="flex justify-end gap-2 mt-6">
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
                 onClick={() => setConfirmReject(false)}
@@ -46,7 +46,7 @@ const RejectModal = ({ onClose, onSubmit, rejectReason, setRejectReason }) => {
           </>
         ) : (
           <>
-            <p className="text-gray-700 mb-3 font-medium">Reasons why you are rejected because:</p>
+            <p className="text-gray-700 mb-3 font-medium">Reason for rejection:</p>
 
             {/* Rejection Input */}
             <textarea
@@ -63,7 +63,7 @@ const RejectModal = ({ onClose, onSubmit, rejectReason, setRejectReason }) => {
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
 
             {/* Action Buttons */}
-            <div className="flex justify-end gap-2 mt-4">
+            <div className="flex justify-end gap-2 mt-6">
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
                 onClick={onClose}

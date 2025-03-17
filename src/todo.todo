@@ -4,21 +4,27 @@ Evaluation Pages:
     Student Flow
         1st - Evaluations.jsx
             (select the evauation)
-            if student (make sure it will see the the types (student-to-student and student-to-adviser)) and open
+            if student (make sure it will see the the types (student-to-student and student-to-adviser)) and open -DONE!
+
         2nd - EvaluationStatus.jsx
             (views the members and adviser also their statuses)
+
         3rd - StudentEvaluation.jsx
             (this is where the magic happens, if theres adviser, include. if not leave it or put "no adviser")
+
         
     Teacher
         (Evaluation)
         1st - EvaluationTeacher.jsx
               (select the evaluation)
-              (make sure that it will only see adviser-student)
+              (make sure that it will only see adviser-student) - DONE!
+
         2nd - TeacherEvaluations.jsx
               (views the team and members that you are currently assigned as adviser)
+
         3rd - TeacherEvaluationStatus.jsx
               (this is where the magic happens.)
+              
        
         (Questions)
         -QuestionTemplate.jsx
@@ -30,10 +36,7 @@ Evaluation Pages:
     *To be continued*
     -can download Teacher-Student or Student-Teacher(?????)
 
- CURRENT STATE OF CALAMITY
--EVALUATION RA JUD!!!!!!
--IN BOTH TEACHER AND STUDENT SIDE!
--AHHHH! 
+
 
 
 Role: Admin

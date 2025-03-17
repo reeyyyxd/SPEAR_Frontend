@@ -68,7 +68,7 @@ const EvaluationStatus = () => {
               <thead className="sticky top-0 bg-[#323c47] text-white shadow-md">
                 <tr>
                   <th className="px-4 py-2 text-left text-sm font-semibold">Member Name</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Role</th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold">Date Submitted</th>
                 </tr>
               </thead>
               <tbody>
@@ -77,6 +77,7 @@ const EvaluationStatus = () => {
                     <td className={`px-4 py-2 ${member === studentId ? "font-bold text-blue-600" : ""}`}>
                       {member === studentId ? `${member} (You)` : member}
                     </td>
+                    {/* change to date submitted once evaluated */}
                     <td className="px-4 py-2">{member === studentId ? "Logged-in User" : "Team Member"}</td>
                   </tr>
                 ))}

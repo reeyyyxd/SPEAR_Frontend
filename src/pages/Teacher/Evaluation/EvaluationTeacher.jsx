@@ -20,12 +20,12 @@ const EvaluationTeacher = () => {
     return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
 
-  const getEvaluationTypeLabel = (type) => {
-    const typeMapping = {
-      ADVISER_TO_STUDENT: "Advisory Teams",
-    };
-    return typeMapping[type] || type.replace(/_/g, " ");
-  };
+  // const getEvaluationTypeLabel = (type) => {
+  //   const typeMapping = {
+  //     ADVISER_TO_STUDENT: "Advisory Teams",
+  //   };
+  //   return typeMapping[type] || type.replace(/_/g, " ");
+  // };
 
   useEffect(() => {
     const fetchEvaluations = async () => {
@@ -57,10 +57,11 @@ const EvaluationTeacher = () => {
     fetchEvaluations();
   }, [teacherId]);
 
-  const handleViewStatus = (evaluationId, classId) => {
+  const handleViewStatus = (evaluationId, classId, teamName) => {
     storeEncryptedId("cid", classId); // Store classId securely in local storage
     storeEncryptedId("eid", evaluationId); // Store evaluationId securely in local storage
-    navigate(`/teacher/evaluation-status`);
+    storeEncryptedId("teamName", teamName); // Store teamName securely
+    navigate(`/teacher/teacher-evaluation-status`);
   };
 
   return (
@@ -78,37 +79,42 @@ const EvaluationTeacher = () => {
         ) : (
           <div className="overflow-y-auto max-h-96 rounded-lg shadow-md">
             <table className="min-w-full border border-gray-300">
-              <thead className="sticky top-0 bg-[#323c47] text-white shadow-md">
+            <thead className="sticky top-0 bg-[#323c47] text-white shadow-md">
                 <tr>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Evaluation Type</th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold">Team Name</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold">Course Description</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold">Period</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold">Date Open</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold">Date Close</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold">Availability</th>
+                  
                   <th className="px-4 py-2 text-left text-sm font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {evaluations.map((evalItem, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="px-4 py-2">{getEvaluationTypeLabel(evalItem.evaluationType)}</td>
-                    <td className="px-4 py-2">{evalItem.courseDescription || "N/A"}</td>
-                    <td className="px-4 py-2">{evalItem.period || "N/A"}</td>
-                    <td className="px-4 py-2">{evalItem.dateOpen || "N/A"}</td>
-                    <td className="px-4 py-2">{evalItem.dateClose || "N/A"}</td>
-                    <td className="px-4 py-2">{evalItem.availability || "N/A"}</td>
-                    <td className="px-4 py-2">
-                      <button
-                        className="bg-[#323c47] text-white px-3 py-1 rounded-lg hover:bg-teal-700 transition-all"
-                        onClick={() => handleViewStatus(evalItem.eid, evalItem.classId)}
-                      >
-                        View Status
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+  {evaluations.map((evalItem, index) => {
+    console.log("Evaluation Item:", evalItem); // Debugging log
+
+    return (
+      <tr key={index} className="border-b">
+        <td className="px-4 py-2 font-semibold">{evalItem.teamName || "N/A"}</td>
+        <td className="px-4 py-2">{evalItem.courseDescription || "N/A"}</td>
+        <td className="px-4 py-2">{evalItem.period || "N/A"}</td>
+        <td className="px-4 py-2">{evalItem.dateOpen || "N/A"}</td>
+        <td className="px-4 py-2">{evalItem.dateClose || "N/A"}</td>
+        <td className="px-4 py-2">{evalItem.availability || "N/A"}</td>
+        <td className="px-4 py-2">
+        <button
+          className="bg-[#323c47] text-white px-3 py-1 rounded-lg hover:bg-teal-700 transition-all"
+          onClick={() => handleViewStatus(evalItem.eid, evalItem.classId, evalItem.teamName)}
+        >
+          View Details
+        </button>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
             </table>
           </div>
         )}

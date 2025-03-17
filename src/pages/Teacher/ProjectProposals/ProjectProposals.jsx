@@ -13,6 +13,7 @@ const ProjectProposals = () => {
   const [showModal, setShowModal] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [selectedProposalId, setSelectedProposalId] = useState(null);
+  const [error, setError] = useState("");
 
   const address = getIpAddress();
 
@@ -225,20 +226,32 @@ const ProjectProposals = () => {
   
       {/* Reject Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded shadow-lg">
-            <h2 className="text-lg font-bold mb-4 text-center">Reason for Rejection</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[550px] animate-fadeIn">
+            <h2 className="text-lg font-bold mb-4 text-center text-gray-800">Reason for Rejection</h2>
+            
             <textarea
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded"
-              placeholder="Enter reason for rejection"
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500"
+              placeholder="Enter reason for rejection..."
             ></textarea>
-            <div className="flex justify-end mt-4">
-              <button onClick={() => setShowModal(false)} className="mr-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700 transition-all">
+
+            {/* Error Message */}
+            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                className="bg-gray-500 text-white px-5 py-2 rounded-md hover:bg-gray-700 transition-all"
+                onClick={() => setShowModal(false)}
+              >
                 Cancel
               </button>
-              <button onClick={handleReject} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700 transition-all">
+              <button
+                className="bg-red-600 text-white px-5 py-2 rounded-md hover:bg-red-700 transition-all"
+                onClick={handleReject}
+              >
                 Submit
               </button>
             </div>
