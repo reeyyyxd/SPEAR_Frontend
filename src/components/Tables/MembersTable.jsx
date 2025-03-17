@@ -4,6 +4,7 @@ import AuthContext from "../../services/AuthContext";
 import AddTeamMembersModal from "../Modals/AddTeamMembersModal";
 import FormTeamModal from "../Modals/FormTeamModal";
 import axios from "axios";
+import { UserRoundPlus } from "lucide-react"
 
 const MembersTable = () => {
   const { authState, getDecryptedId, storeEncryptedId } = useContext(AuthContext);
@@ -145,7 +146,7 @@ const MembersTable = () => {
       {/* Back Button */}
       <button
         onClick={() => navigate(-1)}
-        className="bg-gray-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-700 transition"
+        className="bg-gray-700 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-500 transition"
       >
         Back
       </button>
@@ -155,9 +156,10 @@ const MembersTable = () => {
       {teamDetails && (
         <button
           onClick={() => setIsAddMemberModalOpen(true)}
-          className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-green-700 transition"
+          className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-green-700 transition flex items-center space-x-2"
         >
-          Add Members 
+          <UserRoundPlus/>
+          <span>Add Members </span>
         </button>
       )}
 
@@ -175,8 +177,8 @@ const MembersTable = () => {
       ) : teamDetails ? (
            
         
-        <table className="w-full table-auto text-left border-collapse">
-          <thead className="bg-teal text-white">
+        <table className="w-full table-auto text-left border-collapse overflow-hidden rounded-lg">
+          <thead className="bg-teal text-white rounded-t-lg">
             <tr>
               {TABLE_HEAD.map((head, index) => (
                 <th key={`${head}-${index}`} className="p-4 text-sm font-semibold border-b border-gray-300">
@@ -186,7 +188,7 @@ const MembersTable = () => {
             </tr>
           </thead>
           <tbody className="bg-gray-100">
-            <tr className="hover:bg-peach hover:text-white">
+            <tr className="hover:bg-gray-200">
               <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.groupName || "N/A"}</td>
               <td className="p-4 border-b border-gray-300 text-sm">
                 <span

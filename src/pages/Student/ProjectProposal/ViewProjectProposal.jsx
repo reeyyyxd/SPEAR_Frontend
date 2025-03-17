@@ -4,6 +4,7 @@ import AuthContext from "../../../services/AuthContext";
 import Navbar from "../../../components/Navbar/Navbar";
 import EditProjectProposalModal from "../../../components/Modals/EditProjectProposalModal";
 import axios from "axios";
+import { Pencil, BadgeX , BadgeCheck , Trash2 , PackageOpen } from "lucide-react"
 
 const ViewProjectProposal = () => {
   const { authState, getDecryptedId, storeEncryptedId } = useContext(AuthContext);
@@ -221,7 +222,7 @@ const ViewProjectProposal = () => {
       <div className="p-8 bg-white shadow-md rounded-md w-full">
         <button
           onClick={() => navigate(-1)}
-          className="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-900 transition mb-6"
+          className="bg-gray-700 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-500 transition"
         >
           Back
         </button>
@@ -231,7 +232,8 @@ const ViewProjectProposal = () => {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-700">My Team Proposals</h2>
           <button
-            className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition shadow-md"
+            className="bg-amber-500 text-white px-4 py-2 rounded-md 
+            hover:bg-amber-700 transition shadow-md"
             onClick={() => navigate(`/student/project-proposal`)}
           >
             Create Proposal
@@ -248,7 +250,7 @@ const ViewProjectProposal = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full border-collapse shadow-md rounded-lg overflow-hidden table-fixed">
-          <thead className="bg-gray-800 text-white text-center">
+          <thead className="bg-gray-700 text-white text-center">
             <tr>
               <th className="border p-3 text-center font-semibold w-1/6">Project Name</th>
               <th className="border p-3 text-center font-semibold w-1/6">Description</th>
@@ -290,30 +292,33 @@ const ViewProjectProposal = () => {
                       <td className="border p-3">{proposal.reason || "No reason provided"}</td>
                       <td className="border p-3 flex flex-col items-start gap-2">
                       <button
-                        className="bg-cyan-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition w-full"
+                        className="bg-cyan-500 text-white px-4 py-2 rounded-md hover:bg-cyan-600 transition w-full flex items-center space-x-2"
                         onClick={() => openEditModal(proposal.pid)}
                       >
-                        Edit
+                        <Pencil className="h-4 w-4" />
+                        <span>Edit Project</span>
                       </button>
 
                       {proposal.pid !== officialProjectId ? (
                         <button
-                          className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 w-full"
+                          className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 w-full flex items-center space-x-2"
                           onClick={() => handleSetOfficialProject(proposal.pid)}
                         >
-                          Set as Official
+                          <BadgeCheck className="h-4 w-4" />
+                          <span>Set as Official</span>
                         </button>
                       ) : (
                         <button
-                          className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 w-full"
+                          className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 w-full flex items-center space-x-2"
                           onClick={handleUnsetOfficialProject}
                         >
-                          Unset Official
+                          <BadgeX className="h-4 w-4" />
+                          <span>Unset Official</span>
                         </button>
                       )}
 
                       <button
-                        className={`px-4 py-2 rounded-md transition w-full ${
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-md transition w-full ${
                           proposal.pid === officialProjectId
                             ? "bg-gray-400 text-gray-700 cursor-not-allowed"
                             : "bg-red-500 text-white hover:bg-red-600"
@@ -321,11 +326,12 @@ const ViewProjectProposal = () => {
                         onClick={() => proposal.pid !== officialProjectId && handleDeleteProposal(proposal.pid)}
                         disabled={proposal.pid === officialProjectId}
                       >
-                        Delete
+                        <Trash2 className="h-4 w-4" />
+                        <span>Delete Project</span>
                       </button>
 
                       <button
-                        className={`px-4 py-2 rounded-md transition w-full ${
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-md transition w-full ${
                           proposal.pid === officialProjectId
                             ? "bg-gray-400 text-gray-700 cursor-not-allowed"
                             : "bg-violet-500 text-white hover:bg-violet-600"
@@ -333,7 +339,8 @@ const ViewProjectProposal = () => {
                         onClick={() => proposal.pid !== officialProjectId && handleSetToOpenProject(proposal.pid)}
                         disabled={proposal.pid === officialProjectId}
                       >
-                        Give Project
+                        <PackageOpen className="h-4 w-4" />
+                        <span>Give Project</span>
                       </button>
                   </td>
                 </tr>

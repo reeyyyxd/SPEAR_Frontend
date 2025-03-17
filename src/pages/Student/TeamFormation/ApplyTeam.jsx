@@ -55,7 +55,7 @@ const ApplyTeam = () => {
           <div className="mb-4">
             <button 
               onClick={() => navigate(-1)} 
-              className="bg-gray-500 text-white px-4 py-2 rounded-md shadow hover:bg-gray-600"
+              className="bg-gray-700 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-500 transition"
             >
               Back
             </button>

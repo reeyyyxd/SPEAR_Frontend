@@ -4,6 +4,7 @@ import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { Trash2 } from "lucide-react"
 
 const ProjectProposalPage = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
@@ -82,56 +83,61 @@ const ProjectProposalPage = () => {
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
       <button
           onClick={() => navigate(-1)}
-          className="bg-gray-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-700 transition"
+          className="bg-gray-700 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-500 transition"
         >
           Back
         </button>
         <h1 className="text-3xl font-semibold my-6">Propose New Project</h1>
+        <p className="mb-8 text-muted-foreground">
+        Please provide details about your project below.
+        </p>
 
         
       
         <form className="space-y-10" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-base font-medium text-teal">
+            <label className="block text-base font-semibold font-medium text-teal">
               Project Title
             </label>
             <input
               type="text"
-              className="block w-full border border-gray-300 rounded-md p-3"
-              placeholder="Enter project title"
+              className="block w-full border border-gray-300 rounded-md p-3 mt-1.5"
+              placeholder="Enter your project title"
               value={projectTitle}
               onChange={(e) => setProjectTitle(e.target.value)}
               required
             />
           </div>
           <div>
-            <label className="block text-base font-medium text-teal">
+            <label className="block text-base font-semibold font-medium text-teal">
               Project Overview
             </label>
             <textarea
               rows="4"
-              className="block w-full border border-gray-300 rounded-md p-3"
-              placeholder="Describe your project"
+              className="block w-full border border-gray-300 rounded-md p-3 mt-1.5"
+              placeholder="Provide an overview of your project"
               value={projectOverview}
               onChange={(e) => setProjectOverview(e.target.value)}
               required
             ></textarea>
           </div>
           <div>
+            <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-teal mb-4">Features</h3>
             <button
               type="button"
               onClick={handleAddFeature}
-              className="text-white bg-teal px-4 py-2 my-4 rounded-md border hover:bg-teal-dark transition"
+              className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-green-700 transition"
             >
-              Add Feature
+              + Add Feature
             </button>
+            </div>
             <div className="grid gap-4">
               {features.map((feature, index) => (
                 <div key={index} className="flex items-center space-x-4">
                   <input
                     type="text"
-                    placeholder="Feature title"
+                    placeholder="Enter feature title"
                     className="flex-1 border border-gray-300 rounded-md p-3"
                     value={feature.title}
                     onChange={(e) => {
@@ -142,7 +148,7 @@ const ProjectProposalPage = () => {
                   />
                   <input
                     type="text"
-                    placeholder="Feature description"
+                    placeholder="Describe this feature"
                     className="flex-1 border border-gray-300 rounded-md p-3"
                     value={feature.description}
                     onChange={(e) => {
@@ -154,9 +160,10 @@ const ProjectProposalPage = () => {
                   <button
                     type="button"
                     onClick={() => handleRemoveFeature(index)}
-                    className="text-red-500 border border-red-500 px-3 py-1 rounded-md hover:bg-red-500 hover:text-white transition"
+                    className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-700 transition flex items-center space-x-2"
                   >
-                    Remove
+                    <Trash2 className="h-4 w-4" />
+                    <span>Remove</span>
                   </button>
                 </div>
               ))}
@@ -165,7 +172,7 @@ const ProjectProposalPage = () => {
 
           <button
             type="submit"
-            className="bg-teal text-white px-6 py-3 rounded-md hover:bg-teal-dark transition"
+            className="bg-gray-700 text-white px-6 py-3 rounded-md hover:bg-gray-500 transition"
           >
             Submit Proposal
           </button>
