@@ -4,10 +4,9 @@ import { toast } from "react-toastify";
 import Header from "../../components/Header/Header";
 import axios from "axios";
 
-//fix the schedule
 const AdminRecycleBin = () => {
   const [deletedData, setDeletedData] = useState([]);
-  const [category, setCategory] = useState("users"); // Default filter
+  const [category, setCategory] = useState("users");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -19,19 +18,29 @@ const AdminRecycleBin = () => {
       return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
 
-  // Fetch deleted data based on selected category
+ 
   const fetchDeletedData = async (selectedCategory) => {
     setIsLoading(true);
     setError(null);
-    
+  
     try {
-      // Placeholder API URL (Replace when you provide the actual API)
-      const response = await axios.get(`http://${address}:8080/recycle-bin/${selectedCategory}`, {
+      let apiUrl = `http://${address}:8080/recycle-bin/${selectedCategory}`;
+  
+      if (selectedCategory === "users") {
+        apiUrl = `http://${address}:8080/admin/users/deleted`;  
+      } else if (selectedCategory === "classes") {
+        apiUrl = `http://${address}:8080/admin/classes/deleted`;  
+      } else if (selectedCategory === "proposals") {
+        apiUrl = `http://${address}:8080/admin/proposals/deleted`;  
+      }
+  
+      const response = await axios.get(apiUrl, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
+  
       setDeletedData(response.data || []);
     } catch (err) {
       console.error("Error fetching deleted data:", err);
@@ -52,7 +61,7 @@ const AdminRecycleBin = () => {
       <div className="main-content bg-white text-teal p-11">
         {/* Header Section */}
         <div className="header flex justify-between items-center mb-6">
-          <h1 className="text-lg font-semibold">Admin Recycle Bin</h1>
+          <h1 className="text-lg font-semibold">Archived Data</h1>
           <Header />
         </div>
 
@@ -69,7 +78,7 @@ const AdminRecycleBin = () => {
           >
             <option value="users">Users</option>
             <option value="classes">Classes</option>
-            <option value="teams">Teams</option>
+            <option value="proposals">Proposals</option>
           </select>
         </div>
 
@@ -95,29 +104,128 @@ const DeletedTable = ({ deletedData, category }) => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr className="bg-teal font-medium text-white">
-                  <th className="px-6 py-2 text-start text-md font-medium">ID</th>
-                  <th className="px-6 py-2 text-start text-md font-medium">Name</th>
-                  <th className="px-6 py-2 text-start text-md font-medium">Deleted At</th>
+                  {category === "users" ? (
+                    <>
+                      <th className="px-6 py-2 text-start text-md font-medium">Full Name</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Email</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Interests</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Department</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Role</th>
+                    </>
+                  ) : category === "classes" ? (
+                    <>
+                      <th className="px-6 py-2 text-start text-md font-medium">Course Code</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Course Name</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Section</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">School Year</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Semester</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Created By</th>
+                    </>
+                  ) : category === "proposals" ? (
+                    <>
+                      <th className="px-6 py-2 text-start text-md font-medium">Project Name</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Description</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Status</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Reason</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Features</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Proposed By</th>
+                    </>
+                  ) : (
+                    <>
+                      <th className="px-6 py-2 text-start text-md font-medium">Name</th>
+                      <th className="px-6 py-2 text-start text-md font-medium">Deleted At</th>
+                    </>
+                  )}
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-gray-200">
                 {deletedData.length > 0 ? (
                   deletedData.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-100">
-                      <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
-                        {item.id}
-                      </td>
-                      <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
-                        {item.name || "N/A"}
-                      </td>
-                      <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
-                        {item.deletedAt || "N/A"}
-                      </td>
+                    <tr key={item.cid || item.pid || item.id} className="hover:bg-gray-100">
+                      {category === "users" ? (
+                        <>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {`${item.firstname || "N/A"} ${item.lastname || "N/A"}`}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.email || "N/A"}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.interests || "N/A"}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.department || "N/A"}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.role || "N/A"}
+                          </td>
+                        </>
+                      ) : category === "classes" ? (
+                        <>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.courseCode || "N/A"}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.courseDescription || "N/A"}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.section || "N/A"}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.schoolYear || "N/A"}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.semester || "N/A"}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {`${item.firstname || "N/A"} ${item.lastname || "N/A"}`}
+                          </td>
+                        </>
+                      ) : category === "proposals" ? (
+                        <>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.projectName || "N/A"}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.description || "N/A"}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.status || "N/A"}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.reason || "N/A"}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            <ul>
+                              {item.features && item.features.length > 0 ? (
+                                item.features.map((feature, index) => (
+                                  <li key={index}>{`${feature.featureTitle}: ${feature.featureDescription}`}</li>
+                                ))
+                              ) : (
+                                <li>No features available</li>
+                              )}
+                            </ul>
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.proposedByName || "N/A"}
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.name || "N/A"}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                            {item.deletedAt || "N/A"}
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" className="text-center text-gray-500 py-4">
+                    <td colSpan={category === "users" ? 7 : category === "proposals" ? 5 : 3} className="text-center text-gray-500 py-4">
                       No deleted records available.
                     </td>
                   </tr>

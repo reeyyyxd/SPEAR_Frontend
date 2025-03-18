@@ -44,6 +44,8 @@ import TeamApplications from "./pages/Student/TeamFormation/TeamApplications";
 import EvaluationTeacher from "./pages/Teacher/Evaluation/EvaluationTeacher";
 import TeacherEvaluationStatus from "./pages/Teacher/Evaluation/TeacherEvaluationStatus";
 import QuestionTemplates from "./pages/Teacher/Evaluation/QuestionTemplates"; 
+import AdviserEvaluation from "./pages/Teacher/Evaluation/AdviserEvaluation";
+import AdminEvaluations from "./pages/Admin/AdminEvaluations";
 
 const router = createBrowserRouter([
   {
@@ -272,6 +274,14 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
+  {
+    path:"/teacher/adviser-evaluation",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <AdviserEvaluation />
+      </PrivateRoute>
+    ),
+  },
 
 
   //admin side
@@ -315,6 +325,15 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
+  {
+    path: "/admin-evaluations",
+    element: (
+      <PrivateRoute requiredRoles={["ADMIN"]}>
+        <AdminEvaluations />
+      </PrivateRoute>
+    ),
+  },
+
 
 //other utilites 
   {

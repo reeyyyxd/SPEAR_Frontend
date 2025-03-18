@@ -7,7 +7,7 @@ Evaluation Pages:
             if student (make sure it will see the the types (student-to-student and student-to-adviser)) and open -DONE!
 
         2nd - EvaluationStatus.jsx
-            (views the members and adviser also their statuses)
+            (views the members and adviser also their statuses) -DONE!
 
         3rd - StudentEvaluation.jsx
             (this is where the magic happens, if theres adviser, include. if not leave it or put "no adviser")
@@ -20,7 +20,7 @@ Evaluation Pages:
               (make sure that it will only see adviser-student) - DONE!
 
         2nd - TeacherEvaluations.jsx
-              (views the team and members that you are currently assigned as adviser)
+              (views the team and members that you are currently assigned as adviser) - DONE!
 
         3rd - TeacherEvaluationStatus.jsx
               (this is where the magic happens.)
@@ -36,6 +36,9 @@ Evaluation Pages:
     *To be continued*
     -can download Teacher-Student or Student-Teacher(?????)
 
+
+    -- dont forget to disable the evaluations if done evaluating in both student and teacher.
+    
 
 
 
