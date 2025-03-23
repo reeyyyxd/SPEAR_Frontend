@@ -143,7 +143,7 @@ const StudentTeamSettings = () => {
         {
           adviserId: selectedAdviser,
           scheduleId: selectedSchedule,
-          requesterId: userId,  // Ensure requesterId is passed
+          requesterId: userId, 
         },
         {
           headers: { "Content-Type": "application/json" },
@@ -151,11 +151,10 @@ const StudentTeamSettings = () => {
       );
   
       alert(response.data.message);
-      setTeamDetails((prev) => ({
-        ...prev,
-        adviserId: selectedAdviser,
-        scheduleId: selectedSchedule,
-      }));
+  
+      // Fetch the updated team details
+      window.location.reload();
+  
     } catch (error) {
       console.error("Error assigning adviser and schedule:", error);
       setError(error.response?.data?.error || "Failed to assign.");

@@ -43,9 +43,11 @@ import ApplyTeam from "./pages/Student/TeamFormation/ApplyTeam";
 import TeamApplications from "./pages/Student/TeamFormation/TeamApplications";
 import EvaluationTeacher from "./pages/Teacher/Evaluation/EvaluationTeacher";
 import TeacherEvaluationStatus from "./pages/Teacher/Evaluation/TeacherEvaluationStatus";
-import QuestionTemplates from "./pages/Teacher/Evaluation/QuestionTemplates"; 
 import AdviserEvaluation from "./pages/Teacher/Evaluation/AdviserEvaluation";
 import AdminEvaluations from "./pages/Admin/AdminEvaluations";
+import AdminQuestionTemplates from "./pages/Admin/AdminQuestionTemplates";
+import StudentTeacherEvaluation from "./pages/Student/Evaluation/StudentTeacherEvaluation";
+import StudentTeacherStatus from "./pages/Student/Evaluation/StudentTeacherStatus";
 
 const router = createBrowserRouter([
   {
@@ -150,6 +152,22 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
+  {
+    path: "/student/student-teacher-evaluation",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <StudentTeacherEvaluation />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/student/student-teacher-status",
+    element: (
+      <PrivateRoute requiredRoles={["STUDENT"]}>
+        <StudentTeacherStatus />
+      </PrivateRoute>
+    ),
+  },
   
   //teacher side
 
@@ -243,14 +261,6 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path:"/teacher/question-templates",
-    element: (
-      <PrivateRoute requiredRoles={["TEACHER"]}>
-        <QuestionTemplates />
-      </PrivateRoute>
-    ),
-  },
-  {
     path:"/teacher/evaluation-teacher",
     element: (
       <PrivateRoute requiredRoles={["TEACHER"]}>
@@ -330,6 +340,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["ADMIN"]}>
         <AdminEvaluations />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/admin-question-templates",
+    element: (
+      <PrivateRoute requiredRoles={["ADMIN"]}>
+        <AdminQuestionTemplates />
       </PrivateRoute>
     ),
   },

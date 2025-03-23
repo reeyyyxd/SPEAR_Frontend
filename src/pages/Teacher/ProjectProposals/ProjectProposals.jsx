@@ -197,18 +197,31 @@ const ProjectProposals = () => {
                     {/* Actions */}
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-center space-x-2">
+                        {/* Approve Button */}
                         <button
                           onClick={() => handleApprove(proposal.pid)}
-                          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all"
+                          className={`px-4 py-2 rounded-lg transition-all ${
+                            proposal.status === "OPEN"
+                              ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                              : "bg-green-500 text-white hover:bg-green-700"
+                          }`}
+                          disabled={proposal.status === "OPEN"}
                         >
                           Approve
                         </button>
+
+                        {/* Reject Button */}
                         <button
                           onClick={() => {
                             setSelectedProposalId(proposal.pid);
                             setShowModal(true);
                           }}
-                          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all"
+                          className={`px-4 py-2 rounded-lg transition-all ${
+                            proposal.status === "OPEN"
+                              ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                              : "bg-red-500 text-white hover:bg-red-700"
+                          }`}
+                          disabled={proposal.status === "OPEN"}
                         >
                           Reject
                         </button>

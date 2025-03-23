@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthContext from "../../../services/AuthContext";
 
-const StudentEvaluation = () => {
+const StudentTeacherEvaluation = () => {
   const { getDecryptedId } = useContext(AuthContext);
   const navigate = useNavigate();
   const address = window.location.hostname;
 
   const [questions, setQuestions] = useState([]);
-  const [teamMembers, setTeamMembers] = useState([]); // Ensure it's an array
+  const [adviser, setAdviser] = useState(null);
   const [responses, setResponses] = useState({});
 
   const studentId = getDecryptedId("uid");
@@ -18,7 +18,7 @@ const StudentEvaluation = () => {
 
   useEffect(() => {
     fetchQuestions();
-    fetchTeamMembers();
+    fetchAdviser();
   }, []);
 
   // Fetch Questions by Evaluation ID
@@ -31,34 +31,28 @@ const StudentEvaluation = () => {
     }
   };
 
-  // Fetch Team Members
-  const fetchTeamMembers = async () => {
+  // Fetch Adviser
+  const fetchAdviser = async () => {
     try {
-      const response = await axios.get(`http://${address}:8080/evaluation/${studentId}/class/${classId}/team`);
-      //console.log("Team Members Response:", response.data);
-  
-      if (!Array.isArray(response.data.memberIds) || !Array.isArray(response.data.memberNames)) {
-        console.error("Unexpected response format for team members:", response.data);
-        return;
+      const response = await axios.get(`http://${address}:8080/evaluation/${studentId}/class/${classId}/adviser`);
+      if (response.data && response.data.adviserName && response.data.adviserId) {
+        setAdviser({
+          adviserId: response.data.adviserId,
+          adviserName: response.data.adviserName
+        });
+      } else {
+        console.error("Invalid adviser data:", response.data);
       }
-  
-      // Transform the response into an array of objects
-      const members = response.data.memberIds.map((id, index) => ({
-        memberId: id,
-        memberName: response.data.memberNames[index]
-      }));
-  
-      setTeamMembers(members);
     } catch (error) {
-      console.error("Error fetching team members:", error);
+      console.error("Error fetching adviser details:", error);
     }
   };
 
-  // Handle Radio & Text Inputs
-  const handleResponseChange = (memberId, questionId, value) => {
+  // Handle Input Changes
+  const handleResponseChange = (questionId, value) => {
     setResponses({
       ...responses,
-      [`${memberId}-${questionId}`]: value,
+      [`${adviser?.adviserId}-${questionId}`]: value,
     });
   };
 
@@ -66,8 +60,10 @@ const StudentEvaluation = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    //console.log("Submitted Responses:", responses);
-    alert("Evaluation Submitted!");
+    if (!adviser) {
+      alert("Adviser not loaded. Please wait.");
+      return;
+    }
 
     try {
       await axios.post(`http://${address}:8080/submit-evaluation`, {
@@ -86,8 +82,8 @@ const StudentEvaluation = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold mb-4">Student Evaluation</h1>
-      <p className="text-lg text-gray-600 mb-6">Evaluate your team members here.</p>
+      <h1 className="text-3xl font-bold mb-4">Adviser Evaluation</h1>
+      <p className="text-lg text-gray-600 mb-6">Evaluate your adviser below.</p>
 
       {/* Evaluation Form */}
       <form onSubmit={handleSubmit} className="w-full max-w-4xl bg-white p-6 shadow-md rounded-md">
@@ -96,34 +92,32 @@ const StudentEvaluation = () => {
             <h2 className="font-semibold text-lg text-gray-700">{question.questionText}</h2>
 
             {/* Radio Type Question (Rating 1-5) */}
-            {question.questionType === "RADIO" && teamMembers.length > 0 && (
+            {question.questionType === "RADIO" && (
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse mt-2">
                   <thead>
                     <tr className="bg-gray-100 text-gray-700">
-                      <th className="p-2"></th>
+                      <th className="p-2 text-left">Rate</th>
                       {[1, 2, 3, 4, 5].map((score) => (
                         <th key={score} className="p-2 text-center">{score}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {teamMembers.map((member) => (
-                      <tr key={member.memberId} className="border-b">
-                        <td className="p-2 font-semibold">{member.memberName}</td>
-                        {[1, 2, 3, 4, 5].map((score) => (
-                          <td key={score} className="p-2 text-center">
-                            <input
-                              type="radio"
-                              name={`rating-${member.memberId}-${question.qid}`}
-                              value={score}
-                              checked={responses[`${member.memberId}-${question.qid}`] === score}
-                              onChange={() => handleResponseChange(member.memberId, question.qid, score)}
-                            />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
+                    <tr className="border-b">
+                      <td className="p-2 font-semibold">{adviser?.adviserName || "Adviser"}</td>
+                      {[1, 2, 3, 4, 5].map((score) => (
+                        <td key={score} className="p-2 text-center">
+                          <input
+                            type="radio"
+                            name={`rating-${question.qid}`}
+                            value={score}
+                            checked={responses[`${adviser?.adviserId}-${question.qid}`] === score}
+                            onChange={() => handleResponseChange(question.qid, score)}
+                          />
+                        </td>
+                      ))}
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -137,7 +131,7 @@ const StudentEvaluation = () => {
                   rows="4"
                   placeholder="Write your response here..."
                   value={responses[`text-${question.qid}`] || ""}
-                  onChange={(e) => handleResponseChange("text", question.qid, e.target.value)}
+                  onChange={(e) => handleResponseChange(question.qid, e.target.value)}
                 />
               </div>
             )}
@@ -152,16 +146,8 @@ const StudentEvaluation = () => {
           Submit Evaluation
         </button>
       </form>
-
-      {/* Finish Button */}
-      <button
-        className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-800 transition"
-        onClick={() => navigate(-1)}
-      >
-        Finish Evaluation
-      </button>
     </div>
   );
 };
 
-export default StudentEvaluation;
+export default StudentTeacherEvaluation;

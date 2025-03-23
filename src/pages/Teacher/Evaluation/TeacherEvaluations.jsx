@@ -337,7 +337,16 @@ const handleEditEvaluation = async () => {
       <tbody>
         {evaluations.map((evalItem, index) => (
           <tr key={index} className="border-b">
-            <td className="px-4 py-2">{evalItem.evaluationType || "N/A"}</td>
+            <td className="px-4 py-2">
+              {evalItem.evaluationType === "STUDENT_TO_STUDENT"
+                ? "Student to Student"
+                : evalItem.evaluationType === "STUDENT_TO_ADVISER"
+                ? "Student to Adviser"
+                : evalItem.evaluationType === "ADVISER_TO_STUDENT"
+                ? "Adviser to Student"
+                : "N/A"}
+            </td>
+
             <td className="px-4 py-2">{evalItem.period || "N/A"}</td>
             <td className="px-4 py-2">{evalItem.dateOpen || "N/A"}</td>
             <td className="px-4 py-2">{evalItem.dateClose || "N/A"}</td>
@@ -370,12 +379,16 @@ const handleEditEvaluation = async () => {
               >
                 <i className="fa fa-edit"></i>
               </button>
-              <button
-                className="text-green-500 hover:text-green-700"
-                onClick={() => handleDownload(evalItem.eid)}
-              >
-                <i className="fa fa-download"></i>
-              </button>
+
+              {/* Hide Download button only for "Student to Adviser" evaluations */}
+              {evalItem.evaluationType !== "STUDENT_TO_ADVISER" && (
+                <button
+                  className="text-green-500 hover:text-green-700"
+                  onClick={() => handleDownload(evalItem.eid)}
+                >
+                  <i className="fa fa-download"></i>
+                </button>
+              )}
             </td>
           </tr>
         ))}

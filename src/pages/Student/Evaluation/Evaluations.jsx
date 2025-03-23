@@ -52,10 +52,30 @@ const Evaluations = () => {
     fetchEvaluations();
   }, [studentId]);
 
-  const handleViewStatus = (evaluationId, classId) => {
-    storeEncryptedId("cid", classId); // Store classId in local storage
-    storeEncryptedId("eid", evaluationId); // Store encrypted evaluationId in local storage
-    navigate(`/student/evaluation-status`);
+  const handleViewStatus = async (evaluationId, classId, evaluationType) => {
+    storeEncryptedId("cid", classId);
+    storeEncryptedId("eid", evaluationId);
+  
+    if (evaluationType === "STUDENT_TO_ADVISER") {
+      try {
+        const response = await axios.get(
+          `http://${address}:8080/evaluation/${studentId}/class/${classId}/adviser`
+        );
+  
+        if (response.data) {
+          storeEncryptedId("adviserId", response.data.adviserId);
+          storeEncryptedId("adviserName", response.data.adviserName);
+          navigate("/student/student-teacher-status"); // Redirect to teacher evaluation page
+        } else {
+          alert("No adviser found for this evaluation.");
+        }
+      } catch (error) {
+        console.error("Error fetching adviser:", error);
+        alert("Failed to fetch adviser details.");
+      }
+    } else {
+      navigate("/student/evaluation-status"); // Default route for team evaluations
+    }
   };
 
   return (
@@ -96,7 +116,7 @@ const Evaluations = () => {
                     <td className="px-4 py-2">
                       <button
                         className="bg-[#323c47] text-white px-3 py-1 rounded-lg hover:bg-teal-700 transition-all"
-                        onClick={() => handleViewStatus(evalItem.eid, evalItem.classId)}
+                        onClick={() => handleViewStatus(evalItem.eid, evalItem.classId, evalItem.evaluationType)}
                       >
                         View Status
                       </button>

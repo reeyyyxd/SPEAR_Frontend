@@ -11,6 +11,7 @@ import schedule from "../../assets/icons/schedule.png";
 import teamapplication from "../../assets/icons/team-appliication.png";
 import teacheradviser from "../../assets/icons/my-adviser.png";
 import evaluationadmin from "../../assets/icons/evaluationadmin.png";
+import questionadmin from "../../assets/icons/questionadmin.png";
  
 const Navbar = ({ userRole }) => {
   const location = useLocation();
@@ -39,6 +40,7 @@ const Navbar = ({ userRole }) => {
       { label: "Dashboard", path: "/admin-dashboard", icon: dashboardIcon },
       { label: "Manage Users", path: "/manage-users", icon: userIcon },
       { label: "Evaluations", path: "/admin-evaluations", icon: evaluationadmin },
+      { label: "Questionnaires ", path: "/admin-question-templates", icon: questionadmin },
       { label: "Archives", path: "/admin-recycle-bin", icon: trashcanIcon },
       { label: "Settings", path: "/admin-settings", icon: settingsIcon },
     ],

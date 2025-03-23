@@ -38,18 +38,18 @@ Evaluation Pages:
 
 
     -- dont forget to disable the evaluations if done evaluating in both student and teacher.
-    
+
 
 
 
 Role: Admin
-- Add recycle bin for the isDeleted =true
+- Add recycle bin for the isDeleted =true -DONE!
 - have the generated report for adviser = student, student = adviser (some are not)
 - make a permanent delete and restore(put function)
 
 --------Some Scraps--------
 - Schedule(modal to add) edit and delete are not functional, double check also the class inside the modal. -done
-- delete the admin (fucked it up)
+- delete the admin (fucked it up) -done 
 - apply teams (continuation) - done
 
 - static-o-meter (teams, project proposal, evaluations, questions)

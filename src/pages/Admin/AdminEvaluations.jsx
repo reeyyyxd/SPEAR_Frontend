@@ -12,7 +12,7 @@ const AdminEvaluations = () => {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
-  const address = window.location.hostname; // Dynamic IP handling
+  const address = window.location.hostname;
 
   useEffect(() => {
     fetchEvaluations();
@@ -21,7 +21,7 @@ const AdminEvaluations = () => {
   const fetchEvaluations = async () => {
     try {
       const response = await axios.get(
-        `http://${address}:8080/admin/adviser-to-student-evaluations`,
+        `http://${address}:8080/admin/students-to-adviser-evaluations`,
         { headers: { Authorization: `Bearer ${authState.token}` } }
       );
       setEvaluations(response.data || []);
@@ -82,7 +82,7 @@ const AdminEvaluations = () => {
       <div className="p-8 bg-white shadow-md rounded-md w-full">
         {/* Page Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Adviser-to-Student Evaluations</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Student to Adviser Evaluations</h1>
         </div>
 
         {/* Error Handling */}
@@ -102,19 +102,21 @@ const AdminEvaluations = () => {
                   <th className="px-4 py-3 text-left text-sm font-semibold border">Date Open</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold border">Date Close</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold border">Availability</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold border">Adviser Name</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold border">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {evaluations.length > 0 ? (
-                  evaluations.map((evaluation) => (
-                    <tr key={evaluation.eid} className="border-b">
+                  evaluations.map((evaluation, index) => (
+                    <tr key={`${evaluation.eid}-${index}`} className="border-b">
                       <td className="px-4 py-3 border">{evaluation.courseCode}</td>
                       <td className="px-4 py-3 border">{evaluation.section}</td>
                       <td className="px-4 py-3 border">{evaluation.period}</td>
                       <td className="px-4 py-3 border">{evaluation.dateOpen}</td>
                       <td className="px-4 py-3 border">{evaluation.dateClose}</td>
                       <td className="px-4 py-3 border">{evaluation.availability}</td>
+                      <td className="px-4 py-3 border">{evaluation.adviserName}</td>
                       <td className="px-4 py-3 border">
                         <button
                           className="bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-700 transition w-full flex items-center justify-center"

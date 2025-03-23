@@ -76,7 +76,7 @@ const EvaluationStatus = () => {
         {/* Header with Title & Evaluate Button */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-lg font-semibold text-teal flex-grow text-center">
-            Team Members
+            Evaluation Team Tracker
           </h1>
 
           {/* Evaluate Button */}
@@ -107,7 +107,7 @@ const EvaluationStatus = () => {
                     <td className={`px-4 py-2 ${member === studentId ? "font-bold text-blue-600" : ""}`}>
                       {member === studentId ? `${member} (You)` : member}
                     </td>
-                    <td className="px-4 py-2">{member === studentId ? "Logged-in User" : "Team Member"}</td>
+                    <td className="px-4 py-2">{member === studentId ? "Logged-in User" : "Not Yet Submitted"}</td>
                   </tr>
                 ))}
               </tbody>
