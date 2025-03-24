@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import AuthContext from "../../services/AuthContext";
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AddTeamMembersModal = ({ isOpen, onClose, teamId, classId }) => {
   const { authState } = useContext(AuthContext);
@@ -113,6 +116,7 @@ const AddTeamMembersModal = ({ isOpen, onClose, teamId, classId }) => {
         setFilteredStudents((prev) => prev.filter((student) => student.uid !== memberId));
   
         await refreshTeamData();
+        toast.success("Student added successfully!");
       }
     } catch (error) {
       console.error("Error adding member:", error.response?.data || error);
@@ -143,6 +147,8 @@ const AddTeamMembersModal = ({ isOpen, onClose, teamId, classId }) => {
   if (!isOpen) return null;
 
   return (
+  <>
+     <ToastContainer position="top-right" autoClose={3000} />  
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-[500px]">
       <div className="flex items-center justify-between">
@@ -187,7 +193,8 @@ const AddTeamMembersModal = ({ isOpen, onClose, teamId, classId }) => {
                   {student.firstname} {student.lastname} ({student.email})
                   <button
                     onClick={() => addMember(student.uid)}
-                    className="bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-700 disabled:bg-gray-400"
+                    className="border border-gray-300 text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-300 disabled:bg-gray-400"
+                    // "text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-300 disabled:bg-gray-400"
                     disabled={addingId === student.uid}
                   >
                     {addingId === student.uid ? "Adding..." : "Add"}
@@ -195,32 +202,37 @@ const AddTeamMembersModal = ({ isOpen, onClose, teamId, classId }) => {
                 </li>
               ))}
             </ul>
-            <div className="flex justify-between mt-3">
+            <div className="flex justify-center items-center mt-3 space-x-2">
               <button 
                 onClick={prevPage} 
                 disabled={currentPage === 1} 
-                className="bg-blue-500 text-black px-3 py-1 rounded-lg disabled:bg-gray-400"
+                className="text-gray-700 px-1 py-1 rounded-lg flex items-center opacity-50 disabled:cursor-not-allowed"
               >
-                Prev
+                <ChevronLeft  />
+                Previous
               </button>
               
-              <span className="text-sm">Page {currentPage} of {Math.ceil(filteredStudents.length / studentsPerPage)}</span>
+              <span className="text-base font-medium">Page {currentPage} of {Math.ceil(filteredStudents.length / studentsPerPage)}</span>
               
               <button 
                 onClick={nextPage} 
                 disabled={currentPage === Math.ceil(filteredStudents.length / studentsPerPage)} 
-                className="bg-blue-500 text-black px-3 py-1 rounded-lg disabled:bg-gray-400"
+                className="text-gray-700 px-1 py-1 rounded-lg flex items-center opacity-50 disabled:cursor-not-allowed"
               >
                 Next
+                <ChevronRight/>
               </button>
             </div>
           </>
         ) : (
-          <p>No students found.</p>
+          <div className="flex items-center justify-center h-full">
+           <p className="text-gray-500 text-lg">No students found.</p>
+         </div>
         )}
         {error && <p className="text-red-500 mt-2">{error}</p>}
       </div>
     </div>
+    </>
   );
 };
 

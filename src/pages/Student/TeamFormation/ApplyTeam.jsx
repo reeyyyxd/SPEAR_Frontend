@@ -63,42 +63,41 @@ const ApplyTeam = () => {
 
           {/* Header Section */}
           <div className="header mb-8">
-            <h1 className="text-3xl font-bold text-gray-800">Apply Team</h1>
-            <p className="text-lg font-semibold text-teal-600 mt-2">Open Teams for Recruitment</p>
+            <h1 className="text-3xl font-bold text-gray-700">Apply Team</h1>
+            <p className="text-lg font-semibold text-gray-600 mt-2">Open Teams for Recruitment</p>
           </div>
 
         {/* Open Teams Table */}
         <div className="overflow-x-auto">
-          <table className="w-full border border-gray-400 rounded-lg shadow-md">
-            <thead>
-              <tr className="bg-teal-600 text-black">
-                <th className="border border-gray-400 px-6 py-3 text-left text-black">Team Name</th>
-                <th className="border border-gray-400 px-6 py-3 text-left text-black">Leader</th>
-                <th className="border border-gray-400 px-6 py-3 text-left text-black">Members</th>
-                <th className="border border-gray-400 px-6 py-3 text-left text-black">Project Name</th>
-                <th className="border border-gray-400 px-6 py-3 text-left text-black">Description</th>
-                <th className="border border-gray-400 px-6 py-3 text-left text-black"> </th>  
+          <table className="w-full shadow-md rounded-lg overflow-hidden">
+            <thead className="bg-gray-700 text-center">
+              <tr className="bg-teal-600 text-white">
+                <th className="border border-gray-300 px-6 py-3">Team Name</th>
+                <th className="border border-gray-300 px-6 py-3">Leader</th>
+                <th className="border border-gray-300 px-6 py-3">Members</th>
+                <th className="border border-gray-300 px-6 py-3">Project Name</th>
+                <th className="border border-gray-300 px-6 py-3">Description</th>
+                <th className="border border-gray-300 px-6 py-3"> </th>  
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-center bg-gray-100">
               {openTeams.length > 0 ? (
                 openTeams.map((team) => (
-                  <tr key={team.tid} className="hover:bg-gray-100">
-                    <td className="border border-gray-400 px-6 py-3 text-gray-900">{team.groupName}</td>
-                    <td className="border border-gray-400 px-6 py-3 text-gray-900">{team.leaderName}</td>
+                  <tr key={team.tid} className="hover:bg-gray-200">
+                    <td className="border border-gray-300 px-6 py-3 text-gray-900">{team.groupName}</td>
+                    <td className="border border-gray-300 px-6 py-3 text-gray-900">{team.leaderName}</td>
 
-                    <td className="border border-gray-400 px-6 py-3 text-gray-900">
+                    <td className="border border-gray-300 px-6 py-3 text-gray-900">
                       {team.memberIds ? `${team.memberIds.length}/${team.maxMembers || "N/A"}` : `0/${team.maxMembers || "N/A"}`}
                     </td>
 
-                    <td className="border border-gray-400 px-6 py-3 text-gray-900">{team.projectName || "No Project Assigned"}</td>
-                    <td className="border border-gray-400 px-6 py-3 text-gray-900">{team.projectDescription || "No Description Available"}</td>
+                    <td className="border border-gray-300 px-6 py-3 text-gray-900">{team.projectName || "No Project Assigned"}</td>
+                    <td className="border border-gray-300 px-6 py-3 text-gray-900">{team.projectDescription || "No Description Available"}</td>
 
                     {/* Apply Button */}
-                    <td className="border border-gray-400 px-6 py-3 text-center">
+                    <td className="border border-gray-300 px-6 py-3 text-center">
                       <button 
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md shadow-md border border-blue-800 hover:bg-blue-700"
-                        style={{ backgroundColor: "#2563EB", color: "#ffffff", border: "2px solid #1E40AF" }}
+                        className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
                         onClick={() => setSelectedTeam(team.tid)} // Open modal with team ID
                       >
                         Apply Team
@@ -108,7 +107,7 @@ const ApplyTeam = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center border border-gray-400 px-6 py-3 text-gray-900">
+                  <td colSpan="6" className="text-center border border-gray-300 px-6 py-3 text-gray-900">
                     No open teams available.
                   </td>
                 </tr>

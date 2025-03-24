@@ -1,18 +1,14 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../services/AuthContext";
-import AddTeamMembersModal from "../Modals/AddTeamMembersModal";
 import FormTeamModal from "../Modals/FormTeamModal";
 import axios from "axios";
-import { UserRoundPlus } from "lucide-react"
 
 const MembersTable = () => {
   const { authState, getDecryptedId, storeEncryptedId } = useContext(AuthContext);
   const navigate = useNavigate();
   const [teamDetails, setTeamDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
-  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isFormTeamModalOpen, setIsFormTeamModalOpen] = useState(false);
 
   const address = getIpAddress();
@@ -36,7 +32,7 @@ const MembersTable = () => {
       setLoading(false);
       return;
     }
-
+    
     setLoading(true);
     try {
       const token = authState.token;
@@ -138,118 +134,74 @@ const MembersTable = () => {
     setIsAddMemberModalOpen(true);
   };
 
-
   const TABLE_HEAD = ["Group Name", "Recruitment Status", "Leader", "Members", "Adviser & Schedule", " ", " "];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-300 shadow-md mt-16 p-6">
-      {/* Back Button */}
-      <button
-        onClick={() => navigate(-1)}
-        className="bg-gray-700 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-500 transition"
-      >
-        Back
-      </button>
-
-      <h2 className="text-lg font-semibold text-teal mb-4">Your Team</h2>
-
-      {teamDetails && (
-        <button
-          onClick={() => setIsAddMemberModalOpen(true)}
-          className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-green-700 transition flex items-center space-x-2"
-        >
-          <UserRoundPlus/>
-          <span>Add Members </span>
-        </button>
-      )}
-
-      {isAddMemberModalOpen && (
-        <AddTeamMembersModal
-          isOpen={isAddMemberModalOpen}
-          onClose={() => setIsAddMemberModalOpen(false)}
-          teamId={teamId}
-          classId={classId}
-        />
-      )}
-
-      {loading ? (
-        <p className="text-center text-gray-500 p-4">Loading...</p>
-      ) : teamDetails ? (
-           
-        
-        <table className="w-full table-auto text-left border-collapse overflow-hidden rounded-lg">
-          <thead className="bg-teal text-white rounded-t-lg">
-            <tr>
-              {TABLE_HEAD.map((head, index) => (
-                <th key={`${head}-${index}`} className="p-4 text-sm font-semibold border-b border-gray-300">
-                  {head}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="bg-gray-100">
-            <tr className="hover:bg-gray-200">
-              <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.groupName || "N/A"}</td>
-              <td className="p-4 border-b border-gray-300 text-sm">
-                <span
-                  className={`font-semibold ${
-                    teamDetails.recruitmentOpen ? "text-green-600" : "text-red-500"
-                  }`}
-                >
-                  {teamDetails.recruitmentOpen ? "Open" : "Closed"}
-                </span>
-              </td>
-              <td className="p-4 border-b border-gray-300 text-sm">{teamDetails.leaderName || "N/A"}</td>
-
-              {/* Members Column */}
-              <td className="p-4 border-b border-gray-300 text-sm">
-                {teamDetails.memberNames && teamDetails.memberNames.length > 0 ? (
-                  <ul className="list-disc ml-4">
-                    {teamDetails.memberNames.map((member, index) => (
-                      <li key={index}>{member}</li>  
-                    ))}
-                  </ul>
-                ) : (
-                  "No Members"
-                )}
-              </td>
-              
-              {/* Adviser & Schedule Column */}
-              <td className="p-4 border-b border-gray-300 text-sm">
-                <p>
-                  <strong>Adviser:</strong> {teamDetails.adviserName ? teamDetails.adviserName : "N/A"}
-                </p>
-                <p>
-                <strong>Schedule:</strong> {teamDetails.scheduleDay && teamDetails.scheduleTime 
-                ? `${teamDetails.scheduleDay}, ${teamDetails.scheduleTime}` 
+  <div className="overflow-hidden rounded-2xl border border-gray-300 shadow-sm shadow-gray-200 mt-16 p-6">
+    <div className="flex justify-between items-center mb-6">
+      <h1 className="text-2xl font-semibold text-teal-500">Team Information</h1>
+      {/* {proposal.pid === officialProjectId && (
+      <span className="px-3 py-1 rounded-full text-sm font-semibold inline-block bg-gray-700 text-white">
+        Official
+      </span>
+      )} */}
+    </div>
+  
+    {loading ? (
+      <p className="text-center text-gray-500 p-4">Loading...</p>
+    ) : teamDetails ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Left Column */}
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-sm font-medium text-gray-600">Group Name</h3>
+            <p className="text-lg font-medium">{teamDetails.groupName || "N/A"}</p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">Recruitment</h3>
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-semibold inline-block ${
+                teamDetails.recruitmentOpen ? "bg-green-500 text-white" : "bg-red-500 text-white"
+              }`}
+            >
+              {teamDetails.recruitmentOpen ? "Open" : "Closed"}
+            </span>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-600">Leader</h3>
+            <p className="font-medium">{teamDetails.leaderName || "N/A"}</p>
+          </div>
+        </div>
+  
+        {/* Right Column - Members Section */}
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-sm font-medium text-gray-600">Members</h3>
+            {teamDetails?.memberNames && teamDetails.memberNames.length > 0 ? (
+              <ul className="list-disc pl-5 space-y-1 text-gray-700">
+                {teamDetails.memberNames.map((member, index) => (
+                  <li key={index} className="font-medium">{member}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500 italic">No Members</p>
+            )}
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-600">Adviser</h3>
+            <p className="font-medium">{teamDetails.adviserName || "N/A"}</p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-600">Schedule</h3>
+            <p className="font-medium">
+              {teamDetails.scheduleDay && teamDetails.scheduleTime
+                ? `${teamDetails.scheduleDay}, ${teamDetails.scheduleTime}`
                 : "Not Assigned"}
-                </p>
-              </td>
-              {/* Project Details Column */}
-              <td className="p-4 border-b border-gray-300 text-sm">
-                <button
-                  onClick={() => navigate(`/student/view-project-proposal`)} // Navigate to the Project Proposal Page
-                  className="bg-teal text-white py-2 px-4 rounded-lg hover:bg-peach transition"
-                >
-                  Project Proposals
-                </button>
-              </td>
-              {/* Actions Button - Redirects to StudentTeamSettings */}
-              <td className="p-4 border-b border-gray-300 text-sm">
-                <button
-                  onClick={handleTeamSettingsClick}
-                  className={`bg-teal text-white px-4 py-2 rounded-md transition ${
-                    !teamId ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
-                  }`}
-                  disabled={!teamId}
-                >
-                  Team Settings
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      ) : (
+            </p>
+          </div>
+        </div>
+      </div>
+    ) : (
         <div className="text-gray-500 p-4">
           You have currently no team.{" "}
           <button

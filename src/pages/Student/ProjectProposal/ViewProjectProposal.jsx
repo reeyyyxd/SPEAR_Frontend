@@ -4,7 +4,9 @@ import AuthContext from "../../../services/AuthContext";
 import Navbar from "../../../components/Navbar/Navbar";
 import EditProjectProposalModal from "../../../components/Modals/EditProjectProposalModal";
 import axios from "axios";
-import { Pencil, BadgeX , BadgeCheck , Trash2 , PackageOpen } from "lucide-react"
+import { Pencil, BadgeX , BadgeCheck , Trash2 , PackageOpen , Crown , Plus } from "lucide-react"
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ViewProjectProposal = () => {
   const { authState, getDecryptedId, storeEncryptedId } = useContext(AuthContext);
@@ -14,6 +16,11 @@ const ViewProjectProposal = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProposalId, setSelectedProposalId] = useState(null);
   const [officialProjectId, setOfficialProjectId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [activeTab, setActiveTab] = useState("team");
+
 
   const openEditModal = (proposalId) => {
     storeEncryptedId("pid", proposalId);
@@ -26,6 +33,24 @@ const ViewProjectProposal = () => {
     setIsEditModalOpen(false);
     setSelectedProposalId(null);
   };
+
+  const getStatusBadge = (status) => {
+    const baseClass = "px-3 py-1 rounded-full text-white text-sm font-semibold"; 
+  
+    switch (status) {
+      case "APPROVED":
+        return <span className={`${baseClass} bg-green-500`}>Approved</span>;
+      case "DENIED":
+        return <span className={`${baseClass} bg-red-500`}>Denied</span>;
+      case "PENDING":
+        return <span className={`${baseClass} bg-yellow-500`}>Pending</span>;
+      case "OPEN":
+        return <span className={`${baseClass} bg-purple-500`}>Open</span>;
+      default:
+        return <span className={`${baseClass} bg-gray-500`}>{status}</span>;
+    }
+  };
+  
   
   const address = window.location.hostname;
 
@@ -79,8 +104,6 @@ const ViewProjectProposal = () => {
 
 
   const handleDeleteProposal = async (proposalId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this proposal?");
-    if (!confirmDelete) return;
   
     try {
       const token = authState.token;
@@ -92,18 +115,16 @@ const ViewProjectProposal = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
   
-      alert("Proposal deleted successfully");
+      toast.success("Proposal deleted successfully");
       fetchTeamProposals();
     } catch (error) {
       console.error("Error deleting proposal:", error.response?.data || error.message);
-      alert(error.response?.data?.error || "Failed to delete proposal.");
+      toast.error(error.response?.data?.error || "Failed to delete proposal.");
     }
   };
   
   const handleSetToOpenProject = async (proposalId) => {
-    const confirmSetOpen = window.confirm("Are you sure you want to set this proposal to Open Project?");
-    if (!confirmSetOpen) return;
-  
+
     try {
       const token = authState.token;
       if (!token) throw new Error("No auth token");
@@ -114,19 +135,18 @@ const ViewProjectProposal = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
   
-      alert("Proposal set to Open Project successfully");
+      // alert("Proposal set to Open Project successfully");
+      toast.success("Proposal set to Open Project successfully");
       fetchTeamProposals();
       window.location.reload();
     } catch (error) {
       console.error("Error setting proposal to Open Project:", error.response?.data || error.message);
-      alert(error.response?.data?.error || "Failed to set proposal to Open Project.");
+      toast.error(error.response?.data?.error || "Failed to set proposal to Open Project.");
     }
   };
   
   const handleTakeOwnership = async (proposalId) => {
-    const confirmTakeOwnership = window.confirm("Are you sure you want to take ownership of this project?");
-    if (!confirmTakeOwnership) return;
-  
+
     try {
       const token = authState.token;
       if (!token) throw new Error("No auth token");
@@ -136,12 +156,12 @@ const ViewProjectProposal = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
   
-      alert("You have successfully claimed and accepted this project.");
+      toast.success("You have successfully claimed and accepted this project.");
       fetchOpenProposals();
       window.location.reload();
     } catch (error) {
       console.error("Error taking ownership of project:", error.response?.data || error.message);
-      alert(error.response?.data?.error || "Failed to claim project.");
+      toast.error(error.response?.data?.error || "Failed to claim project.");
     }
   };
 
@@ -172,9 +192,7 @@ const ViewProjectProposal = () => {
   }, [authState.uid, teamId]);
 
   const handleSetOfficialProject = async (proposalId) => {
-    const confirmSet = window.confirm("Are you sure you want to set this project as the official project?");
-    if (!confirmSet) return;
-  
+
     try {
       const token = authState.token;
       if (!token) throw new Error("No auth token");
@@ -184,18 +202,18 @@ const ViewProjectProposal = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
   
-      alert("Project successfully set as the official project");
+      toast.success("Project successfully set as the official project!");
       fetchOfficialProject(); // Refresh after setting
     } catch (error) {
       console.error("Error setting official project:", error.response?.data || error.message);
-      alert(error.response?.data?.error || "Failed to set official project.");
+      
+      toast.error(error.response?.data?.error || "Failed to set official project.");
     }
   };
   
-  const handleUnsetOfficialProject = async () => {
-    const confirmUnset = window.confirm("Are you sure you want to unset this official project?");
-    if (!confirmUnset) return;
   
+  const handleUnsetOfficialProject = async () => {
+    
     try {
       const token = authState.token;
       if (!token) throw new Error("No auth token");
@@ -205,17 +223,53 @@ const ViewProjectProposal = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
   
-      alert("Official project removed successfully");
+      toast.success("Official project removed successfully");
       fetchOfficialProject(); // Refresh after unsetting
     } catch (error) {
       console.error("Error unsetting official project:", error.response?.data || error.message);
-      alert(error.response?.data?.error || "Failed to remove official project.");
+      toast.error(error.response?.data?.error || "Failed to remove official project.");
     }
   };
 
-
+  const ConfirmationModal = ({ isOpen, onClose, onConfirm, message }) => {
+    if (!isOpen) return null;
+  
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="bg-white rounded-lg p-6 shadow-lg w-96">
+          <div className="flex items-center justify-between">
+            <h2 className="text-gray-700 text-xl font-semibold">Confirmation</h2>
+            <button
+              className="text-gray-500 hover:text-gray-700 mb-4"
+              onClick={onClose}
+            >
+              ✖
+            </button>
+          </div>
+          <p className="text-gray-600 mt-2">{message}</p>
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              className="bg-teal text-white px-4 py-2 rounded-md hover:bg-peach transition"
+              onClick={onConfirm}
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
 
   return (
+    <>
+    <ToastContainer position="top-right" autoClose={3000} />
     <div className="grid grid-cols-[256px_1fr] min-h-screen bg-gray-100">
       <Navbar userRole={authState.role} />
 
@@ -226,29 +280,45 @@ const ViewProjectProposal = () => {
         >
           Back
         </button>
-
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Project Proposals</h1>
-
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-700">My Team Proposals</h2>
-          <button
-            className="bg-amber-500 text-white px-4 py-2 rounded-md 
-            hover:bg-amber-700 transition shadow-md"
+        <h1 className="text-3xl font-bold text-gray-800 mb-5">Project Proposals</h1>
+        <button
+            className="bg-gray-600 text-white px-6 py-3 rounded-md hover:bg-gray-500 transition flex items-center space-x-2"
             onClick={() => navigate(`/student/project-proposal`)}
           >
-            Create Proposal
+            <Plus className="h-4 w-4"  />
+            <span>
+           Create Proposal</span>
           </button>
         </div>
+       
+          <div className="flex bg-gray-100 p-1 rounded-lg w-fit">
+      <button
+          className={`px-4 py-2 text-sm font-medium rounded-md transition ${
+            activeTab === "team"
+              ? "bg-white shadow text-black font-semibold"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("team")}
+        >
+          Team Proposals
+        </button>
+        <button
+          className={`px-4 py-2 text-sm font-medium rounded-md transition ml-1 ${
+            activeTab === "suggested"
+              ? "bg-white shadow text-black font-semibold"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("suggested")}
+        >
+          Suggested Proposals
+        </button>
+      </div>
 
-        {/* Debugging Logs
-        <div className="p-4 bg-gray-200 rounded-md mb-4">
-          <h3 className="text-lg font-semibold text-gray-600">Debugging Logs:</h3>
-          <pre className="text-xs text-gray-700 overflow-x-auto">
-            {JSON.stringify(teamProposals, null, 2)}
-          </pre>
-        </div> */}
-
+        {activeTab === "team" ? (
         <div className="overflow-x-auto">
+          <h2 className="text-xl font-semibold text-gray-700 mt-6">My Team Proposals</h2>
+          <p className="text-sm text-gray-500 mb-4">Review and manage project proposals from your team.</p>
           <table className="w-full border-collapse shadow-md rounded-lg overflow-hidden table-fixed">
           <thead className="bg-gray-700 text-white text-center">
             <tr>
@@ -261,20 +331,20 @@ const ViewProjectProposal = () => {
               <th className="border p-3 text-center font-semibold w-1/6">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white text-gray-800">
+          <tbody className="bg-gray-100 bg-white text-gray-800">
           {teamProposals.length > 0 ? (
                 teamProposals.map((proposal, index) => (
                   <tr
                   key={proposal.pid}
                   className={`border p-3 text-center ${
-                    proposal.pid === officialProjectId ? "bg-gray-400 text-white" : index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                    proposal.pid === officialProjectId ? "bg-gray-100 text-gray-900" : index % 2 === 0 ? "bg-gray-100" : "bg-white"
                   }`}
                 >
-                  <td className="text-center border p-3">
+                  <td className="border border-gray-300 text-center border p-3">
                     {proposal.projectName} {proposal.pid === officialProjectId && "(Official Project)"}
                       </td>
-                      <td className="text-center border p-3">{proposal.description}</td>
-                      <td className="border p-3 break-words">
+                      <td className="border border-gray-300 text-center border p-3">{proposal.description}</td>
+                      <td className="border border-gray-300 border p-3 break-words">
                         {proposal.features?.length > 0 ? (
                           <ul className="list-disc pl-4">
                             {proposal.features.map((f, i) => (
@@ -287,61 +357,79 @@ const ViewProjectProposal = () => {
                           "No features"
                         )}
                       </td>
-                      <td className="border p-3">{proposal.proposedByName}</td>
-                      <td className="text-center border p-3">{proposal.status}</td>
-                      <td className="border p-3">{proposal.reason || "No reason provided"}</td>
-                      <td className="border p-3 flex flex-col items-start gap-2">
+                      <td className="border border-gray-300 border p-3">{proposal.proposedByName}</td>
+                      <td className="border border-gray-300 text-center border p-3">
+                      <div className="flex flex-col items-center gap-2">
+                    {getStatusBadge(proposal.status)}
+                    {proposal.pid === officialProjectId && (
+                      <span className="px-3 py-1 rounded-full text-sm font-semibold inline-block bg-gray-700 text-white mt-1">
+                        Official
+                      </span>
+                    )}
+                    </div>
+                  </td>
+                      <td className="border border-gray-300 border p-3">{proposal.reason || "No reason provided"}</td>
+                      <td className="border border-gray-300 border p-3 flex flex-col items-start gap-2">
                       <button
-                        className="bg-cyan-500 text-white px-4 py-2 rounded-md hover:bg-cyan-600 transition w-full flex items-center space-x-2"
+                        className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center space-x-2 group"
                         onClick={() => openEditModal(proposal.pid)}
                       >
-                        <Pencil className="h-4 w-4" />
-                        <span>Edit Project</span>
+                        <Pencil className="h-4 w-4 text-cyan-500 group-hover:text-gray-800 transition-colors"  />
+                        <span className="text-cyan-500 group-hover:text-gray-800 transition-colors">Edit Project</span>
                       </button>
 
                       {proposal.pid !== officialProjectId ? (
                         <button
-                          className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 w-full flex items-center space-x-2"
-                          onClick={() => handleSetOfficialProject(proposal.pid)}
+                          className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center space-x-2 group"
+                          onClick={() => {
+                            setModalMessage("Are you sure you want to set this project as the official project?");
+                            setConfirmAction(() => () => handleSetOfficialProject(proposal.pid)); 
+                            setIsModalOpen(true);
+                          }}
                         >
-                          <BadgeCheck className="h-4 w-4" />
-                          <span>Set as Official</span>
+                          <BadgeCheck className="h-4 w-4 text-green-500 group-hover:text-gray-800 transition-colors" />
+                          <span className="text-green-500 group-hover:text-gray-800 transition-colors">Set as Official</span>
                         </button>
                       ) : (
                         <button
-                          className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 w-full flex items-center space-x-2"
-                          onClick={handleUnsetOfficialProject}
+                          className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center space-x-2 group"
+                          onClick={() => {
+                            setModalMessage("Are you sure you want to unset this project as the official project?");
+                            setConfirmAction(() => handleUnsetOfficialProject);
+                            setIsModalOpen(true);
+                          }}
                         >
-                          <BadgeX className="h-4 w-4" />
-                          <span>Unset Official</span>
+                          <BadgeX className="h-4 w-4 text-red-500 group-hover:text-gray-800 transition-colors" />
+                          <span className="text-red-500 group-hover:text-gray-800 transition-colors">Unset Official</span>
                         </button>
                       )}
 
-                      <button
-                        className={`flex items-center space-x-2 px-4 py-2 rounded-md transition w-full ${
-                          proposal.pid === officialProjectId
-                            ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-                            : "bg-red-500 text-white hover:bg-red-600"
-                        }`}
-                        onClick={() => proposal.pid !== officialProjectId && handleDeleteProposal(proposal.pid)}
-                        disabled={proposal.pid === officialProjectId}
+                      {proposal.pid !== officialProjectId && (
+                        <button
+                          className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center space-x-2 group"
+                          onClick={() => {
+                            setModalMessage("Are you sure you want to delete this project?");
+                            setConfirmAction(() => () => handleDeleteProposal(proposal.pid));
+                            setIsModalOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500 group-hover:text-gray-800 transition-colors" />
+                          <span className="text-red-500 group-hover:text-gray-800 transition-colors">Delete Project</span>
+                        </button>
+                      )}
+                    {proposal.pid !== officialProjectId && (
+                     <button
+                        className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center space-x-2 group"
+                        onClick={() => {
+                          setModalMessage("Are you sure you want to give this project?");
+                          setConfirmAction(() => () => handleSetToOpenProject(proposal.pid));
+                          setIsModalOpen(true);
+                        }}
                       >
-                        <Trash2 className="h-4 w-4" />
-                        <span>Delete Project</span>
+                        <PackageOpen className="h-4 w-4 text-violet-500 group-hover:text-gray-800 transition-colors" />
+                        <span className="text-violet-500 group-hover:text-gray-800 transition-colors">Give Project</span>
                       </button>
-
-                      <button
-                        className={`flex items-center space-x-2 px-4 py-2 rounded-md transition w-full ${
-                          proposal.pid === officialProjectId
-                            ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-                            : "bg-violet-500 text-white hover:bg-violet-600"
-                        }`}
-                        onClick={() => proposal.pid !== officialProjectId && handleSetToOpenProject(proposal.pid)}
-                        disabled={proposal.pid === officialProjectId}
-                      >
-                        <PackageOpen className="h-4 w-4" />
-                        <span>Give Project</span>
-                      </button>
+                    )}
                   </td>
                 </tr>
                 ))
@@ -353,6 +441,19 @@ const ViewProjectProposal = () => {
             </tbody>
           </table>
         </div>
+        ) : null}
+
+        {isModalOpen && (
+        <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={() => {
+          if (confirmAction) confirmAction();
+          setIsModalOpen(false);
+        }}
+        message={modalMessage}
+      />
+      )}
 
         <EditProjectProposalModal 
           proposalId={selectedProposalId} 
@@ -361,59 +462,73 @@ const ViewProjectProposal = () => {
           refreshProposals={fetchTeamProposals} 
         />
 
+      
+        {activeTab === "suggested" ? (
+          <>
+            {/* Open Project Proposals Header */}
+            <h2 className="text-xl font-semibold text-gray-700 mt-6">Suggested Project Proposals</h2>
+            <p className="text-sm text-gray-500 mb-3">Explore abandoned projects available for reassignment and ownership.</p>
 
-        {/* Open Project Proposals Header */}
-        <h2 className="text-xl font-semibold text-gray-700 mt-6 mb-3">Suggested Project Proposals</h2>
-
-        {/* Open Project Proposals Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse shadow-md rounded-lg overflow-hidden">
-            <thead className="bg-gray-700 text-white">
-              <tr>
-                {["Project Name", "Description", "Features", "Action"].map((header) => (
-                  <th key={header} className="border p-3 text-left">{header}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white text-gray-800">
-              {openProposals.length > 0 ? (
-                openProposals.map((proposal, index) => (
-                  <tr key={proposal.pid} className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}>
-                    <td className="text-center border p-3">{proposal.projectName}</td>
-                    <td className="text-center border p-3">{proposal.description}</td>
-                    <td className="text-center border p-3">
-                      {proposal.features?.length > 0 ? (
-                        <ul>
-                          {proposal.features.map((f, i) => (
-                            <li key={i}>{f.featureTitle}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        "No features"
-                      )}
-                    </td>
-                    <td className="text-center border p-3">
-                      <button
-                        className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition"
-                        onClick={() => handleTakeOwnership(proposal.pid)}
-                      >
-                        Take Over
-                      </button>
-                    </td>
+            {/* Open Project Proposals Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse shadow-md rounded-lg overflow-hidden">
+                <thead className="bg-gray-700 text-white">
+                  <tr>
+                    {["Project Name", "Description", "Features", "Action"].map((header) => (
+                      <th key={header} className="border p-3 text-center">
+                        {header}
+                      </th>
+                    ))}
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="4" className="border p-3 text-center text-gray-500">
-                    No open project proposals available.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody className="bg-white text-gray-800 text-center">
+                  {openProposals.length > 0 ? (
+                    openProposals.map((proposal, index) => (
+                      <tr key={proposal.pid} className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}>
+                        <td className="border border-gray-300 text-center border p-3">{proposal.projectName}</td>
+                        <td className="border border-gray-300 text-center border p-3">{proposal.description}</td>
+                        <td className="border border-gray-300 text-center border p-3">
+                          {proposal.features?.length > 0 ? (
+                            <ul>
+                              {proposal.features.map((f, i) => (
+                                <li key={i}>{f.featureTitle}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            "No features"
+                          )}
+                        </td>
+                        <td className="border border-gray-300 text-center p-3 flex justify-center">
+                       <button
+                         className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center space-x-2 group"
+                         onClick={() => {
+                           setModalMessage("Are you sure you want to take ownership of this project?");
+                           setConfirmAction(() => () => handleTakeOwnership(proposal.pid));
+                           setIsModalOpen(true);
+                         }}
+                       >
+                         <Crown className="h-4 w-4 text-green-500 group-hover:text-gray-800 transition-colors" />
+                         <span className="text-green-500 group-hover:text-gray-800 transition-colors">Take Over</span>
+                       </button>
+                     </td>
+
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="border p-3 text-center text-gray-500">
+                        No open project proposals available.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
+    </>
   );
 };
 

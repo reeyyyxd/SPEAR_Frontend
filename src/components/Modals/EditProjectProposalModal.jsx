@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import AuthContext from "../../services/AuthContext";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const EditProjectProposalModal = ({ isOpen, proposalId, onClose, refreshProposals }) => {
   const { authState } = useContext(AuthContext);
@@ -91,23 +93,34 @@ const EditProjectProposalModal = ({ isOpen, proposalId, onClose, refreshProposal
                 headers: { Authorization: `Bearer ${token}` },
             }
         );
-
-        alert("Proposal updated successfully!");
-        refreshProposals();
-        onClose();
+        toast.success("Proposal updated successfully!");
+        setTimeout(() => {
+          refreshProposals();
+          onClose();
+      }, 1000);
+      
     } catch (error) {
         console.error("Error updating proposal:", error.response?.data || error.message);
-        alert(error.response?.data?.error || "Failed to update proposal.");
+        toast.error(error.response?.data?.error || "Failed to update proposal.");
     }
 };
 
   if (!isOpen) return null;
 
   return (
+    <>
+      <ToastContainer position="top-right" autoClose={3000} />
     <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
       <div className="bg-white p-6 rounded-md shadow-md w-1/3">
+      <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold mb-4">Edit Proposal</h2>
-
+        <button
+                className="text-gray-500 hover:text-gray-700 mb-4"
+                onClick={onClose}
+              >
+                ✖
+              </button>
+              </div>
         {loading ? (
           <p className="text-gray-600">Loading proposal data...</p>
         ) : errorMessage ? (
@@ -120,7 +133,7 @@ const EditProjectProposalModal = ({ isOpen, proposalId, onClose, refreshProposal
               name="projectName"
               value={proposalData.projectName}
               onChange={handleChange}
-              className="w-full p-2 border rounded-md mb-3"
+              className="w-full p-2 border rounded-md mb-4"
             />
 
             <label className="block text-sm font-medium">Description</label>
@@ -128,12 +141,18 @@ const EditProjectProposalModal = ({ isOpen, proposalId, onClose, refreshProposal
               name="description"
               value={proposalData.description}
               onChange={handleChange}
-              className="w-full p-2 border rounded-md mb-3"
+              className="w-full p-2 border rounded-md mb-5"
             ></textarea>
 
             <label className="block text-sm font-medium">Features</label>
             {proposalData.features.map((feature, index) => (
               <div key={index} className="flex gap-2 mb-3">
+                 <button
+                  onClick={() => handleRemoveFeature(index)}
+                  className="text-red-500 px-2 hover:text-red-700"
+                >
+                  ✖
+                </button>
                 <input
                   type="text"
                   placeholder="Feature Title"
@@ -148,31 +167,23 @@ const EditProjectProposalModal = ({ isOpen, proposalId, onClose, refreshProposal
                   onChange={(e) => handleFeatureChange(index, "featureDescription", e.target.value)}
                   className="w-1/2 p-2 border rounded-md"
                 />
-                <button
-                  onClick={() => handleRemoveFeature(index)}
-                  className="text-red-500 px-2 hover:text-red-700"
-                >
-                  ✖
-                </button>
               </div>
             ))}
-
-            <button
+          <button
               onClick={handleAddFeature}
-              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-700 transition mb-3"
+              className="border border-green-500 text-green-500 px-3 py-1 rounded-md hover:bg-green-100 transition mb-3 ml-[35px]"
             >
-              Add Feature
+             + Add feature
             </button>
-
-            <div className="flex justify-end gap-2 mt-4">
+            <div className="flex justify-end gap-3 mt-4">
               <button
-                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-700"
+                className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition"
                 onClick={onClose}
               >
                 Cancel
               </button>
               <button
-                className="bg-cyan-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                className="bg-teal text-white px-4 py-2 rounded-md hover:bg-peach transition"
                 onClick={handleUpdateProposal}
               >
                 Save Changes
@@ -182,6 +193,7 @@ const EditProjectProposalModal = ({ isOpen, proposalId, onClose, refreshProposal
         )}
       </div>
     </div>
+    </>
   );
 };
 

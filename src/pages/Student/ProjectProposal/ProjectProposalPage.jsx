@@ -127,7 +127,7 @@ const ProjectProposalPage = () => {
             <button
               type="button"
               onClick={handleAddFeature}
-              className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-green-700 transition"
+              className="bg-green-500 text-white px-4 py-3 rounded-lg mb-4 hover:bg-green-700 transition"
             >
               + Add Feature
             </button>
@@ -160,7 +160,7 @@ const ProjectProposalPage = () => {
                   <button
                     type="button"
                     onClick={() => handleRemoveFeature(index)}
-                    className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-700 transition flex items-center space-x-2"
+                    className="text-red-500 border border-red-500 px-4 py-3 rounded-md hover:bg-red-500 hover:text-white transition flex items-center space-x-2"
                   >
                     <Trash2 className="h-4 w-4" />
                     <span>Remove</span>

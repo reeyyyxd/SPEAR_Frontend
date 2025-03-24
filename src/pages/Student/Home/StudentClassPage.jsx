@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useParams , useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import MembersTable from "../../../components/Tables/MembersTable";
 import axios from "axios";
+import { FileText, Settings, UserPlus , ChevronRight , Users , UserRoundPlus} from "lucide-react"
+import AddTeamMembersModal from "../../../components/Modals/AddTeamMembersModal";
 
 const StudentClassPage = () => {
-  const { authState, storeEncryptedId } = useContext(AuthContext);
+  const { authState, storeEncryptedId , getDecryptedId  } = useContext(AuthContext);
+  const navigate = useNavigate();
   const { courseCode, section } = useParams();
   const [classDetails, setClassDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,8 +18,13 @@ const StudentClassPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [teacherName, setTeacherName] = useState("");
   const [creatorName, setCreatorName] = useState(""); // Store creator's name
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
 
   const address = getIpAddress();
+  const classId = getDecryptedId("cid");
+  const userId = authState.uid;
+  const [teamId, setTeamId] = useState(getDecryptedId("tid") || authState.teamId || null);
 
   function getIpAddress() {
     const hostname = window.location.hostname;
@@ -68,6 +76,50 @@ const StudentClassPage = () => {
     }
   };
 
+  const handleTeamSettingsClick = () => {
+    let latestTeamId = getDecryptedId("tid") || teamId;
+  
+    if (!classId || !latestTeamId || !userId) {
+      console.error("Missing parameters for navigation:", { classId, latestTeamId, userId });
+      return;
+    }
+  
+    storeEncryptedId("tid", latestTeamId);
+  
+    navigate(`/student-team-settings/${classId}/${latestTeamId}/${userId}`);
+  };
+
+  const handleAddMembersClick = () => {
+    setIsAddMemberModalOpen(true);
+  };
+
+  useEffect(() => {
+    if (classId && authState.uid) {
+      fetchTeamDetails();
+    }
+  }, [classId, authState.uid]);
+ 
+  const fetchTeamDetails = async () => {
+    try {
+      const token = authState.token; // Ensure token is correctly retrieved
+      const response = await axios.get(
+        `http://${address}:8080/team/my/${classId}/${userId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      if (response.status === 200 && response.data) {
+        const latestTeamId = response.data.tid;
+        
+        if (latestTeamId) {
+          setTeamId(latestTeamId);
+          storeEncryptedId("tid", latestTeamId);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching team details:", error);
+    }
+  };
+  
   const fetchStudents = async () => {
     try {
       const response = await axios.get(`http://${address}:8080/class/${classDetails.classKey}/students`);
@@ -94,33 +146,39 @@ const StudentClassPage = () => {
         <p className="text-lg font-semibold text-red-500">Class details not found.</p>
       </div>
     );
-  }
+  } 
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         {/* Header Section */}
-        <div className="header flex justify-between items-center mb-6">
+        <button
+        onClick={() => navigate(-1)}
+        className="bg-gray-700 text-white px-4 py-2 rounded-lg mb-10 hover:bg-gray-500 transition"
+      >
+        Back
+      </button>
+        <div className="header flex justify-between items-center mb-2">
           <div>
-            <h1 className="text-lg font-semibold">
+            <h1 className="text-2xl font-bold">
               {classDetails.courseCode} - {classDetails.courseDescription} - {classDetails.section}
             </h1>
-            <p className="text-sm text-gray-600">
-              <strong>Class Creator:</strong> {creatorName}
+            <p className="text-gray-600">
+              Class Creator: {creatorName}
             </p>
           </div>
           <button
-          style={{ backgroundColor: "#323c47", color: "white" }} // Equivalent to teal-600
-          className="px-4 py-2 rounded-lg shadow-lg hover:opacity-90 transition-all"
+          className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center space-x-2"
           onClick={fetchStudents}
         >
-          Members ({totalMembers})
+          <Users className="h-4 w-4"/>
+          <span className="font-semibold">Class Members ({totalMembers})</span>
         </button>
         </div>
 
         {/* Members Table */}
-        <MembersTable />
+        <MembersTable className="-mt-20" />
 
         {/* Members Modal */}
         {showModal && (
@@ -156,9 +214,62 @@ const StudentClassPage = () => {
             </div>
           </div>
         )}
+
+  <div className="space-y-4 pt-10">
+    <h2 className="text-2xl font-semibold text-teal-500">Actions</h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <button 
+    className={`border px-3 py-1.5 rounded-lg transition flex items-center justify-between w-full h-12 
+      ${teamId ? "border-gray-300 hover:bg-gray-200 cursor-pointer" : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"}`}
+    onClick={teamId ? () => navigate(`/student/view-project-proposal`) : undefined}
+    disabled={!teamId}
+  >
+    <div className="flex items-center gap-2">
+      <FileText className="h-4 w-4" />
+      <span className="text-sm font-semibold">Project Proposal</span>
+    </div>
+    <ChevronRight className="h-4 w-4" />
+  </button>
+
+  <button 
+  className={`border px-3 py-1.5 rounded-lg transition flex items-center justify-between w-full h-12 
+    ${teamId ? "border-gray-300 hover:bg-gray-200 cursor-pointer" : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"}`}
+  onClick={teamId ? handleTeamSettingsClick : undefined}
+  disabled={!teamId}
+>
+  <div className="flex items-center gap-2">
+    <Settings className="h-4 w-4" />
+    <span className="text-sm font-semibold">Team Settings</span>
+  </div>
+  <ChevronRight className="h-4 w-4" />
+</button>
+
+</div>
+
+<button 
+  className={`bg-gray-700 text-white px-4 py-2 rounded-lg mb-10 transition flex items-center justify-between w-30 h-12 
+    ${teamId ? "hover:bg-gray-500 cursor-pointer" : "bg-gray-400 cursor-not-allowed"}`}
+  onClick={teamId ? () => setIsAddMemberModalOpen(true) : undefined}
+  disabled={!teamId}
+>
+  <UserPlus className="h-5 w-5 mr-2" />
+  <span className="text-sm font-semibold">Add Members</span>
+</button>
+
+
+    {isAddMemberModalOpen && (
+              <AddTeamMembersModal 
+              isOpen={isAddMemberModalOpen} 
+              onClose={() => setIsAddMemberModalOpen(false)} 
+              teamId={teamId} 
+              classId={classId} />
+            )}
+          </div>
+
       </div>
     </div>
   );
 };
+
 
 export default StudentClassPage;

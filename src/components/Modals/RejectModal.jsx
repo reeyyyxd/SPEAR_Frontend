@@ -20,8 +20,15 @@ const RejectModal = ({ onClose, onSubmit, rejectReason, setRejectReason }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[500px] animate-fadeIn z-50">
+      <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold mb-4 text-gray-800">Reject Application</h2>
-        
+        <button
+         className="text-gray-500 hover:text-gray-700 mb-4"
+          onClick={onClose}
+          >
+          ✖
+          </button>
+        </div>
         {/* Show Confirmation Prompt Instead */}
         {confirmReject ? (
           <>
@@ -31,13 +38,13 @@ const RejectModal = ({ onClose, onSubmit, rejectReason, setRejectReason }) => {
             {/* Confirmation Buttons */}
             <div className="flex justify-end gap-2 mt-6">
               <button
-                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
                 onClick={() => setConfirmReject(false)}
               >
                 Cancel
               </button>
               <button
-                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                className="bg-teal text-white px-4 py-2 rounded-md hover:bg-peach transition"
                 onClick={handleFinalReject}
               >
                 Yes, Reject
@@ -50,7 +57,7 @@ const RejectModal = ({ onClose, onSubmit, rejectReason, setRejectReason }) => {
 
             {/* Rejection Input */}
             <textarea
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
               placeholder="Enter the reason for rejection..."
               value={rejectReason}
               onChange={(e) => {
@@ -65,13 +72,13 @@ const RejectModal = ({ onClose, onSubmit, rejectReason, setRejectReason }) => {
             {/* Action Buttons */}
             <div className="flex justify-end gap-2 mt-6">
               <button
-                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
                 onClick={onClose}
               >
                 Cancel
               </button>
               <button
-                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                className="bg-teal text-white px-4 py-2 rounded-md hover:bg-peach transition"
                 onClick={handleSubmit}
               >
                 Reject
