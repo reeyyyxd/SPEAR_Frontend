@@ -35,10 +35,8 @@ const AdminEvaluations = () => {
 
   const handleDownload = async (eid) => {
     try {
-      const [details, submissions, results, responses] = await Promise.all([
-        axios.get(`http://${address}:8080/evaluation/${eid}/details`),
+      const [submissions, responses] = await Promise.all([
         axios.get(`http://${address}:8080/submissions/by-evaluation/${eid}`),
-        axios.get(`http://${address}:8080/teacher/by-evaluation/${eid}`),
         axios.get(`http://${address}:8080/responses/get-evaluation/${eid}`),
       ]);
 
@@ -49,10 +47,6 @@ const AdminEvaluations = () => {
           "Evaluation Period": sub.evaluationPeriod,
           "Status": sub.status,
           "Submission Date": sub.submittedAt,
-        })),
-        Results: results.data.map((res) => ({
-          "Evaluatee": res.evaluateeName,
-          "Average Score": res.averageScore,
         })),
         Responses: responses.data.map((resp) => ({
           "Question": resp.questionName,
@@ -80,15 +74,12 @@ const AdminEvaluations = () => {
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole="ADMIN" />
       <div className="p-8 bg-white shadow-md rounded-md w-full">
-        {/* Page Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Student to Adviser Evaluations</h1>
         </div>
 
-        {/* Error Handling */}
         {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 
-        {/* Loading State */}
         {loading ? (
           <div className="text-center text-gray-500">Loading evaluations...</div>
         ) : (
@@ -129,7 +120,7 @@ const AdminEvaluations = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="border p-3 text-center text-gray-500">
+                    <td colSpan="8" className="border p-3 text-center text-gray-500">
                       No evaluations available.
                     </td>
                   </tr>

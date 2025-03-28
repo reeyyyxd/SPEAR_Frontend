@@ -52,7 +52,7 @@ const ViewProposalAdviserModal = ({ isOpen, onClose }) => {
                 <tr>
                   <th className="border p-3 text-left font-semibold">Project Name</th>
                   <th className="border p-3 text-left font-semibold">Description</th>
-                  <th className="border p-3 text-left font-semibold">Features</th>
+                  <th className="border p-3 text-left font-semibold">Objectives</th>
                   <th className="border p-3 text-left font-semibold">Proposed By</th>
                 </tr>
               </thead>

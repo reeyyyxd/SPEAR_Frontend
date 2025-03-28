@@ -92,7 +92,7 @@ const OfficialProjectModal = ({ isOpen, onClose, teamId }) => {
           <>
             <p className="text-lg font-semibold">Project Name: {project.projectName}</p>
             <p className="text-gray-700 mb-2">Description: {project.description}</p>
-            <h3 className="mt-4 text-md font-semibold">Features:</h3>
+            <h3 className="mt-4 text-md font-semibold">Objectives:</h3>
             <ul className="list-disc pl-5 text-sm text-gray-700">
               {project.features.length > 0 ? (
                 project.features.map((feature, index) => (
@@ -101,7 +101,7 @@ const OfficialProjectModal = ({ isOpen, onClose, teamId }) => {
                   </li>
                 ))
               ) : (
-                <p className="text-gray-500">No features listed.</p>
+                <p className="text-gray-500">No objectives listed.</p>
               )}
             </ul>
             <br />

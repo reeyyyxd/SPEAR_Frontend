@@ -21,7 +21,6 @@ const StudentTeacherEvaluation = () => {
     fetchAdviser();
   }, []);
 
-  // Fetch Questions by Evaluation ID
   const fetchQuestions = async () => {
     try {
       const response = await axios.get(`http://${address}:8080/get-questions-by-evaluation/${evaluationId}`);
@@ -31,7 +30,6 @@ const StudentTeacherEvaluation = () => {
     }
   };
 
-  // Fetch Adviser
   const fetchAdviser = async () => {
     try {
       const response = await axios.get(`http://${address}:8080/evaluation/${studentId}/class/${classId}/adviser`);
@@ -48,7 +46,6 @@ const StudentTeacherEvaluation = () => {
     }
   };
 
-  // Handle Input Changes
   const handleResponseChange = (questionId, value) => {
     setResponses({
       ...responses,
@@ -56,22 +53,67 @@ const StudentTeacherEvaluation = () => {
     });
   };
 
-  // Handle Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!adviser) {
       alert("Adviser not loaded. Please wait.");
       return;
     }
 
-    try {
-      await axios.post(`http://${address}:8080/submit-evaluation`, {
-        studentId,
-        evaluationId,
-        responses,
-      });
+    // Check if all questions are answered
+    for (const question of questions) {
+      if (question.questionType === "RADIO" && !responses[`${adviser.adviserId}-${question.qid}`]) {
+        alert("Please answer all radio questions.");
+        return;
+      }
+      if (question.questionType === "TEXT" && !responses[`text-${question.qid}`]) {
+        alert("Please answer all text questions.");
+        return;
+      }
+    }
 
+    // Check for same score restriction
+    const radioAnswers = questions.filter(q => q.questionType === "RADIO").map(q => responses[`${adviser.adviserId}-${q.qid}`]);
+    const allSame = radioAnswers.every(val => val === radioAnswers[0]);
+
+    if (allSame) {
+      alert("You cannot give the same rating for all questions.");
+      return;
+    }
+
+    const responseList = [];
+    questions.forEach((question) => {
+      if (question.questionType === "RADIO") {
+        const key = `${adviser.adviserId}-${question.qid}`;
+        const value = responses[key];
+        if (value) {
+          responseList.push({
+            evaluator: { uid: studentId },
+            evaluatee: { uid: adviser.adviserId },
+            question: { qid: question.qid },
+            evaluation: { eid: evaluationId },
+            score: value,
+            textResponse: null
+          });
+        }
+      }
+      if (question.questionType === "TEXT") {
+        const value = responses[`text-${question.qid}`];
+        if (value) {
+          responseList.push({
+            evaluator: { uid: studentId },
+            evaluatee: { uid: adviser.adviserId },
+            question: { qid: question.qid },
+            evaluation: { eid: evaluationId },
+            score: 0,
+            textResponse: value
+          });
+        }
+      }
+    });
+
+    try {
+      await axios.post(`http://${address}:8080/submissions/submit-adviser?evaluationId=${evaluationId}&evaluatorId=${studentId}`);
       alert("Evaluation successfully submitted!");
       navigate(-1);
     } catch (error) {
@@ -81,33 +123,45 @@ const StudentTeacherEvaluation = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold mb-4">Adviser Evaluation</h1>
-      <p className="text-lg text-gray-600 mb-6">Evaluate your adviser below.</p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-8">
+
+      {/* Back Button */}
+      <div className="w-full max-w-4xl mb-6">
+        <button 
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
+        >
+          ← Back
+        </button>
+      </div>
+
+      <h1 className="text-3xl font-bold text-gray-800 mb-2">Adviser Evaluation</h1>
+      <p className="text-md text-gray-500 mb-6">Evaluate your adviser below.</p>
 
       {/* Evaluation Form */}
-      <form onSubmit={handleSubmit} className="w-full max-w-4xl bg-white p-6 shadow-md rounded-md">
-        {questions.map((question) => (
-          <div key={question.qid} className="mb-6">
-            <h2 className="font-semibold text-lg text-gray-700">{question.questionText}</h2>
+      <form onSubmit={handleSubmit} className="w-full max-w-4xl bg-white p-8 rounded-lg shadow space-y-8">
 
-            {/* Radio Type Question (Rating 1-5) */}
-            {question.questionType === "RADIO" && (
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse mt-2">
+        {questions.map((question) => (
+          <div key={question.qid} className="space-y-3">
+            <h2 className="font-semibold text-gray-700">{question.questionText}</h2>
+
+            {/* Radio */}
+            {question.questionType === "RADIO" && adviser && (
+              <div className="overflow-x-auto rounded border">
+                <table className="w-full text-center table-auto border-collapse">
                   <thead>
-                    <tr className="bg-gray-100 text-gray-700">
-                      <th className="p-2 text-left">Rate</th>
+                    <tr className="bg-gray-100 text-gray-600">
+                      <th className="p-2 text-left">Adviser</th>
                       {[1, 2, 3, 4, 5].map((score) => (
-                        <th key={score} className="p-2 text-center">{score}</th>
+                        <th key={score} className="p-2">{score}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b">
-                      <td className="p-2 font-semibold">{adviser?.adviserName || "Adviser"}</td>
+                    <tr className="border-t hover:bg-gray-50">
+                      <td className="p-2 text-left font-medium">{adviser?.adviserName || "Adviser"}</td>
                       {[1, 2, 3, 4, 5].map((score) => (
-                        <td key={score} className="p-2 text-center">
+                        <td key={score} className="p-2">
                           <input
                             type="radio"
                             name={`rating-${question.qid}`}
@@ -123,11 +177,11 @@ const StudentTeacherEvaluation = () => {
               </div>
             )}
 
-            {/* Text Type Question (Essay) */}
+            {/* Text */}
             {question.questionType === "TEXT" && (
-              <div className="mt-3">
+              <div>
                 <textarea
-                  className="w-full p-3 border border-gray-300 rounded-md"
+                  className="w-full p-3 border rounded focus:ring-2 focus:ring-gray-400"
                   rows="4"
                   placeholder="Write your response here..."
                   value={responses[`text-${question.qid}`] || ""}
@@ -138,10 +192,9 @@ const StudentTeacherEvaluation = () => {
           </div>
         ))}
 
-        {/* Submit Button */}
         <button
           type="submit"
-          className="w-full bg-green-600 text-white px-6 py-3 mt-6 rounded-md hover:bg-green-800 transition"
+          className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 transition text-lg"
         >
           Submit Evaluation
         </button>

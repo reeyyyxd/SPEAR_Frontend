@@ -123,13 +123,13 @@ const ProjectProposalPage = () => {
           </div>
           <div>
             <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-teal mb-4">Features</h3>
+            <h3 className="text-lg font-semibold text-teal mb-4">Objectives</h3>
             <button
               type="button"
               onClick={handleAddFeature}
               className="bg-green-500 text-white px-4 py-3 rounded-lg mb-4 hover:bg-green-700 transition"
             >
-              + Add Feature
+              + Add Objective
             </button>
             </div>
             <div className="grid gap-4">
@@ -137,7 +137,7 @@ const ProjectProposalPage = () => {
                 <div key={index} className="flex items-center space-x-4">
                   <input
                     type="text"
-                    placeholder="Enter feature title"
+                    placeholder="Enter an Objective"
                     className="flex-1 border border-gray-300 rounded-md p-3"
                     value={feature.title}
                     onChange={(e) => {
@@ -148,7 +148,7 @@ const ProjectProposalPage = () => {
                   />
                   <input
                     type="text"
-                    placeholder="Describe this feature"
+                    placeholder="Describe this objective"
                     className="flex-1 border border-gray-300 rounded-md p-3"
                     value={feature.description}
                     onChange={(e) => {

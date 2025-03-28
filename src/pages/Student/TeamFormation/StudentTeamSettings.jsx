@@ -4,6 +4,7 @@ import AuthContext from "../../../services/AuthContext";
 import axios from "axios";
 import Navbar from "../../../components/Navbar/Navbar";
 import { FiArrowLeft, FiEdit3, FiUserMinus, FiChevronDown, FiUserCheck} from "react-icons/fi";
+import StudentAdvisoryRequestModal from "../../../components/Modals/StudentAdvisoryRequestModal";
 
 const StudentTeamSettings = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
@@ -27,7 +28,10 @@ const StudentTeamSettings = () => {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [showAdviserDropdown, setShowAdviserDropdown] = useState(false);
   const [showScheduleDropdown, setShowScheduleDropdown] = useState(false);
+  const [showRequestModal, setShowRequestModal] = useState(false);
   const [error, setError] = useState("");
+  const [showDropModal, setShowDropModal] = useState(false);
+  const [dropReason, setDropReason] = useState("");
 
   
   const address = getIpAddress();
@@ -131,38 +135,27 @@ const StudentTeamSettings = () => {
     return `${formattedHour}:${minute} ${ampm}`;
   };
 
-  const assignAdviserAndSchedule = async () => {
-    if (!selectedAdviser || !selectedSchedule || !teamDetails?.tid) return;
-  
-    setIsUpdating(true);
-    setError("");
+  const dropAdviser = async () => {
+    if (!dropReason.trim()) {
+      alert("Please provide a reason before submitting.");
+      return;
+    }
   
     try {
-      const response = await axios.put(
-        `http://${address}:8080/team/${teamDetails.tid}/assign-adviser-schedule`,
-        {
-          adviserId: selectedAdviser,
-          scheduleId: selectedSchedule,
-          requesterId: userId, 
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      const res = await axios.post(`http://${address}:8080/team/${teamDetails.tid}/leave-adviser`, {
+        requesterId: userId,
+        reason: dropReason,
+      });
   
-      alert(response.data.message);
-  
-      // Fetch the updated team details
-      window.location.reload();
-  
-    } catch (error) {
-      console.error("Error assigning adviser and schedule:", error);
-      setError(error.response?.data?.error || "Failed to assign.");
-    } finally {
-      setIsUpdating(false);
+      alert(res.data.message);
+      setShowDropModal(false);
+      setDropReason("");
+      window.location.reload(); // optional
+    } catch (err) {
+      console.error("Error submitting leave adviser request:", err);
+      alert(err.response?.data?.error || "Failed to submit leave request.");
     }
   };
-
 
   const toggleRecruitment = async () => {
     if (!teamDetails?.tid) return;
@@ -197,6 +190,10 @@ const StudentTeamSettings = () => {
 
   const kickMember = async (memberId) => {
     if (!teamDetails?.tid) return;
+  
+    const confirmKick = window.confirm("Are you sure you want to remove this member from the team?");
+    if (!confirmKick) return;
+  
     try {
       await axios.delete(`http://${address}:8080/student/${teamDetails.tid}/kick-member/${memberId}`, {
         data: { requesterId: userId },
@@ -207,7 +204,8 @@ const StudentTeamSettings = () => {
         memberIds: prev.memberIds.filter((id) => id !== memberId),
         memberNames: prev.memberNames.filter((_, index) => prev.memberIds[index] !== memberId),
       }));
-      window.location.reload(); 
+  
+      window.location.reload();
     } catch (error) {
       console.error("Error removing member:", error);
     }
@@ -354,105 +352,54 @@ const transferLeadership = async (newLeaderId) => {
                 <p className="text-gray-600">No members in the team.</p>
               )}
             </div>
-
+            {/* Advisories and Schedules */}
             <div className="mb-4 p-4 border rounded-md bg-gray-50">
-            <h3 className="text-lg font-semibold mb-2">Current Adviser & Schedule</h3>
-            <p className="text-gray-700"><strong>Adviser:</strong> {teamDetails?.adviserName || "Not Assigned"}</p>
-            <p className="text-gray-700"><strong>Schedule:</strong> 
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-semibold">Team Adviser & Schedule</h3>
+              <button
+                onClick={() => setShowRequestModal(true)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+              >
+                Request Adviser & Schedule
+              </button>
+            </div>
+
+            <p className="text-gray-700">
+              <strong>Adviser:</strong> {teamDetails?.adviserName || "Not Assigned"}
+            </p>
+            <p className="text-gray-700">
+              <strong>Schedule:</strong>{" "}
               {teamDetails?.scheduleDay && teamDetails?.scheduleTime
                 ? `${teamDetails.scheduleDay}, ${teamDetails.scheduleTime}`
                 : "Not Assigned"}
             </p>
-          </div>
 
-  
-          {/* Adviser & Schedule Section */}
-        <div className="mb-6 border p-4 rounded-md bg-gray-100 relative">
-          <h3 className="text-lg font-semibold">Assign or Change Adviser & Schedule</h3>
-
-          {/* Adviser Selection */}
-          <div className="mt-2">
-            <label className="block font-medium mb-1">Select Adviser:</label>
-            <button
-              onClick={fetchAdvisers}
-              className="bg-white border border-gray-300 text-gray-800 px-3 py-2 rounded-md w-full text-left flex justify-between items-center"
+            {teamDetails?.adviserName !== "Not Assigned" && teamDetails?.scheduleDay && teamDetails?.scheduleTime && (
+              <button
+              onClick={() => setShowDropModal(true)}
+              disabled={
+                !teamDetails?.adviserName ||
+                teamDetails?.adviserName === "No Adviser Assigned" ||
+                !teamDetails?.scheduleDay ||
+                !teamDetails?.scheduleTime ||
+                teamDetails?.scheduleDay === "No Day Set" ||
+                teamDetails?.scheduleTime === "No Time Set"
+              }
+              className={`mt-4 px-4 py-2 rounded text-white w-full transition ${
+                !teamDetails?.adviserName ||
+                teamDetails?.adviserName === "No Adviser Assigned" ||
+                !teamDetails?.scheduleDay ||
+                !teamDetails?.scheduleTime ||
+                teamDetails?.scheduleDay === "No Day Set" ||
+                teamDetails?.scheduleTime === "No Time Set"
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-red-600 hover:bg-orange-800"
+              }`}
             >
-              {selectedAdviser
-                ? advisers.find((a) => a.uid === selectedAdviser)?.firstname + " " + advisers.find((a) => a.uid === selectedAdviser)?.lastname
-                : "Select an Adviser"}
-              <FiChevronDown className="ml-2 transition-transform duration-200" />
+              Request to Leave Adviser
             </button>
-
-            {showAdviserDropdown && advisers.length > 0 && (
-              <ul className="absolute z-10 bg-white border border-gray-300 rounded-md mt-1 w-full shadow-lg max-h-48 overflow-auto text-gray-900">
-                {advisers.map((adv) => (
-                  <li
-                    key={adv.uid}
-                    className="p-3 hover:bg-blue-100 cursor-pointer transition"
-                    onClick={() => {
-                      setSelectedAdviser(adv.uid);
-                      setShowAdviserDropdown(false);
-                      fetchSchedules(adv.uid);
-                    }}
-                  >
-                    {adv.firstname} {adv.lastname} - {adv.interests}
-                  </li>
-                ))}
-              </ul>
             )}
           </div>
-
-          {/* Schedule Selection */}
-          {selectedAdviser && (
-            <div className="mt-4">
-              <label className="block font-medium mb-1">Select Schedule:</label>
-              <button
-                onClick={() => setShowScheduleDropdown((prev) => !prev)}
-                className="bg-white border border-gray-300 text-gray-800 px-3 py-2 rounded-md w-full text-left flex justify-between items-center"
-              >
-                {selectedSchedule
-                  ? schedules.find((s) => s.schedid === selectedSchedule)?.day + " - " +
-                    formatTime(schedules.find((s) => s.schedid === selectedSchedule)?.startTime) + " - " +
-                    formatTime(schedules.find((s) => s.schedid === selectedSchedule)?.endTime)
-                  : schedules.length > 0 
-                    ? "Select a Schedule" 
-                    : "No Available Schedules"}
-                <FiChevronDown className="ml-2 transition-transform duration-200" />
-              </button>
-
-              {showScheduleDropdown && schedules.length > 0 && (
-               <ul className="absolute z-10 bg-white border border-gray-300 rounded-md mt-1 w-full shadow-lg max-h-48 overflow-auto text-gray-900">
-               {schedules.map((sched) => (
-                 <li
-                   key={sched.schedid}
-                   className="p-3 hover:bg-blue-100 cursor-pointer transition"
-                   onClick={() => {
-                     setSelectedSchedule(sched.schedid);
-                     setShowScheduleDropdown(false);
-                   }}
-                 >
-                   {sched.day} - {formatTime(sched.startTime)} - {formatTime(sched.endTime)}
-                 </li>
-               ))}
-             </ul>
-              )}
-            </div>
-          )}
-
-          {/* Assign Button */}
-          <button
-            onClick={assignAdviserAndSchedule}
-            className={`mt-3 px-4 py-2 w-full rounded-lg transition ${
-              isUpdating || !selectedAdviser || !selectedSchedule
-                ? "bg-gray-400 text-white cursor-not-allowed"
-                : "bg-green-500 text-white hover:bg-green-600"
-            }`}
-            disabled={isUpdating || !selectedAdviser || !selectedSchedule}
-          >
-            {isUpdating ? "Assigning..." : "Assign Adviser & Schedule"}
-          </button>
-        </div>
-  
 
             {/* Recruitment Status */}
             <div className="mb-6">
@@ -491,7 +438,45 @@ const transferLeadership = async (newLeaderId) => {
           <p className="text-center text-gray-600">You are not in a team.</p>
         )}
       </div>
+      {showRequestModal && (
+          <StudentAdvisoryRequestModal
+            teamId={teamDetails.tid}
+            requesterId={authState.userId}
+            closeModal={() => setShowRequestModal(false)}
+          />
+        )}
+
+      {showDropModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-md shadow-md w-full max-w-md relative">
+            <button
+              onClick={() => setShowDropModal(false)}
+              className="absolute top-2 right-2 text-gray-600"
+            >
+              ✕
+            </button>
+            <h2 className="text-lg font-semibold mb-4">Drop Adviser</h2>
+            <p className="text-gray-700 mb-2">Please provide a reason:</p>
+            <textarea
+              rows="4"
+              value={dropReason}
+              onChange={(e) => setDropReason(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md"
+              placeholder="Explain why you want to drop your adviser..."
+            />
+            <button
+            onClick={dropAdviser}
+            disabled={!dropReason.trim()}
+            className="mt-4 w-full bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Confirm
+          </button>
+          </div>
+        </div>
+      )}
     </div>
+    
+    
   );
 };
 

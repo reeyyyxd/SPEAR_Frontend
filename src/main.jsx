@@ -48,6 +48,7 @@ import AdminEvaluations from "./pages/Admin/AdminEvaluations";
 import AdminQuestionTemplates from "./pages/Admin/AdminQuestionTemplates";
 import StudentTeacherEvaluation from "./pages/Student/Evaluation/StudentTeacherEvaluation";
 import StudentTeacherStatus from "./pages/Student/Evaluation/StudentTeacherStatus";
+import TeacherAdvisoryRequest from "./pages/Teacher/Teams/TeacherAdvisoryRequest";
 
 const router = createBrowserRouter([
   {
@@ -289,6 +290,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["TEACHER"]}>
         <AdviserEvaluation />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path:"/teacher/advisory-request",
+    element: (
+      <PrivateRoute requiredRoles={["TEACHER"]}>
+        <TeacherAdvisoryRequest />
       </PrivateRoute>
     ),
   },

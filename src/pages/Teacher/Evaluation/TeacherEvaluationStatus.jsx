@@ -39,8 +39,6 @@ const TeacherEvaluationStatus = () => {
     fetchTeamDetails();
   }, [teamName]);
 
-
-
   const handleEvaluateTeam = () => {
     navigate("/teacher/adviser-evaluation");
   };
@@ -84,9 +82,9 @@ const TeacherEvaluationStatus = () => {
                   <td className="px-4 py-3 border">{teamDetails.projectName || "No Project Assigned"}</td>
                   <td className="px-4 py-3 border">{teamDetails.projectDescription || "No Description Available"}</td>
                   <td className="px-4 py-3 border">
-                    {teamDetails.teamMembers && teamDetails.teamMembers.length > 0 ? (
-                      <ul className="list-disc pl-4">
-                        {teamDetails.teamMembers.map((member, index) => (
+                    {teamDetails.memberNames && teamDetails.memberNames.length > 0 ? (
+                      <ul className="list-disc pl-4 space-y-1">
+                        {teamDetails.memberNames.map((member, index) => (
                           <li key={index}>{member}</li>
                         ))}
                       </ul>

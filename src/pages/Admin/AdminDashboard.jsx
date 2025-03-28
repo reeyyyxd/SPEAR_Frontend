@@ -98,7 +98,7 @@ const ProposalsTable = ({ proposals }) => {
                   <th className="px-6 py-2 text-start text-md font-medium">Description</th>
                   <th className="px-6 py-2 text-start text-md font-medium">Status</th>
                   <th className="px-6 py-2 text-start text-md font-medium">Reason</th>
-                  <th className="px-6 py-2 text-start text-md font-medium">Features</th>
+                  <th className="px-6 py-2 text-start text-md font-medium">Objectives</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">

@@ -14,6 +14,7 @@ const ClassSettings = () => {
     schoolYear: "",
     semester: "",
     maxTeamSize: 5,
+    needsAdvisory: true,
   });
   const [error, setError] = useState(null);
 
@@ -206,6 +207,28 @@ const ClassSettings = () => {
                 onChange={handleChange}
                 className="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal focus:border-teal"
               />
+            </div>
+
+            {/* Needs Advisory Toggle */}
+            <div className="flex flex-col">
+              <label className="block text-sm font-medium mb-1 text-gray-700">
+                Class Needs Advisory?
+              </label>
+              <div
+                onClick={() => setClassData(prev => ({ ...prev, needsAdvisory: !prev.needsAdvisory }))}
+                className={`w-14 h-8 flex items-center bg-gray-300 rounded-full p-1 cursor-pointer transition-colors duration-300 ${
+                  classData.needsAdvisory ? "bg-green-500" : "bg-gray-400"
+                }`}
+              >
+                <div
+                  className={`bg-white w-6 h-6 rounded-full shadow-md transform duration-300 ease-in-out ${
+                    classData.needsAdvisory ? "translate-x-6" : ""
+                  }`}
+                ></div>
+              </div>
+              <span className="text-sm mt-1 text-gray-700">
+                {classData.needsAdvisory ? "This class requires advisory." : "No advisory needed."}
+              </span>
             </div>
 
             <div className="col-span-2 flex justify-between">

@@ -324,7 +324,7 @@ const ViewProjectProposal = () => {
             <tr>
               <th className="border p-3 text-center font-semibold w-1/6">Project Name</th>
               <th className="border p-3 text-center font-semibold w-1/6">Description</th>
-              <th className="border p-3 text-center font-semibold w-1/3">Features</th>
+              <th className="border p-3 text-center font-semibold w-1/3">Objectives</th>
               <th className="border p-3 text-center font-semibold w-1/6">Proposed By</th>
               <th className="border p-3 text-center font-semibold w-1/6">Status</th>
               <th className="border p-3 text-center font-semibold w-1/6">Reason</th>
@@ -354,7 +354,7 @@ const ViewProjectProposal = () => {
                             ))}
                           </ul>
                         ) : (
-                          "No features"
+                          "No Objectives"
                         )}
                       </td>
                       <td className="border border-gray-300 border p-3">{proposal.proposedByName}</td>
@@ -474,7 +474,7 @@ const ViewProjectProposal = () => {
               <table className="w-full border-collapse shadow-md rounded-lg overflow-hidden">
                 <thead className="bg-gray-700 text-white">
                   <tr>
-                    {["Project Name", "Description", "Features", "Action"].map((header) => (
+                    {["Project Name", "Description", "Objectives", "Action"].map((header) => (
                       <th key={header} className="border p-3 text-center">
                         {header}
                       </th>

@@ -11,6 +11,10 @@ const TeacherAdvisories = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+  const [showDropModal, setShowDropModal] = useState(false);
+  const [dropTeamId, setDropTeamId] = useState(null);
+  const [dropReason, setDropReason] = useState("");
+  const { getDecryptedId } = useContext(AuthContext);
 
   const address = getIpAddress();
 
@@ -61,19 +65,63 @@ const TeacherAdvisories = () => {
 
   
 
+  const openDropModal = (teamId) => {
+    setDropTeamId(teamId);
+    setDropReason("");
+    setShowDropModal(true);
+  };
+  
+  const submitDropTeam = async () => {
+    if (!dropTeamId || !dropReason.trim()) {
+      return alert("Please provide a reason.");
+    }
+  
+    try {
+      const decryptedAdviserId = getDecryptedId("uid");
+  
+      const res = await axios.post(`http://${address}:8080/adviser-drop/team/${dropTeamId}`, {
+        adviserId: decryptedAdviserId,
+        reason: dropReason.trim(),
+      });
+  
+      alert(res.data.message);
+      setAdvisoryTeams((prev) => prev.filter((team) => team.tid !== dropTeamId));
+    } catch (err) {
+      console.error("Error dropping adviser:", err);
+      alert(err.response?.data?.error || "Failed to drop adviser.");
+    } finally {
+      setShowDropModal(false);
+      setDropReason("");
+      setDropTeamId(null);
+    }
+  };
+  
+
   return (
             <div className="grid grid-cols-[256px_1fr] min-h-screen">
               <Navbar userRole={authState?.role} />
               <div className="main-content bg-white text-gray-900 md:px-20 lg:px-28 pt-8 md:pt-12">
                 
                 {/* Back Button */}
-                <div className="flex justify-start mb-4">
-                  <button className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700" onClick={() => navigate(-1)}>
+                <div className="flex justify-between items-center mb-4">
+                  <button
+                    className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+                    onClick={() => navigate(-1)}
+                  >
                     Back
                   </button>
                 </div>
 
-                <h1 className="text-3xl font-bold text-gray-800 mb-4 text-center">My Advisories</h1>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center">My Advisories</h1>
+
+                <div className="flex justify-end mb-6">
+                  <button
+                    className="bg-[#323c47] text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition"
+                    onClick={() => navigate("/teacher/advisory-request")}
+                  >
+                    Teams Advisory Requests
+                  </button>
+                </div>
 
                 <div className="bg-gray-100 shadow-md rounded-lg p-6">
           {advisoryTeams.length > 0 ? (
@@ -119,13 +167,20 @@ const TeacherAdvisories = () => {
                       {team.scheduleTime}
                     </td>
 
-                    {/* View Project Proposals Button */}
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    {/* View proposals and drop team */}
+                    <td className="px-6 py-4 text-sm text-gray-900 space-y-2">
                       <button
-                        className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
+                        className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all block w-full"
                         onClick={() => handleViewProposals(team.tid)}
                       >
                         View Proposals
+                      </button>
+
+                      <button
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-800 transition-all block w-full"
+                        onClick={() => openDropModal(team.tid)}
+                      >
+                        Drop Team
                       </button>
                     </td>
                   </tr>
@@ -138,6 +193,34 @@ const TeacherAdvisories = () => {
         </div>
       </div>
       {isModalOpen && <ViewProposalAdviserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
+      {showDropModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-md shadow-md p-6 w-full max-w-md relative">
+            <button
+              onClick={() => setShowDropModal(false)}
+              className="absolute top-2 right-2 text-gray-600 hover:text-black"
+            >
+              ✕
+            </button>
+            <h2 className="text-lg font-semibold mb-4">Drop Team</h2>
+            <p className="mb-2 text-gray-700">Please provide a reason for dropping this team:</p>
+            <textarea
+              value={dropReason}
+              onChange={(e) => setDropReason(e.target.value)}
+              rows="4"
+              className="w-full border border-gray-300 rounded-md p-2"
+              placeholder="Type reason here..."
+            />
+            <button
+              onClick={submitDropTeam}
+              disabled={!dropReason.trim()}
+              className="mt-4 w-full bg-red-600 text-white py-2 rounded-md hover:bg-red-700 disabled:opacity-50"
+            >
+              Confirm Drop
+            </button>
+          </div>
+        </div>
+      )}
     </div>
     
   );

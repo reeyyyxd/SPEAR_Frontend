@@ -14,6 +14,7 @@ const ClassPage = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdviserModalOpen, setIsAdviserModalOpen] = useState(false);
+  const [studentsWithoutTeam, setStudentsWithoutTeam] = useState([]);
 
   const address = getIpAddress();
 
@@ -39,14 +40,16 @@ const ClassPage = () => {
         );
         setClassDetails(data.classes);
         storeEncryptedId("cid", data.classes.cid);
-
-        const [{ data: totalUsersData }, { data: studentsData }] = await Promise.all([
+  
+        const [{ data: totalUsersData }, { data: studentsData }, { data: studentsNoTeamData }] = await Promise.all([
           axios.get(`http://${address}:8080/class/${data.classes.cid}/total-users`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`http://${address}:8080/class/${data.classes.classKey}/students`, { headers: { Authorization: `Bearer ${token}` } })
+          axios.get(`http://${address}:8080/class/${data.classes.classKey}/students`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`http://${address}:8080/class/${data.classes.cid}/students-without-team`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
-
+  
         setTotalUsers(totalUsersData || 0);
         setStudents(studentsData || []);
+        setStudentsWithoutTeam(studentsNoTeamData || []);
       } catch (error) {
         console.error("Error fetching class data:", error);
       } finally {
@@ -105,12 +108,12 @@ const ClassPage = () => {
             {classDetails.courseCode} - {classDetails.courseDescription} - {classDetails.section}
           </h1>
             <div className="flex space-x-4">
-            <button
+            {/* <button
               className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
               onClick={() => navigate("/teacher/adviser-candidate")}
             >
              Advisories
-            </button>
+            </button> */}
             <button
               className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white"
               onClick={() => navigate(`/teacher/teams`)}
@@ -197,7 +200,34 @@ const ClassPage = () => {
           ) : (
             <p className="text-gray-500">No students enrolled in this class.</p>
           )}
-        
+
+          {/* Students Without Team */}
+          <h2 className="text-lg font-semibold mt-8 mb-4 text-teal">Students without Team</h2>
+          {studentsWithoutTeam.length > 0 ? (
+            <div className="overflow-y-auto max-h-96 rounded-lg shadow-md mb-12">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="sticky top-0 bg-yellow-500 text-white z-20 shadow">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm font-semibold">First Name</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold">Last Name</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold">Email</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {studentsWithoutTeam.map((student, index) => (
+                    <tr key={index}>
+                      <td className="px-6 py-4 text-sm text-gray-900">{student.firstname}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{student.lastname}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{student.email}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-gray-500">All students have teams.</p>
+          )}
+                            
       </div>
     </div>
   );

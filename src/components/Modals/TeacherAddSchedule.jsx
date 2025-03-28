@@ -28,15 +28,15 @@ const TeacherAddSchedule = ({ closeModal, fetchSchedules }) => {
 
   // Fetch qualified adviser classes
   useEffect(() => {
-    const fetchQualifiedAdviserClasses = async () => {
-      if (!authState?.uid) return;
-
+    const fetchClassesNeedingAdvisory = async () => {
+      if (!authState?.token) return;
+  
       setLoading(true);
       setFetchError(null);
-
+  
       try {
         const response = await axios.get(
-          `http://${address}:8080/teacher/${authState.uid}/qualified-adviser-classes`,
+          `http://${address}:8080/class/advisory-needed`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -44,17 +44,17 @@ const TeacherAddSchedule = ({ closeModal, fetchSchedules }) => {
             },
           }
         );
-
+  
         setClasses(response.data || []);
       } catch (err) {
-        console.error("Error fetching adviser classes:", err);
-        setFetchError("Failed to load qualified adviser classes.");
+        console.error("Error fetching advisory-needed classes:", err);
+        setFetchError("Failed to load advisory-needed classes.");
       } finally {
         setLoading(false);
       }
     };
-
-    fetchQualifiedAdviserClasses();
+  
+    fetchClassesNeedingAdvisory();
   }, [authState]);
 
   const handleInputChange = (e) => {

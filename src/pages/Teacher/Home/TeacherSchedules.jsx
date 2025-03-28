@@ -66,15 +66,15 @@ const TeacherSchedules = () => {
   const fetchQualifiedClasses = async () => {
     try {
       const response = await axios.get(
-        `http://${address}:8080/teacher/${authState.uid}/qualified-adviser-classes`,
+        `http://${address}:8080/class/advisory-needed`,
         {
           headers: { Authorization: `Bearer ${authState.token}` },
         }
       );
-
+  
       setQualifiedClasses(response.data || []);
     } catch (error) {
-      console.error("Error fetching qualified classes:", error);
+      console.error("Error fetching advisory-needed classes:", error);
     }
   };
 
@@ -134,7 +134,7 @@ const TeacherSchedules = () => {
 
         {/* Qualified Advisory Classes Table */}
         <div className="mb-6">
-          <h2 className="text-md font-semibold mb-2">Qualified Advisory Classes</h2>
+          <h2 className="text-md font-semibold mb-2">Advisory Classes</h2>
           <div className="overflow-x-auto border border-gray-300 rounded-lg">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-200">

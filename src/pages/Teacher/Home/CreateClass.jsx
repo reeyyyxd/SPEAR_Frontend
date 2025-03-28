@@ -50,6 +50,7 @@ const CreateClass = () => {
   const [schoolYear, setSchoolYear] = useState(null);
   const [semester, setSemester] = useState(null);
   const [courseDescription, setCourseDescription] = useState("");
+  const [needsAdvisory, setNeedsAdvisory] = useState(true);
   const [invalidSection, setInvalidSection] = useState(false);
 
   const handleSectionChange = (e) => {
@@ -94,6 +95,7 @@ const CreateClass = () => {
         semester: semester.label,
         courseDescription,
         createdBy: { uid: authState.uid },
+        needsAdvisory,
       };
 
       const response = await axios.post(
@@ -198,6 +200,26 @@ const CreateClass = () => {
               value={courseDescription}
               onChange={(e) => setCourseDescription(e.target.value)}
             />
+          </div>
+
+          {/* Needs Advisory Toggle */}
+          <div className="flex flex-col">
+            <label className="block text-sm font-medium mb-1">Class Needs Advisory?</label>
+            <div
+              onClick={() => setNeedsAdvisory((prev) => !prev)}
+              className={`w-14 h-8 flex items-center bg-gray-300 rounded-full p-1 cursor-pointer transition-colors duration-300 ${
+                needsAdvisory ? "bg-green-500" : "bg-gray-400"
+              }`}
+            >
+              <div
+                className={`bg-white w-6 h-6 rounded-full shadow-md transform duration-300 ease-in-out ${
+                  needsAdvisory ? "translate-x-6" : ""
+                }`}
+              ></div>
+            </div>
+            <span className="text-sm mt-1 text-gray-700">
+              {needsAdvisory ? "This class requires advisory." : "No advisory needed for this class."}
+            </span>
           </div>
 
           {/* Submit Button */}

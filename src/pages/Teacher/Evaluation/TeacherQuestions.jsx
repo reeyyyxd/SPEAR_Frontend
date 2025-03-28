@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import axios from "axios";
-import TeacherQuestionTemplateModal from "../../../components/Modals/TeacherQuestionTemplateModal";
+import TeacherImportSetModal from "../../../components/Modals/TeacherImportSetModal";
 
 const TeacherQuestions = () => {
   const { getDecryptedId, storeEncryptedId } = useContext(AuthContext);
@@ -215,10 +215,10 @@ const TeacherQuestions = () => {
 
         {/* Import Questions Modal */}
         {showImportModal && (
-          <TeacherQuestionTemplateModal
-            onClose={() => setShowImportModal(false)}
-            fetchQuestions={fetchQuestions} 
-          />
+          <TeacherImportSetModal 
+          onClose={() => setShowImportModal(false)} 
+          fetchQuestions={fetchQuestions}
+      />
         )}
 
         {/* Create Question Modal */}

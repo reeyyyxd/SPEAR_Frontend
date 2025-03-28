@@ -228,53 +228,20 @@ const handleEditEvaluation = async () => {
       return;
     }
     try {
-      const [details, submissions, results, responses] = await Promise.all([
-        axios.get(`http://${address}:8080/evaluation/${eid}/details`),
+      const [submissions, responses] = await Promise.all([
         axios.get(`http://${address}:8080/submissions/by-evaluation/${eid}`),
-        axios.get(`http://${address}:8080/teacher/by-evaluation/${eid}`),
         axios.get(`http://${address}:8080/responses/get-evaluation/${eid}`),
       ]);
-  
-      const exportData = {
-        Submissions: submissions.data.map(sub => ({
-          "Submission ID": sub.sid,
-          "Student Name": sub.evaluatorName,
-          "Evaluation Period": sub.evaluationPeriod,
-          "Status": sub.status,
-          "Submission Date": sub.submittedAt,
-        })),
-        Results: results.data.map(res => ({
-          "Result ID": res.resultId,
-          "Evaluatee Name": res.evaluateeName,
-          "Average Score": res.averageScore,
-        })),
-        Responses: responses.data.map(resp => ({
-          "Response ID": resp.rid,
-          "Evaluation Period": resp.evaluationPeriod,
-          "Evaluatee": resp.evaluateeName,
-          "Question": resp.questionName,
-          "Evaluator": resp.evaluatorName,
-          "Answer": resp.score,
-        })),
-      };
-  
-      const headerDetails = [
-        ["EVALUATION REPORT"],
-        [`Course Code: ${details.data.courseCode || "Not Available"}`],
-        [`Course Name: ${details.data.courseDescription || "Not Available"}`],
-        [`Section: ${details.data.section || "Not Available"}`],
-        [],
-      ];
-  
+
       const workbook = XLSX.utils.book_new();
-      Object.keys(exportData).forEach(sheetName => {
-        const worksheet = XLSX.utils.json_to_sheet([]);
-        XLSX.utils.sheet_add_aoa(worksheet, headerDetails, { origin: "A1" });
-        XLSX.utils.sheet_add_json(worksheet, exportData[sheetName], { origin: `A${headerDetails.length + 1}` });
-        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-      });
-  
-      XLSX.writeFile(workbook, `Evaluation_${eid}_Export.xlsx`);
+
+      const submissionsSheet = XLSX.utils.json_to_sheet(submissions.data);
+      XLSX.utils.book_append_sheet(workbook, submissionsSheet, "Submissions");
+
+      const responsesSheet = XLSX.utils.json_to_sheet(responses.data);
+      XLSX.utils.book_append_sheet(workbook, responsesSheet, "Responses");
+
+      XLSX.writeFile(workbook, `Evaluation_${eid}_Submissions_and_Responses.xlsx`);
       alert("Excel file downloaded successfully!");
     } catch (error) {
       console.error("Error downloading Excel:", error);
