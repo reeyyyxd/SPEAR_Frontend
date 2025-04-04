@@ -149,9 +149,9 @@ const StudentClassPage = () => {
   } 
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
-      <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
+      <div className="main-content bg-white text-teal px-6 sm:px-12 md:px-20 lg:px-28 pt-8 md:pt-12">
         {/* Header Section */}
         <button
         onClick={() => navigate(-1)}
@@ -172,7 +172,7 @@ const StudentClassPage = () => {
           className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center space-x-2"
           onClick={fetchStudents}
         >
-          <Users className="h-4 w-4"/>
+          <Users className="h-4 w-4 sm:h-4 sm:w-4"/>
           <span className="font-semibold">Class Members ({totalMembers})</span>
         </button>
         </div>
@@ -183,7 +183,7 @@ const StudentClassPage = () => {
         {/* Members Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white p-6 rounded-lg w-1/3 relative">
+            <div className="bg-white p-4 sm:p-6 rounded-lg w-full sm:w-3/4 md:w-2/3 lg:w-1/3 max-h-[90vh] overflow-y-auto relative">
               {/* Header Section */}
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">Class Members</h2>

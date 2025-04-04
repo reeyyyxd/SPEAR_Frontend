@@ -137,7 +137,7 @@ const MembersTable = () => {
   const TABLE_HEAD = ["Group Name", "Recruitment Status", "Leader", "Members", "Adviser & Schedule", " ", " "];
 
   return (
-  <div className="overflow-hidden rounded-2xl border border-gray-300 shadow-sm shadow-gray-200 mt-16 p-6">
+  <div className="overflow-hidden rounded-2xl border border-gray-300 shadow-sm shadow-gray-200 mt-8 p-6">
     <div className="flex justify-between items-center mb-6">
       <h1 className="text-2xl font-semibold text-teal-500">Team Information</h1>
       {/* {proposal.pid === officialProjectId && (

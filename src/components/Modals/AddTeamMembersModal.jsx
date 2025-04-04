@@ -197,7 +197,7 @@ const AddTeamMembersModal = ({ isOpen, onClose, teamId, classId }) => {
                     // "text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-300 disabled:bg-gray-400"
                     disabled={addingId === student.uid}
                   >
-                    {addingId === student.uid ? "Adding..." : "Add"}
+                    {addingId === student.uid ? "Inviting..." : "Invite"}
                   </button>
                 </li>
               ))}

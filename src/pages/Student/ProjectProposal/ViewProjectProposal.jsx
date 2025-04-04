@@ -270,10 +270,10 @@ const ViewProjectProposal = () => {
   return (
     <>
     <ToastContainer position="top-right" autoClose={3000} />
-    <div className="grid grid-cols-[256px_1fr] min-h-screen bg-gray-100">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
 
-      <div className="p-8 bg-white shadow-md rounded-md w-full">
+      <div className="flex flex-col p-8 bg-white shadow-md rounded-md min-h-screen">
         <button
           onClick={() => navigate(-1)}
           className="bg-gray-700 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-500 transition"
@@ -316,9 +316,10 @@ const ViewProjectProposal = () => {
       </div>
 
         {activeTab === "team" ? (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
           <h2 className="text-xl font-semibold text-gray-700 mt-6">My Team Proposals</h2>
           <p className="text-sm text-gray-500 mb-4">Review and manage project proposals from your team.</p>
+          <div className="min-w-[800px]">
           <table className="w-full border-collapse shadow-md rounded-lg overflow-hidden table-fixed">
           <thead className="bg-gray-700 text-white text-center">
             <tr>
@@ -369,9 +370,9 @@ const ViewProjectProposal = () => {
                     </div>
                   </td>
                       <td className="border border-gray-300 border p-3">{proposal.reason || "No reason provided"}</td>
-                      <td className="border border-gray-300 border p-3 flex flex-col items-start gap-2">
+                      <td className="border border-gray-300 border p-3 flex flex-col items-start gap-1">
                       <button
-                        className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center space-x-2 group"
+                        className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center justify-center space-x-2 group w-full"
                         onClick={() => openEditModal(proposal.pid)}
                       >
                         <Pencil className="h-4 w-4 text-cyan-500 group-hover:text-gray-800 transition-colors"  />
@@ -380,7 +381,7 @@ const ViewProjectProposal = () => {
 
                       {proposal.pid !== officialProjectId ? (
                         <button
-                          className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center space-x-2 group"
+                          className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center justify-center space-x-2 group w-full"
                           onClick={() => {
                             setModalMessage("Are you sure you want to set this project as the official project?");
                             setConfirmAction(() => () => handleSetOfficialProject(proposal.pid)); 
@@ -392,7 +393,7 @@ const ViewProjectProposal = () => {
                         </button>
                       ) : (
                         <button
-                          className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center space-x-2 group"
+                          className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center justify-center space-x-2 group w-full"
                           onClick={() => {
                             setModalMessage("Are you sure you want to unset this project as the official project?");
                             setConfirmAction(() => handleUnsetOfficialProject);
@@ -406,7 +407,7 @@ const ViewProjectProposal = () => {
 
                       {proposal.pid !== officialProjectId && (
                         <button
-                          className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center space-x-2 group"
+                          className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center justify-center space-x-2 group w-full"
                           onClick={() => {
                             setModalMessage("Are you sure you want to delete this project?");
                             setConfirmAction(() => () => handleDeleteProposal(proposal.pid));
@@ -419,7 +420,7 @@ const ViewProjectProposal = () => {
                       )}
                     {proposal.pid !== officialProjectId && (
                      <button
-                        className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center space-x-2 group"
+                        className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all flex items-center justify-center space-x-2 group w-full"
                         onClick={() => {
                           setModalMessage("Are you sure you want to give this project?");
                           setConfirmAction(() => () => handleSetToOpenProject(proposal.pid));
@@ -440,6 +441,7 @@ const ViewProjectProposal = () => {
               )}
             </tbody>
           </table>
+          </div>
         </div>
         ) : null}
 

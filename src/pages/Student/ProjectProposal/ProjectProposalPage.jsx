@@ -78,9 +78,9 @@ const ProjectProposalPage = () => {
   };
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
-      <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
+      <div className="main-content bg-white text-teal px-4 md:px-20 lg:px-28 pt-8 md:pt-12 flex flex-col min-h-screen">
       <button
           onClick={() => navigate(-1)}
           className="bg-gray-700 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-500 transition"
@@ -134,11 +134,11 @@ const ProjectProposalPage = () => {
             </div>
             <div className="grid gap-4">
               {features.map((feature, index) => (
-                <div key={index} className="flex items-center space-x-4">
+                <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:space-x-4t">
                   <input
                     type="text"
                     placeholder="Enter an Objective"
-                    className="flex-1 border border-gray-300 rounded-md p-3"
+                    className="flex-1 sm:flex-1 border border-gray-300 rounded-md p-3"
                     value={feature.title}
                     onChange={(e) => {
                       const updatedFeatures = [...features];
@@ -149,7 +149,7 @@ const ProjectProposalPage = () => {
                   <input
                     type="text"
                     placeholder="Describe this objective"
-                    className="flex-1 border border-gray-300 rounded-md p-3"
+                    className="flex-1 sm:flex-1 border border-gray-300 rounded-md p-3"
                     value={feature.description}
                     onChange={(e) => {
                       const updatedFeatures = [...features];

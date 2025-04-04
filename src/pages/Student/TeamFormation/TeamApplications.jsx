@@ -14,6 +14,7 @@ const TeamApplications = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState(null);
+  const [activeTab, setActiveTab] = useState("team");
 
 
   const address = getIpAddress();
@@ -147,15 +148,43 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
   
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen bg-gray-100">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen bg-gray-100">
       <Navbar userRole={authState.role} />
-      <div className="main-content bg-white text-gray-900 md:px-20 lg:px-28 pt-8 md:pt-12">
-
-      <div className="overflow-x-auto">
+      <div className="main-content bg-white text-gray-900 md:px-20 lg:px-28 pt-8 md:pt-12 flex flex-col min-h-screen">
+      <h1 className="text-3xl font-bold text-gray-700 mb-8">Team Applications</h1>
+      
+      <div className="flex bg-gray-100 p-1 rounded-lg w-fit mb-4">
+      <button
+          className={`px-4 py-2 text-sm font-medium rounded-md transition ${
+            activeTab === "team"
+              ? "bg-white shadow text-black font-semibold"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("team")}
+        >
+          Team Applications
+        </button>
+        <button
+          className={`px-4 py-2 text-sm font-medium rounded-md transition ml-1 ${
+            activeTab === "applications"
+              ? "bg-white shadow text-black font-semibold"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("applications")}
+        >
+          My Applications
+        </button>
+      </div>
+      
+     <div className="flex-grow flex flex-col">
+      {activeTab === "team" ? (
+      <div className="flex flex-col flex-grow">
         {/* Pending Applications Table */}
-        <h1 className="text-3xl font-bold text-gray-700 mb-4">Team Applications</h1>
-        <h2 className="text-xl font-semibold text-gray-600 mb-2">Pending Applications for My Team</h2>
-        <div className="overflow-x-auto mb-8">
+        <div className="pt-6"> 
+        <h2 className="text-xl font-semibold text-gray-600">Pending Applications for My Team</h2>
+        <p className="text-sm text-gray-500 mb-3">Applications currently awaiting approval for your team’s decision.</p>
+       
+        <div className="overflow-x-auto mb-8 min-w-full md:min-w-0">
           <table className="w-full border shadow-md rounded-lg overflow-hidden table-fixed">
             <thead className="bg-gray-700 text-white text-center">
               <tr>
@@ -218,9 +247,15 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
           </tbody>
           </table>
         </div>
+        </div>
+        </div>
+      ) : null}
 
+      {activeTab === "applications" ? (
+        <>
         {/* My Applications Table */}
-        <h2 className="text-xl font-semibold text-gray-600 mb-2">My Applications</h2>
+        <h2 className="text-xl font-semibold text-gray-600 pt-6">My Applications</h2>
+        <p className="text-sm text-gray-500 mb-3">Track the status of your team applications.</p>
           <div className="overflow-x-auto">
           <table className="w-full border shadow-md rounded-lg overflow-hidden table-fixed border-collapse">
             <thead className="bg-gray-700 text-center">
@@ -235,7 +270,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
             <tbody className="text-center bg-gray-100">
               {myApplications.length > 0 ? (
                 myApplications.map((app) => (
-                  <tr key={app.trid} className="hover:bg-gray-200">
+                  <tr key={app.trid}>
                     <td className="border border-gray-300 px-6 py-3 text-gray-900">{app.classDescription}</td>
                     <td className="border border-gray-300 px-6 py-3 text-gray-900">{app.groupName}</td>
                     <td className="border border-gray-300 px-6 py-3 text-gray-900">{app.leaderName}</td>
@@ -258,6 +293,8 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
             </tbody>
           </table>
         </div>
+        </>
+        ) : null}
 
       {isModalOpen && (
         <ConfirmationModal
@@ -280,8 +317,8 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
         />
       )}
       </div>
-    </div>
-    </div>
+      </div>
+      </div>
   );
 };
 

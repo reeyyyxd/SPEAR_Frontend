@@ -110,8 +110,8 @@ const EditProjectProposalModal = ({ isOpen, proposalId, onClose, refreshProposal
   return (
     <>
       <ToastContainer position="top-right" autoClose={3000} />
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white p-6 rounded-md shadow-md w-1/3">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center p-4 sm:p-0">
+      <div className="bg-white p-6 rounded-md shadow-md w-full max-w-full sm:max-w-3xl md:w-2/3 lg:w-1/2 xl:w-1/3 mx-auto overflow-y-auto max-h-[90vh]">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold mb-4">Edit Proposal</h2>
         <button
