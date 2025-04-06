@@ -118,7 +118,7 @@ const AdminQuestionTemplates = () => {
           </button>
           <div className="space-x-2">
             <button className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-700" onClick={() => setShowSetModal(true)}>
-              Create Set
+              Create Template
             </button>
             <button className="bg-[#323c47] text-white px-4 py-2 rounded-md hover:bg-gray-900 transition" onClick={() => setShowQuestionModal(true)}>
               Create Question
@@ -130,10 +130,10 @@ const AdminQuestionTemplates = () => {
 
         <div className="flex justify-between mb-4">
           <select className="border rounded p-2 w-64" value={selectedSet} onChange={(e) => setSelectedSet(e.target.value)}>
-            <option value="">Select a Set</option>
+            <option value="">Select Template</option>
             {sets.map((set) => (<option key={set.id} value={set.id}>{set.name}</option>))}
           </select>
-          <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700" onClick={handleDeleteSet}>Delete Set</button>
+          <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700" onClick={handleDeleteSet}>Delete Template</button>
         </div>
 
         <div className="overflow-y-auto max-h-96 rounded-lg shadow-md">
