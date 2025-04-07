@@ -72,6 +72,22 @@ const StudentEvaluation = () => {
                 return;
             }
         }
+        if (question.questionType === "RADIO") {
+          for (const member of teamMembers) {
+            const value = responses[`${member.memberId}-${question.qid}`];
+            if (
+              value === "" ||
+              value === undefined ||
+              isNaN(value) ||
+              value < 0 ||
+              value > 10
+            ) {
+              alert(`Please enter a valid score between 0.0 and 10.0 for "${question.questionText}"`);
+              return;
+            }
+          }
+        }
+        
     }
 
     // Check if all radio scores are not identical
@@ -150,65 +166,77 @@ const StudentEvaluation = () => {
 
       <form onSubmit={handleSubmit} className="w-full max-w-4xl bg-white p-8 rounded-lg shadow space-y-8">
 
-        {questions.map((question) => (
-          <div key={question.qid} className="space-y-3">
-            <h2 className="font-semibold text-gray-700">{question.questionText}</h2>
-
-            {question.questionType === "RADIO" && teamMembers.length > 0 && (
-              <div className="overflow-x-auto rounded border">
-                <table className="w-full text-center table-auto border-collapse">
-                  <thead>
-                    <tr className="bg-gray-100 text-gray-600">
-                      <th className="p-2 text-left">Team Member</th>
-                      {[1, 2, 3, 4, 5].map((score) => (
-                        <th key={score} className="p-2">{score}</th>
+        {questions.some(q => q.questionType === "RADIO") && (
+          <div className="overflow-x-auto space-y-4">
+            <p className="text-sm text-gray-500 mb-4">Rate each team member on a scale of 0.0 - 10.0 for each question.</p>
+            <table className="w-full table-fixed">
+              <thead>
+                <tr className="bg-gray-100 text-gray-600">
+                  <th className="w-1/3 text-left p-3">Criteria</th>
+                  {teamMembers.map((member) => (
+                    <th key={member.memberId} className="text-center p-3">{member.memberName}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {questions
+                  .filter(q => q.questionType === "RADIO")
+                  .map((question) => (
+                    <tr key={question.qid}>
+                      <td className="p-3 text-left align-top whitespace-normal text-sm text-gray-700">
+                        {question.questionText}
+                      </td>
+                      {teamMembers.map((member) => (
+                        <td key={member.memberId} className="p-3 text-center">
+                          <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.1"
+                            placeholder="0.0"
+                            className="w-20 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                            value={responses[`${member.memberId}-${question.qid}`] || ""}
+                            onChange={(e) =>
+                              handleResponseChange(
+                                member.memberId,
+                                question.qid,
+                                parseFloat(e.target.value)
+                              )
+                            }
+                          />
+                        </td>
                       ))}
                     </tr>
-                  </thead>
-                  <tbody>
-                    {teamMembers.map((member) => (
-                      <tr key={member.memberId} className="border-t hover:bg-gray-50">
-                        <td className="p-2 text-left">{member.memberName}</td>
-                        {[1, 2, 3, 4, 5].map((score) => (
-                          <td key={score} className="p-2">
-                            <input
-                              type="radio"
-                              name={`rating-${member.memberId}-${question.qid}`}
-                              value={score}
-                              checked={responses[`${member.memberId}-${question.qid}`] === score}
-                              onChange={() => handleResponseChange(member.memberId, question.qid, score)}
-                            />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {question.questionType === "TEXT" && (
-              <div>
-                <textarea
-                  className="w-full p-3 border rounded focus:ring-2 focus:ring-gray-400"
-                  rows="4"
-                  placeholder="Write your response here..."
-                  value={responses[`text-${question.qid}`] || ""}
-                  onChange={(e) => handleResponseChange("text", question.qid, e.target.value)}
-                />
-              </div>
-            )}
+                  ))}
+              </tbody>
+            </table>
           </div>
+        )}
+
+        {questions
+          .filter(q => q.questionType === "TEXT")
+          .map((question) => (
+            <div key={question.qid} className="space-y-3">
+              <h2 className="font-semibold text-gray-700">{question.questionText}</h2>
+              <textarea
+                className="w-full p-3 border rounded focus:ring-2 focus:ring-gray-400"
+                rows="4"
+                placeholder="Write your response here..."
+                value={responses[`text-${question.qid}`] || ""}
+                onChange={(e) => handleResponseChange("text", question.qid, e.target.value)}
+              />
+            </div>
         ))}
 
-        <button
-          type="submit"
-          className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 transition text-lg"
-        >
-          Submit Evaluation
-        </button>
+        <div className="flex justify-end mt-8">
+          <button
+            type="submit"
+            className="px-6 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 transition"
+          >
+            Submit
+          </button>
+        </div>
       </form>
-
     </div>
   );
 };
