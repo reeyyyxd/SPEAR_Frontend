@@ -214,7 +214,6 @@ const ScheduleTable = ({ schedules, onEdit, onDelete, formatTime }) => (
         <tr>
           <th className="px-6 py-2 text-start text-md font-medium">Day</th>
           <th className="px-6 py-2 text-start text-md font-medium">Time</th>
-          <th className="px-6 py-2 text-start text-md font-medium">Class</th>
           <th className="px-6 py-2 text-start text-md font-medium">Actions</th>
         </tr>
       </thead>
@@ -227,7 +226,6 @@ const ScheduleTable = ({ schedules, onEdit, onDelete, formatTime }) => (
                 ? `${formatTime(schedule.startTime)} - ${formatTime(schedule.endTime)}`
                 : "No Time Set"}
             </td>
-            <td className="px-6 py-2">{schedule.className} - {schedule.courseDescription}</td>
             <td className="px-6 py-2 flex space-x-2">
               {/* Purple Edit Button */}
               <button
