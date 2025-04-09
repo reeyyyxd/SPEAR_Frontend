@@ -63,7 +63,7 @@ const StudentAdvisoryRequestModal = ({ teamId, closeModal }) => {
     if (!adviserId || !classId) return setError("Invalid adviser/class info");
 
     try {
-      const res = await axios.get(`http://${address}:8080/adviser/${adviserId}/available-schedules/${classId}`);
+      const res = await axios.get(`http://${address}:8080/adviser/${adviserId}/available-schedules`);
       setSchedules(res.data.length > 0 ? res.data : []);
       if (res.data.length === 0) setError("No schedules available.");
     } catch (err) {

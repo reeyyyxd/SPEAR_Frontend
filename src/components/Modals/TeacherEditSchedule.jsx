@@ -6,10 +6,9 @@ import AuthContext from "../../services/AuthContext";
 const TeacherEditSchedule = ({ schedule, closeModal, fetchSchedules }) => {
   const { authState } = useContext(AuthContext);
   const [updatedSchedule, setUpdatedSchedule] = useState({
-    day: schedule.day, // DayOfWeek enum
-    startTime: schedule.startTime, // New field
-    endTime: schedule.endTime, // New field
-    classId: schedule.classId,
+    day: schedule.day,
+    startTime: schedule.startTime,
+    endTime: schedule.endTime,
   });
 
   const [classes, setClasses] = useState([]);
@@ -63,15 +62,25 @@ const TeacherEditSchedule = ({ schedule, closeModal, fetchSchedules }) => {
   };
 
   const handleUpdateSchedule = async () => {
-    if (!updatedSchedule.day || !updatedSchedule.startTime || !updatedSchedule.endTime || !updatedSchedule.classId) {
-      toast.error("All fields are required.");
+    const { day, startTime, endTime } = updatedSchedule;
+  
+    if (!day || !startTime || !endTime) {
+      toast.error("Day, start time, and end time are required.");
       return;
     }
-
+  
+    if (new Date(`1970-01-01T${startTime}`) >= new Date(`1970-01-01T${endTime}`)) {
+      toast.error("Start time must be before end time.");
+      return;
+    }
+  
     try {
       await axios.put(
         `http://${address}:8080/teacher/update-schedule/${schedule.schedid}`,
-        { ...updatedSchedule, teacherId: authState.uid }, // Ensure correct API structure
+        {
+          ...updatedSchedule,
+          teacherId: authState.uid,
+        },
         {
           headers: {
             "Content-Type": "application/json",
@@ -79,12 +88,22 @@ const TeacherEditSchedule = ({ schedule, closeModal, fetchSchedules }) => {
           },
         }
       );
-
+  
       toast.success("Schedule updated successfully!");
       closeModal();
       fetchSchedules();
     } catch (err) {
-      toast.error("Failed to update schedule. Please try again.");
+      const msg = err.response?.data?.message || err.message;
+  
+      if (msg.includes("Duplicate schedule")) {
+        toast.error("A schedule with the same time already exists.");
+      } else if (msg.includes("Conflicting schedule")) {
+        toast.error("Schedule overlaps with an existing one.");
+      } else {
+        toast.error("Failed to update schedule. Please try again.");
+      }
+  
+      console.error("Error updating schedule:", msg);
     }
   };
 
@@ -129,7 +148,7 @@ const TeacherEditSchedule = ({ schedule, closeModal, fetchSchedules }) => {
           className="w-full p-2 border border-gray-300 rounded mb-3"
         />
 
-        {/* Class Selection Dropdown */}
+        {/* Class Selection Dropdown
         <label className="block mb-2">Class:</label>
         {loading ? (
           <p className="text-sm text-gray-500 mb-3">Loading classes...</p>
@@ -149,7 +168,7 @@ const TeacherEditSchedule = ({ schedule, closeModal, fetchSchedules }) => {
               </option>
             ))}
           </select>
-        )}
+        )} */}
 
         {/* Buttons */}
         <div className="flex justify-end">

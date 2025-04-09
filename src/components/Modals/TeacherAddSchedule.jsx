@@ -9,7 +9,6 @@ const TeacherAddSchedule = ({ closeModal, fetchSchedules }) => {
     day: "",
     startTime: "",
     endTime: "",
-    classId: "",
   });
 
   const [classes, setClasses] = useState([]);
@@ -62,39 +61,44 @@ const TeacherAddSchedule = ({ closeModal, fetchSchedules }) => {
   };
 
   const handleCreateSchedule = async () => {
-    if (!newSchedule.day || !newSchedule.startTime || !newSchedule.endTime || !newSchedule.classId) {
-      toast.error("All fields are required.");
+    if (!newSchedule.day || !newSchedule.startTime || !newSchedule.endTime) {
+      toast.error("Day, start time, and end time are required.");
       return;
     }
-  
+    
     try {
       const payload = {
-        day: newSchedule.day.toUpperCase(),  // ✅ Convert to uppercase for Enum compatibility
-        startTime: newSchedule.startTime + ":00",  // Ensure LocalTime format (HH:mm:ss)
+        day: newSchedule.day.toUpperCase(),
+        startTime: newSchedule.startTime + ":00",
         endTime: newSchedule.endTime + ":00",
-        classId: newSchedule.classId,
-        teacherId: authState.uid
+        teacherId: authState.uid,
       };
-  
-      await axios.post(
-        `http://${address}:8080/teacher/create-schedule`,
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authState.token}`,
-          },
-        }
-      );
-  
+    
+      await axios.post(`http://${address}:8080/teacher/create-schedule`, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authState.token}`,
+        },
+      });
+    
       toast.success("Schedule created successfully!");
       closeModal();
       fetchSchedules();
     } catch (err) {
-      console.error("Error creating schedule:", err.response?.data || err.message);
-      toast.error("Failed to create schedule. Please try again.");
+      const msg = err.response?.data?.message || err.message;
+    
+      if (msg.includes("Duplicate schedule")) {
+        toast.error("A schedule with the same time already exists.");
+      } else if (msg.includes("Conflicting schedule")) {
+        toast.error("Schedule overlaps with an existing one.");
+      } else {
+        toast.error("Failed to create schedule. Please try again.");
+      }
+    
+      console.error("Error creating schedule:", msg);
     }
   };
+  
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
@@ -136,7 +140,7 @@ const TeacherAddSchedule = ({ closeModal, fetchSchedules }) => {
           className="w-full p-2 border border-gray-300 rounded mb-3"
         />
 
-        {/* Class Selection Dropdown */}
+        {/* Class Selection Dropdown
         <label className="block mb-2">Class:</label>
         {loading ? (
           <p className="text-sm text-gray-500 mb-3">Loading classes...</p>
@@ -156,7 +160,7 @@ const TeacherAddSchedule = ({ closeModal, fetchSchedules }) => {
               </option>
             ))}
           </select>
-        )}
+        )} */}
 
         {/* Buttons */}
         <div className="flex justify-end">

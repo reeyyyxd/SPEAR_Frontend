@@ -13,6 +13,15 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: false,
   });
 
+
+  const address = getIpAddress();
+
+  function getIpAddress() {
+    const hostname = window.location.hostname;
+    const indexOfColon = hostname.indexOf(":");
+    return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+  }
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const refreshToken = localStorage.getItem("refreshToken");
@@ -80,7 +89,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshAccessToken = async (refreshToken) => {
     try {
-      const response = await axios.post("http://localhost:8080/refresh-token", {
+      const response = await axios.post(`http://${address}:8080/refresh-token`, {
         token: refreshToken,
       });
 

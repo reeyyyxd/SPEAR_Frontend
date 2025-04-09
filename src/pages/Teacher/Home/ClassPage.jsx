@@ -201,9 +201,15 @@ const ClassPage = () => {
             <p className="text-gray-500">No students enrolled in this class.</p>
           )}
 
+
           {/* Students Without Team */}
           <h2 className="text-lg font-semibold mt-8 mb-4 text-teal">Students without Team</h2>
-          {studentsWithoutTeam.length > 0 ? (
+
+          {students.length === 0 ? (
+            <p className="text-gray-500">No students enrolled in this class.</p>
+          ) : studentsWithoutTeam.length === 0 ? (
+            <p className="text-gray-500">All students have teams.</p>
+          ) : (
             <div className="overflow-y-auto max-h-96 rounded-lg shadow-md mb-12">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="sticky top-0 bg-yellow-500 text-white z-20 shadow">
@@ -224,10 +230,7 @@ const ClassPage = () => {
                 </tbody>
               </table>
             </div>
-          ) : (
-            <p className="text-gray-500">All students have teams.</p>
           )}
-                            
       </div>
     </div>
   );
