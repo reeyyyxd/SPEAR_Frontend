@@ -14,7 +14,7 @@ const AdminQuestionTemplates = () => {
   const [showSetModal, setShowSetModal] = useState(false);
   const [isEditingQuestion, setIsEditingQuestion] = useState(false);
   const [editingQuestionId, setEditingQuestionId] = useState(null);
-  const [newQuestion, setNewQuestion] = useState({ questionText: "", questionType: "RADIO" });
+  const [newQuestion, setNewQuestion] = useState({ questionText: "", questionType: "INPUT" });
   const [newSetName, setNewSetName] = useState("");
   const [error, setError] = useState("");
 
@@ -72,17 +72,40 @@ const AdminQuestionTemplates = () => {
       setError("Question text is required.");
       return;
     }
+  
+    const payload = {
+      ...newQuestion,
+      createdByUserId: authState.uid,
+    };
+  
     try {
       if (isEditingQuestion) {
-        await axios.put(`http://${address}:8080/templates/admin/update-question/${editingQuestionId}`, newQuestion);
+        await axios.put(
+          `http://${address}:8080/templates/admin/update-question/${editingQuestionId}`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${authState.token}`,
+            },
+          }
+        );
         alert("Question updated successfully!");
       } else {
-        await axios.post(`http://${address}:8080/templates/admin/add-question/${selectedSet}`, newQuestion);
+        await axios.post(
+          `http://${address}:8080/templates/admin/add-question/${selectedSet}`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${authState.token}`,
+            },
+          }
+        );
         alert("Question created successfully!");
       }
+  
       fetchSets();
       setShowQuestionModal(false);
-      setNewQuestion({ questionText: "", questionType: "RADIO" });
+      setNewQuestion({ questionText: "", questionType: "INPUT" });
       setIsEditingQuestion(false);
     } catch (error) {
       console.error("Error saving question:", error);
@@ -178,10 +201,18 @@ const AdminQuestionTemplates = () => {
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Question Type</label>
-              <select value={newQuestion.questionType} onChange={(e) => setNewQuestion({ ...newQuestion, questionType: e.target.value })} className="w-full border border-gray-300 px-3 py-2 rounded-lg">
-                <option value="RADIO">Radio (Multiple Choice)</option>
-                <option value="TEXT">Text (Open-Ended Answer)</option>
-              </select>
+              <select
+              value={newQuestion.questionType}
+              onChange={(e) =>
+                setNewQuestion({
+                  ...newQuestion,
+                  questionType: e.target.value.toUpperCase(), // 🔥 Ensures it matches ENUM
+                })
+              } className="w-full border border-gray-300 px-3 py-2 rounded-lg"
+            >
+              <option value="INPUT">Input (Ratings)</option>
+              <option value="TEXT">Text (Open-Ended)</option>
+            </select>
             </div>
             <div className="flex justify-end space-x-4">
               <button className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400" onClick={() => { setShowQuestionModal(false); setIsEditingQuestion(false); }}>Cancel</button>

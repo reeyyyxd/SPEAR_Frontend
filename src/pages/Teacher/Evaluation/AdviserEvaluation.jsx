@@ -49,9 +49,9 @@ const TeacherAdviserEvaluation = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check unanswered RADIO
+    // Check unanswered INPUT
     const unansweredRadio = questions.some(question =>
-      question.questionType === "RADIO" &&
+      question.questionType === "INPUT" &&
       teamDetails.memberIds.some(memberId => !responses[`${memberId}-${question.qid}`])
     );
 
@@ -68,7 +68,7 @@ const TeacherAdviserEvaluation = () => {
 
     // Check duplicate scores
     const hasDuplicateScores = questions.some(question => {
-      if (question.questionType !== "RADIO") return false;
+      if (question.questionType !== "INPUT") return false;
       const scores = teamDetails.memberIds.map(memberId => responses[`${memberId}-${question.qid}`]);
       return new Set(scores).size === 1;
     });
@@ -80,12 +80,12 @@ const TeacherAdviserEvaluation = () => {
 
     const responseList = [];
 
-    // RADIO responses
+    // INPUT responses
     teamDetails.memberIds.forEach((memberId) => {
       questions.forEach((question) => {
         const key = `${memberId}-${question.qid}`;
         const value = responses[key];
-        if (question.questionType === "RADIO" && value) {
+        if (question.questionType === "INPUT" && value) {
           responseList.push({
             evaluator: { uid: -1 }, // Replace with teacher ID if available
             evaluatee: { uid: memberId },
@@ -153,8 +153,8 @@ const TeacherAdviserEvaluation = () => {
             <div key={question.qid} className="space-y-3">
               <h3 className="font-semibold text-lg text-gray-700">{question.questionText}</h3>
 
-              {/* Radio Type */}
-              {question.questionType === "RADIO" && (
+              {/* Input Type */}
+              {question.questionType === "INPUT" && (
                 <div className="overflow-x-auto rounded border">
                   <table className="w-full text-center table-auto border-collapse">
                     <thead>

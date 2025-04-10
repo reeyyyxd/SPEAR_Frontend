@@ -137,7 +137,7 @@ const TeacherImportSetModal = ({ onClose, fetchQuestions }) => {
                     </table>
                 )}
 
-                <h3 className="text-md font-semibold mb-2">My Templates</h3>
+                <h3 className="text-md font-semibold mb-2">My Previous Questions</h3>
                 <ul className="space-y-2 border border-gray-300 p-2 rounded">
                     {paginatedMyQuestions.map((q) => (
                         <li key={q.qid} className="flex justify-between text-sm">
@@ -161,7 +161,9 @@ const TeacherImportSetModal = ({ onClose, fetchQuestions }) => {
                     >
                         Previous
                     </button>
-                    <span className="text-gray-700">Page {myPage} of {Math.ceil(myQuestions.length / itemsPerPage)}</span>
+                    <span className="text-gray-700">
+                    Page {myPage} of {Math.max(1, Math.ceil(myQuestions.length / itemsPerPage))}
+                    </span>
                     <button
                         disabled={myPage >= Math.ceil(myQuestions.length / itemsPerPage)}
                         onClick={() => setMyPage(myPage + 1)}

@@ -239,7 +239,7 @@ const TeacherQuestions = () => {
                 className="w-full mt-3 border border-gray-300 px-3 py-2 rounded-lg"
               >
                 <option value="TEXT">TEXT</option>
-                <option value="RADIO">RADIO</option>
+                <option value="INPUT">INPUT</option>
               </select>
               <div className="flex justify-end space-x-4 mt-4">
                 <button className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400" onClick={() => setShowCreateModal(false)}>
@@ -286,7 +286,7 @@ const TeacherQuestions = () => {
               className="w-full border border-gray-300 px-3 py-2 rounded-lg mb-4"
             >
               <option value="TEXT">Text</option>
-              <option value="RADIO">Multiple Choice</option>
+              <option value="INPUT">Input</option>
             </select>
 
             <div className="flex justify-end space-x-4 mt-4">

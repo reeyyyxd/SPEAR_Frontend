@@ -59,7 +59,7 @@ const StudentEvaluation = () => {
 
     // Check all questions are answered
     for (const question of questions) {
-        if (question.questionType === "RADIO") {
+        if (question.questionType === "INPUT") {
             const missingMember = teamMembers.find(member => !responses[`${member.memberId}-${question.qid}`]);
             if (missingMember) {
                 alert(`Please answer all ratings for "${question.questionText}"`);
@@ -72,7 +72,7 @@ const StudentEvaluation = () => {
                 return;
             }
         }
-        if (question.questionType === "RADIO") {
+        if (question.questionType === "INPUT") {
           for (const member of teamMembers) {
             const value = responses[`${member.memberId}-${question.qid}`];
             if (
@@ -90,9 +90,9 @@ const StudentEvaluation = () => {
         
     }
 
-    // Check if all radio scores are not identical
+    // Check if all input scores are not identical
     for (const question of questions) {
-        if (question.questionType === "RADIO") {
+        if (question.questionType === "INPUT") {
             const scores = teamMembers.map(member => responses[`${member.memberId}-${question.qid}`]).filter(Boolean);
             const uniqueScores = [...new Set(scores)];
             if (scores.length > 0 && uniqueScores.length === 1) {
@@ -109,7 +109,7 @@ const StudentEvaluation = () => {
         questions.forEach((question) => {
             const key = `${member.memberId}-${question.qid}`;
             const value = responses[key];
-            if (question.questionType === "RADIO" && value) {
+            if (question.questionType === "INPUT" && value) {
                 responseList.push({
                     evaluator: { uid: studentId },
                     evaluatee: { uid: member.memberId },
@@ -166,7 +166,7 @@ const StudentEvaluation = () => {
 
       <form onSubmit={handleSubmit} className="w-full max-w-4xl bg-white p-8 rounded-lg shadow space-y-8">
 
-        {questions.some(q => q.questionType === "RADIO") && (
+        {questions.some(q => q.questionType === "INPUT") && (
           <div className="overflow-x-auto space-y-4">
             <p className="text-sm text-gray-500 mb-4">Rate each team member on a scale of 0.0 - 10.0 for each question.</p>
             <table className="w-full table-fixed">
@@ -180,7 +180,7 @@ const StudentEvaluation = () => {
               </thead>
               <tbody>
                 {questions
-                  .filter(q => q.questionType === "RADIO")
+                  .filter(q => q.questionType === "INPUT")
                   .map((question) => (
                     <tr key={question.qid}>
                       <td className="p-3 text-left align-top whitespace-normal text-sm text-gray-700">

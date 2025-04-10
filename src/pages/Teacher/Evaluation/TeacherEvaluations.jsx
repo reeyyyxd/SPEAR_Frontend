@@ -18,6 +18,7 @@ const TeacherEvaluations = () => {
     dateClose: "",
     period: "Prelims",
   });
+  const [customPeriodInput, setCustomPeriodInput] = useState("");
 
   useEffect(() => {
     if (showModal) {
@@ -85,7 +86,10 @@ const handleCreateEvaluation = async () => {
     const body = cleanEvaluationData({
       ...newEvaluation,
       evaluationType: newEvaluation.evaluationType || "STUDENT_TO_STUDENT",  
-      period: newEvaluation.period || "Prelims",  
+      period:
+      newEvaluation.period === "Others"
+        ? `${customPeriodInput.trim()}`
+        : newEvaluation.period || "Prelims",
     });
 
     const response = await axios.post(url, body, {
@@ -172,16 +176,23 @@ const handleDeleteEvaluation = async (eid) => {
   
 const handleEditEvaluation = async () => {
   if (!validateEvaluation()) return;
+
   const eid = getDecryptedId("eid");
   if (!eid) {
     alert("Invalid evaluation ID");
     return;
   }
+
+  const period =
+    newEvaluation.period === "Others"
+      ? `${customPeriodInput.trim()}`
+      : newEvaluation.period || "Prelims";
+
   try {
     const response = await axios.put(
       `http://${address}:8080/teacher/update-evaluation/${eid}`,
-      newEvaluation
-    );  
+      { ...newEvaluation, period }
+    );
     alert("Evaluation updated successfully!");
     window.location.reload();
   } catch (error) {
@@ -417,21 +428,38 @@ const handleEditEvaluation = async () => {
 
 
             <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Period
-                </label>
-                <select
-                  name="period"
-                  value={newEvaluation.period}
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 px-3 py-2 rounded-lg"
-                >
-                  <option value="Prelims">Prelims</option>
-                  <option value="Midterms">Midterms</option>
-                  <option value="Pre-Finals">Pre-Finals</option>
-                  <option value="Finals">Finals</option>
-                </select>
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Period
+              </label>
+              <select
+                name="period"
+                value={newEvaluation.period}
+                onChange={(e) => {
+                  handleInputChange(e);
+                  if (e.target.value !== "Others") {
+                    setCustomPeriodInput(""); // clear input if not others
+                  }
+                }}
+                className="w-full border border-gray-300 px-3 py-2 rounded-lg"
+              >
+                <option value="">Select Period</option>
+                <option value="Prelims">Prelims</option>
+                <option value="Midterms">Midterms</option>
+                <option value="Pre-Finals">Pre-Finals</option>
+                <option value="Finals">Finals</option>
+                <option value="Others">Others</option>
+              </select>
+
+              {newEvaluation.period === "Others" && (
+                <input
+                  type="text"
+                  placeholder="Enter custom period..."
+                  value={customPeriodInput}
+                  onChange={(e) => setCustomPeriodInput(e.target.value)}
+                  className="mt-2 w-full border border-gray-300 px-3 py-2 rounded-lg"
+                />
+              )}
+            </div>
 
             <div className="flex justify-end space-x-4">
               <button

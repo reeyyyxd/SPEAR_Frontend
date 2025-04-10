@@ -62,8 +62,8 @@ const StudentTeacherEvaluation = () => {
 
     // Check if all questions are answered
     for (const question of questions) {
-      if (question.questionType === "RADIO" && !responses[`${adviser.adviserId}-${question.qid}`]) {
-        alert("Please answer all radio questions.");
+      if (question.questionType === "INPUT" && !responses[`${adviser.adviserId}-${question.qid}`]) {
+        alert("Please answer all questions.");
         return;
       }
       if (question.questionType === "TEXT" && !responses[`text-${question.qid}`]) {
@@ -73,7 +73,7 @@ const StudentTeacherEvaluation = () => {
     }
 
     // Check for same score restriction
-    const radioAnswers = questions.filter(q => q.questionType === "RADIO").map(q => responses[`${adviser.adviserId}-${q.qid}`]);
+    const radioAnswers = questions.filter(q => q.questionType === "INPUT").map(q => responses[`${adviser.adviserId}-${q.qid}`]);
     const allSame = radioAnswers.every(val => val === radioAnswers[0]);
 
     if (allSame) {
@@ -83,7 +83,7 @@ const StudentTeacherEvaluation = () => {
 
     const responseList = [];
     questions.forEach((question) => {
-      if (question.questionType === "RADIO") {
+      if (question.questionType === "INPUT") {
         const key = `${adviser.adviserId}-${question.qid}`;
         const value = responses[key];
         if (value) {
@@ -145,8 +145,8 @@ const StudentTeacherEvaluation = () => {
           <div key={question.qid} className="space-y-3">
             <h2 className="font-semibold text-gray-700">{question.questionText}</h2>
 
-            {/* Radio */}
-            {question.questionType === "RADIO" && adviser && (
+            {/* Input */}
+            {question.questionType === "INPUT" && adviser && (
               <div className="overflow-x-auto rounded border">
                 <table className="w-full text-center table-auto border-collapse">
                   <thead>
