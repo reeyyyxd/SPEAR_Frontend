@@ -20,6 +20,9 @@ const StudentClassPage = () => {
   const [creatorName, setCreatorName] = useState(""); // Store creator's name
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [userData, setUserData] = useState({firstname: "", lastname: "" });
+  const [teamDetails, setTeamDetails] = useState(null);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   const address = getIpAddress();
   const classId = getDecryptedId("cid");
@@ -93,15 +96,9 @@ const StudentClassPage = () => {
     setIsAddMemberModalOpen(true);
   };
 
-  useEffect(() => {
-    if (classId && authState.uid) {
-      fetchTeamDetails();
-    }
-  }, [classId, authState.uid]);
- 
   const fetchTeamDetails = async () => {
     try {
-      const token = authState.token; // Ensure token is correctly retrieved
+      const token = authState.token;
       const response = await axios.get(
         `http://${address}:8080/team/my/${classId}/${userId}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -109,6 +106,8 @@ const StudentClassPage = () => {
   
       if (response.status === 200 && response.data) {
         const latestTeamId = response.data.tid;
+        const teamData = response.data;
+        setTeamDetails(teamData);
         
         if (latestTeamId) {
           setTeamId(latestTeamId);
@@ -119,6 +118,38 @@ const StudentClassPage = () => {
       console.error("Error fetching team details:", error);
     }
   };
+
+  const fetchStudentData = async () => {
+    try {
+      const response = await axios.get(
+        `http://${address}:8080/get-student/${authState.uid}`,
+        {
+          headers: {
+            Authorization: `Bearer ${authState.token}`,
+          },
+        }
+      );
+      const { firstname, lastname } = response.data;
+      setUserData({ firstname, lastname });
+    } catch (error) {
+      console.error("Error fetching student data:", error);
+      alert("Error fetching student data. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await fetchStudentData();
+        await fetchTeamDetails();
+        setIsDataLoaded(true);
+      } catch (err) {
+        console.error("Error fetching initial data:", err);
+      }
+    };
+  
+    fetchData();
+  }, [authState.token, address, classId, userId]);
   
   const fetchStudents = async () => {
     try {
@@ -215,48 +246,48 @@ const StudentClassPage = () => {
           </div>
         )}
 
-  <div className="space-y-4 pt-10">
-    <h2 className="text-2xl font-semibold text-teal-500">Actions</h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <button 
-    className={`border px-3 py-1.5 rounded-lg transition flex items-center justify-between w-full h-12 
-      ${teamId ? "border-gray-300 hover:bg-gray-200 cursor-pointer" : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"}`}
-    onClick={teamId ? () => navigate(`/student/view-project-proposal`) : undefined}
-    disabled={!teamId}
-  >
-    <div className="flex items-center gap-2">
-      <FileText className="h-4 w-4" />
-      <span className="text-sm font-semibold">Project Proposal</span>
-    </div>
-    <ChevronRight className="h-4 w-4" />
-  </button>
+            <div className="space-y-4 pt-10">
+              <h2 className="text-2xl font-semibold text-teal-500">Actions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button 
+              className={`border px-3 py-1.5 rounded-lg transition flex items-center justify-between w-full h-12 
+                ${teamId ? "border-gray-300 hover:bg-gray-200 cursor-pointer" : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"}`}
+              onClick={teamId ? () => navigate(`/student/view-project-proposal`) : undefined}
+              disabled={!teamId}
+            >
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span className="text-sm font-semibold">Project Proposal</span>
+              </div>
+              <ChevronRight className="h-4 w-4" />
+            </button>
 
-  <button 
-  className={`border px-3 py-1.5 rounded-lg transition flex items-center justify-between w-full h-12 
-    ${teamId ? "border-gray-300 hover:bg-gray-200 cursor-pointer" : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"}`}
-  onClick={teamId ? handleTeamSettingsClick : undefined}
-  disabled={!teamId}
->
-  <div className="flex items-center gap-2">
-    <Settings className="h-4 w-4" />
-    <span className="text-sm font-semibold">Team Settings</span>
-  </div>
-  <ChevronRight className="h-4 w-4" />
-</button>
+            <button 
+            className={`border px-3 py-1.5 rounded-lg transition flex items-center justify-between w-full h-12 
+              ${teamId ? "border-gray-300 hover:bg-gray-200 cursor-pointer" : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"}`}
+            onClick={teamId ? handleTeamSettingsClick : undefined}
+            disabled={!teamId}
+          >
+            <div className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              <span className="text-sm font-semibold">Team Settings</span>
+            </div>
+            <ChevronRight className="h-4 w-4" />
+          </button>
 
-</div>
+          </div>
 
-<button 
-  className={`bg-gray-700 text-white px-4 py-2 rounded-lg mb-10 transition flex items-center justify-between w-30 h-12 
-    ${teamId ? "hover:bg-gray-500 cursor-pointer" : "bg-gray-400 cursor-not-allowed"}`}
-  onClick={teamId ? () => setIsAddMemberModalOpen(true) : undefined}
-  disabled={!teamId}
->
-  <UserPlus className="h-5 w-5 mr-2" />
-  <span className="text-sm font-semibold">Add Members</span>
-</button>
-
-
+          {`${userData.firstname} ${userData.lastname}` === teamDetails?.leaderName && (
+          <button 
+            className={`bg-gray-700 text-white px-4 py-2 rounded-lg mb-10 transition flex items-center justify-between w-30 h-12 
+              ${teamId ? "hover:bg-gray-500 cursor-pointer" : "bg-gray-400 cursor-not-allowed"}`}
+            onClick={teamId ? () => setIsAddMemberModalOpen(true) : undefined}
+            disabled={!teamId}
+          >
+            <UserPlus className="h-5 w-5 mr-2" />
+            <span className="text-sm font-semibold">Add Members</span>
+          </button>
+          )}
     {isAddMemberModalOpen && (
               <AddTeamMembersModal 
               isOpen={isAddMemberModalOpen} 

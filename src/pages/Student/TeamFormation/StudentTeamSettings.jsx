@@ -4,7 +4,10 @@ import AuthContext from "../../../services/AuthContext";
 import axios from "axios";
 import Navbar from "../../../components/Navbar/Navbar";
 import { FiArrowLeft, FiEdit3, FiUserMinus, FiChevronDown, FiUserCheck} from "react-icons/fi";
+import { Crown, UserMinus } from "lucide-react"
 import StudentAdvisoryRequestModal from "../../../components/Modals/StudentAdvisoryRequestModal";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const StudentTeamSettings = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
@@ -32,6 +35,11 @@ const StudentTeamSettings = () => {
   const [error, setError] = useState("");
   const [showDropModal, setShowDropModal] = useState(false);
   const [dropReason, setDropReason] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [userData, setUserData] = useState({firstname: "", lastname: "" });
+
 
   
   const address = getIpAddress();
@@ -59,6 +67,7 @@ const StudentTeamSettings = () => {
           setTeamDetails(teamData);
           setGroupName(teamData.groupName || "");
           setRecruitmentOpen(teamData.recruitmentOpen);
+          console.log("Fetched team details:", teamData);
 
           if (teamData.adviserId) {
             setSelectedAdviser(teamData.adviserId);
@@ -190,10 +199,7 @@ const StudentTeamSettings = () => {
 
   const kickMember = async (memberId) => {
     if (!teamDetails?.tid) return;
-  
-    const confirmKick = window.confirm("Are you sure you want to remove this member from the team?");
-    if (!confirmKick) return;
-  
+
     try {
       await axios.delete(`http://${address}:8080/student/${teamDetails.tid}/kick-member/${memberId}`, {
         data: { requesterId: userId },
@@ -204,10 +210,12 @@ const StudentTeamSettings = () => {
         memberIds: prev.memberIds.filter((id) => id !== memberId),
         memberNames: prev.memberNames.filter((_, index) => prev.memberIds[index] !== memberId),
       }));
-  
+
+      toast.success("Member removed successfully!");
       window.location.reload();
     } catch (error) {
-      console.error("Error removing member:", error);
+    toast.error("Failed to remove member. Please try again.");
+    console.error("Error removing member:", error);
     }
   };
 
@@ -226,16 +234,12 @@ const StudentTeamSettings = () => {
   
     } catch (error) {
       console.error("Error leaving team:", error.response?.data?.error || error.message);
-      alert(error.response?.data?.error || "Failed to leave the team.");
+      toast.error(error.response?.data?.error || "Failed to leave the team.");
     }
   };
   
   const deleteTeam = async () => {
     if (!teamDetails?.tid) return;
-
-    if (!window.confirm("Are you sure you want to delete this team? This action cannot be undone.")) {
-        return;
-    }
 
     try {
         const response = await axios.delete(`http://${address}:8080/student/delete-team/${teamDetails.tid}/requester/${userId}`);
@@ -244,17 +248,13 @@ const StudentTeamSettings = () => {
         navigate("/student-dashboard");
     } catch (error) {
         console.error("Error deleting team:", error.response?.data?.message || error.message);
-        alert(error.response?.data?.message || "Failed to delete the team.");
+        toast.error(error.response?.data?.message || "Failed to delete the team.");
     }
 };
 
 
 const transferLeadership = async (newLeaderId) => {
   if (!teamDetails?.tid) return;
-
-  if (!window.confirm("Are you sure you want to transfer leadership?")) {
-    return;
-  }
 
   try {
     const response = await axios.put(
@@ -264,15 +264,84 @@ const transferLeadership = async (newLeaderId) => {
         newLeaderId: newLeaderId,
       }
     );
-    alert(response.data.message);
+    toast.success(response.data.message || "Leadership transferred successfully!");
     window.location.reload();
   } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to transfer leadership.");
     console.error("Error transferring leadership:", error);
-    alert(error.response?.data?.message || "Failed to transfer leadership.");
   }
 };
 
+
+const fetchStudentData = async () => {
+  try {
+    const response = await axios.get(
+      `http://${address}:8080/get-student/${authState.uid}`,
+      {
+        headers: {
+          Authorization: `Bearer ${authState.token}`,
+        },
+      }
+    );
+    const {firstname, lastname } = response.data;
+  setUserData({ firstname, lastname });
+
+    console.log("Student Info:", response.data);
+
+
+  } catch (error) {
+    console.error("Error fetching student data:", error);
+    alert("Error fetching student data. Please try again.");
+  }
+};
+
+useEffect(() => {
+  if (authState?.uid) {
+    fetchStudentData();
+  }
+}, [authState]);
+
+
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, message }) => {
+  if (!isOpen) return null;
+
   return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white rounded-lg p-6 shadow-lg w-96">
+        <div className="flex items-center justify-between">
+          <h2 className="text-gray-700 text-xl font-semibold">Confirmation</h2>
+          <button
+            className="text-gray-500 hover:text-gray-700 mb-4"
+            onClick={onClose}
+          >
+            ✖
+          </button>
+        </div>
+        <p className="text-gray-600 mt-2">{message}</p>
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="bg-teal text-white px-4 py-2 rounded-md hover:bg-peach transition"
+            onClick={onConfirm}
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+console.log("teamDetails:", teamDetails?.tid);
+
+  return (
+    <>
+    <ToastContainer position="top-right" autoClose={3000} />
     <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
       <Navbar userRole={authState.role} />
   
@@ -300,7 +369,7 @@ const transferLeadership = async (newLeaderId) => {
                 />
                 <button
                   onClick={updateGroupName}
-                  className="border border-gray-300 px-3 py-2 rounded-md hover:bg-gray-200 transition"
+                  className="bg-gray-200 px-3 py-2 rounded-md hover:bg-gray-300 transition"
                   disabled={isUpdating}
                 >
                   Save
@@ -317,9 +386,10 @@ const transferLeadership = async (newLeaderId) => {
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-2">Team Members</h3>
               {teamDetails.memberNames && teamDetails.memberNames.length > 0 ? (
-                <table className="w-full border-collapse border border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-200">
+                 <div className="rounded-md overflow-hidden">
+                <table className="w-full border-collapse">
+                  <thead  className="bg-gray-700 text-white">
+                    <tr>
                       <th className="border border-gray-300 px-4 py-2 text-left">Member Name</th>
                       <th className="border border-gray-300 px-4 py-2">Actions</th>
                     </tr>
@@ -331,103 +401,129 @@ const transferLeadership = async (newLeaderId) => {
                         <td className="border border-gray-300 px-4 py-3">
                           <div className="flex flex-wrap gap-2 justify-center">
                             <button
-                              onClick={() => kickMember(teamDetails.memberIds[index])}
-                              className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-700 transition flex items-center gap-2"
+                             className="group border border-red-300 text-gray-800 px-3 py-2 rounded-md hover:bg-red-600 hover:text-white transition flex items-center gap-2"
+                             onClick={() => {
+                              setModalMessage("Are you sure you want to remove this member from the team?");
+                              setConfirmAction(() => () => kickMember(teamDetails.memberIds[index]));
+                              setIsModalOpen(true);
+                            }}
                             >
-                              <FiUserMinus /> Kick
+                              <UserMinus className="h-5 w-5 text-red-600 group-hover:text-white transition"  />
                             </button>
                             <button
-                              onClick={() => transferLeadership(teamDetails.memberIds[index])}
-                              className="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition flex items-center gap-2"
+                              className="group border border-amber-300 text-gray-800 px-3 py-2 rounded-md hover:bg-amber-500 hover:text-white transition flex items-center gap-2"
+                              onClick={() => {
+                              setModalMessage("Are you sure you want to transfer leadership?");
+                              setConfirmAction(() => () => transferLeadership(teamDetails.memberIds[index]));
+                              setIsModalOpen(true);
+                            }}
                             >
-                              <FiUserCheck /> Transfer Leadership
+                              <Crown className="h-5 w-5 text-amber-500 group-hover:text-white transition"  />
                             </button>
                           </div>
                         </td>
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table>               
+            </div>
               ) : (
                 <p className="text-gray-600">No members in the team.</p>
               )}
             </div>
+            
             {/* Advisories and Schedules */}
-            <div className="mb-4 p-4 border rounded-md bg-gray-50">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-lg font-semibold">Team Adviser & Schedule</h3>
-              <button
-                onClick={() => setShowRequestModal(true)}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
-              >
-                Request Adviser & Schedule
-              </button>
-            </div>
-
-            <p className="text-gray-700">
-              <strong>Adviser:</strong> {teamDetails?.adviserName || "Not Assigned"}
-            </p>
-            <p className="text-gray-700">
-              <strong>Schedule:</strong>{" "}
-              {teamDetails?.scheduleDay && teamDetails?.scheduleTime
-                ? `${teamDetails.scheduleDay}, ${teamDetails.scheduleTime}`
-                : "Not Assigned"}
-            </p>
-
-            {teamDetails?.adviserName !== "Not Assigned" && teamDetails?.scheduleDay && teamDetails?.scheduleTime && (
-              <button
-              onClick={() => setShowDropModal(true)}
-              disabled={
-                !teamDetails?.adviserName ||
-                teamDetails?.adviserName === "No Adviser Assigned" ||
-                !teamDetails?.scheduleDay ||
-                !teamDetails?.scheduleTime ||
-                teamDetails?.scheduleDay === "No Day Set" ||
-                teamDetails?.scheduleTime === "No Time Set"
-              }
-              className={`mt-4 px-4 py-2 rounded text-white w-full transition ${
-                !teamDetails?.adviserName ||
-                teamDetails?.adviserName === "No Adviser Assigned" ||
-                !teamDetails?.scheduleDay ||
-                !teamDetails?.scheduleTime ||
-                teamDetails?.scheduleDay === "No Day Set" ||
-                teamDetails?.scheduleTime === "No Time Set"
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-red-600 hover:bg-orange-800"
-              }`}
-            >
-              Request to Leave Adviser
-            </button>
+            {!(
+              teamDetails &&
+              teamDetails.adviserName &&
+              teamDetails.adviserName !== "No Adviser Assigned" &&
+              teamDetails.scheduleDay &&
+              teamDetails.scheduleDay !== "No Day Set" &&
+              teamDetails.scheduleTime &&
+              teamDetails.scheduleTime !== "No Time Set"
+            ) && (
+              <div className="flex justify-start mb-2">
+                <button
+                  onClick={() => setShowRequestModal(true)}
+                  className="px-4 py-2 w-full mb-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+                >
+                  Request Adviser & Schedule
+                </button>
+              </div>
             )}
-          </div>
+            {teamDetails &&
+              teamDetails.adviserName &&
+              teamDetails.adviserName !== "No Adviser Assigned" &&
+              teamDetails.scheduleDay &&
+              teamDetails.scheduleDay !== "No Day Set" &&
+              teamDetails.scheduleTime &&
+              teamDetails.scheduleTime !== "No Time Set" && (
+                <div className="mb-4 p-4 border rounded-md bg-gray-50">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Team Adviser & Schedule</h3>
+                    <p className="text-gray-700">
+                      <strong>Adviser:</strong> {teamDetails.adviserName}
+                    </p>
+                    <p className="text-gray-700">
+                      <strong>Schedule:</strong> {`${teamDetails.scheduleDay}, ${teamDetails.scheduleTime}`}
+                    </p>
 
+                    <button
+                      onClick={() => setShowDropModal(true)}
+                      className="mt-4 px-4 py-2 rounded text-white w-full transition bg-red-500 hover:bg-red-600"
+                    >
+                      Request to Leave Adviser
+                    </button>
+                  </div>
+                </div>
+            )}
+    
             {/* Recruitment Status */}
-            <div className="mb-6">
-              <p className="font-medium">
-                <strong>Recruitment Status:</strong>
-                <span className={recruitmentOpen ? "text-green-600" : "text-red-500"}> {recruitmentOpen ? "Open" : "Closed"}</span>
-              </p>
-              <button
-                onClick={toggleRecruitment}
-                className="mt-2 px-4 py-2 w-full bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition"
-                disabled={isUpdating}
-              >
-                {recruitmentOpen ? "Close Recruitment" : "Open Recruitment"}
-              </button>
+            <div className="mb-4 p-4 border rounded-md bg-gray-50">
+              <h2 className="text-lg font-semibold text-black">Recruitment Status</h2>
+              <div className="mt-4 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-black">Open Recruitment</p>
+                  <p className="text-sm text-gray-500">Allow new members to join your team</p>
+                </div>
+                <button
+                  onClick={toggleRecruitment}
+                  disabled={isUpdating}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
+                    recruitmentOpen ? "bg-green-500" : "bg-gray-300"
+                  } ${isUpdating ? "opacity-50 cursor-not-allowed" : "hover:opacity-90"}`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-300 ${
+                      recruitmentOpen ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
-  
+
             {/* Leave Team & Delete Team Buttons */}
+           
             <div className="flex flex-col sm:flex-row gap-4">
               <button
-                onClick={leaveTeam}
-                className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-700 transition"
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                onClick={() => {
+                setModalMessage("Are you sure you want to leave the team?");
+                setConfirmAction(() => () => leaveTeam());
+                setIsModalOpen(true);
+              }}
               >
                 Leave Team
               </button>
-              {authState.userId === teamDetails.leaderId && (
+              
+              {`${userData.firstname} ${userData.lastname}` === teamDetails?.leaderName && (
                 <button
-                  onClick={deleteTeam}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-800 transition"
+                  className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                  onClick={() => {
+                  setModalMessage("Are you sure you want to delete this team? This action cannot be undone.");
+                  setConfirmAction(() => () => deleteTeam());
+                  setIsModalOpen(true);
+                }}
                 >
                   Delete Team
                 </button>
@@ -438,6 +534,7 @@ const transferLeadership = async (newLeaderId) => {
           <p className="text-center text-gray-600">You are not in a team.</p>
         )}
       </div>
+
       {showRequestModal && (
           <StudentAdvisoryRequestModal
             teamId={teamDetails.tid}
@@ -449,13 +546,15 @@ const transferLeadership = async (newLeaderId) => {
       {showDropModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-md shadow-md w-full max-w-md relative">
+          <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Drop Adviser</h2>
             <button
               onClick={() => setShowDropModal(false)}
-              className="absolute top-2 right-2 text-gray-600"
+              className="text-gray-500 hover:text-gray-700"
             >
-              ✕
+              ✖
             </button>
-            <h2 className="text-lg font-semibold mb-4">Drop Adviser</h2>
+            </div>
             <p className="text-gray-700 mb-2">Please provide a reason:</p>
             <textarea
               rows="4"
@@ -474,9 +573,21 @@ const transferLeadership = async (newLeaderId) => {
           </div>
         </div>
       )}
+
+      {isModalOpen && (
+        <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={() => {
+          if (confirmAction) confirmAction();
+          setIsModalOpen(false);
+        }}
+        message={modalMessage}
+      />
+      )}
     </div>
     
-    
+    </>
   );
 };
 

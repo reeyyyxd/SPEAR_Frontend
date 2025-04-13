@@ -63,6 +63,22 @@ const EvaluationStatus = () => {
     return format(new Date(submission.submittedAt), "MMM d, yyyy - h:mm a");
   };
 
+  const getStatusByName = (memberName) => {
+    const submission = submissions.find(sub => sub.evaluatorName === memberName);
+    if (!submission) {
+      return (
+        <span className="px-3 py-1 rounded-full text-sm font-semibold inline-block bg-yellow-500 text-white">
+          INC
+        </span>
+      );
+    }
+    return (
+      <span className="px-3 py-1 rounded-full text-sm font-semibold inline-block bg-green-500 text-white">
+        Completed
+      </span>
+    );
+  };
+
   const handleEvaluate = () => {
     navigate("/student/student-evaluation");
   };
@@ -104,6 +120,7 @@ const EvaluationStatus = () => {
                 <tr>
                   <th className="px-4 py-2 text-left text-sm font-semibold">Member Name</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold">Date Submitted</th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -113,6 +130,7 @@ const EvaluationStatus = () => {
                       {member === studentId ? `${member} (You)` : member}
                     </td>
                     <td className="px-4 py-2">{getSubmissionDateByName(member)}</td>
+                    <td className="px-4 py-2">{getStatusByName(member)}</td>
                   </tr>
                 ))}
               </tbody>

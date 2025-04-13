@@ -138,15 +138,39 @@ const StudentAdvisoryRequestModal = ({ teamId, closeModal }) => {
     }
   };
 
+  const getStatusBadge = (status) => {
+    const baseClass = "px-3 py-1 rounded-full text-white text-sm font-semibold";
+  
+    switch (status) {
+      case "APPROVED":
+        return <span className={`${baseClass} bg-green-500`}>Approved</span>;
+      case "DENIED":
+        return <span className={`${baseClass} bg-red-500`}>Denied</span>;
+      case "PENDING":
+        return <span className={`${baseClass} bg-yellow-500`}>Pending</span>;
+      case "OPEN":
+        return <span className={`${baseClass} bg-purple-500`}>Open</span>;
+      case "ACCEPTED":
+        return <span className={`${baseClass} bg-green-600`}>Accepted</span>;
+      case "REQUEST_TO_LEAVE":
+        return <span className={`${baseClass} bg-orange-500`}>Leaving</span>;
+      case "DROP":
+        return <span className={`${baseClass} bg-gray-600`}>Dropped</span>;
+      default:
+        return <span className={`${baseClass} bg-gray-500`}>{status}</span>;
+    }
+  };
+  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg px-6 py-10 w-full max-w-3xl relative shadow-lg max-h-[90vh] overflow-y-auto">
-        <button onClick={closeModal} className="absolute top-2 right-2 text-gray-600">
-          <FiX size={24} />
-        </button>
-
-        <h2 className="text-lg font-semibold mb-4">Request Adviser & Schedule</h2>
-
+      <div className="flex items-center justify-between mb-4 mt-[-10px]">
+      <h2 className="text-lg font-semibold">Request Adviser & Schedule</h2>
+      <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">
+       ✖
+       </button>
+      </div>
         {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
 
         {/* Adviser dropdown */}
@@ -245,25 +269,14 @@ const StudentAdvisoryRequestModal = ({ teamId, closeModal }) => {
                       {req.scheduleDay} - {formatTime(req.scheduleTime?.split(" - ")[0])} - {formatTime(req.scheduleTime?.split(" - ")[1])}
                     </td>
                     <td className="px-4 py-2">
-                      <span className={`px-2 py-1 rounded text-white text-sm
-                        ${req.status === 'PENDING' ? 'bg-yellow-500' :
-                          req.status === 'ACCEPTED' ? 'bg-green-600' :
-                          req.status === 'REQUEST_TO_LEAVE' ? 'bg-orange-500' :
-                          req.status === 'DROP' ? 'bg-gray-600' :
-                          'bg-red-500'}`}>
-                        {req.status === 'REQUEST_TO_LEAVE'
-                          ? 'Leaving'
-                          : req.status === 'DROP'
-                          ? 'Dropped'
-                          : req.status}
-                      </span>
+                    {getStatusBadge(req.status)}
                     </td>
                     <td className="px-4 py-2 text-gray-700">{req.reason || "No Reason Provided"}</td>
                     <td className="px-4 py-2">
                     {["ACCEPTED","PENDING", "REJECTED", "REQUEST_TO_LEAVE", "DROP"].includes(req.status) && (
                         <button
                         onClick={() => handleDelete(req.requestId)}
-                        className="bg-[#323c47] text-white px-3 py-1 rounded hover:bg-gray-900 transition"
+                        className="bg-[#323c47] text-white whitespace-nowrap px-3 py-1 rounded hover:bg-gray-900 transition"
                         >
                         Remove Request
                         </button>
