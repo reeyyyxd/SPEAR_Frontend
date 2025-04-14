@@ -15,11 +15,10 @@ const PasswordModal = ({ userId, token, onClose }) => {
   const address = getIpAddress();
 
   function getIpAddress() {
-      const hostname = window.location.hostname;
-      const indexOfColon = hostname.indexOf(':');
-      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+    const hostname = window.location.hostname;
+    const indexOfColon = hostname.indexOf(":");
+    return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
-
 
   const [showPassword, setShowPassword] = useState({
     currentPassword: false,
@@ -91,38 +90,42 @@ const PasswordModal = ({ userId, token, onClose }) => {
     <div className="modal bg-gray-800 bg-opacity-75 fixed inset-0 flex justify-center items-center">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-lg font-semibold mb-4">Change Password</h2>
-        {["currentPassword", "newPassword", "confirmNewPassword"].map((field) => (
-          <div key={field} className="mb-4">
-            <label
-              htmlFor={field}
-              className="block mb-2 font-medium capitalize"
-            >
-              {field.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword[field] ? "text" : "password"}
-                id={field}
-                name={field}
-                placeholder={
-                  field === "currentPassword"
-                    ? "Enter current password"
-                    : "Enter new password"
-                }
-                value={passwordData[field]}
-                onChange={handleInputChange}
-                className="w-full border rounded-md p-3"
-              />
-              <button
-                type="button"
-                onClick={() => togglePasswordVisibility(field)}
-                className="absolute right-3 top-3 text-gray-500"
+        {["currentPassword", "newPassword", "confirmNewPassword"].map(
+          (field) => (
+            <div key={field} className="mb-4">
+              <label
+                htmlFor={field}
+                className="block mb-2 font-medium capitalize"
               >
-                {showPassword[field] ? "Hide" : "Show"}
-              </button>
+                {field
+                  .replace(/([A-Z])/g, " $1")
+                  .replace(/^./, (str) => str.toUpperCase())}
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword[field] ? "text" : "password"}
+                  id={field}
+                  name={field}
+                  placeholder={
+                    field === "currentPassword"
+                      ? "Enter current password"
+                      : "Enter new password"
+                  }
+                  value={passwordData[field]}
+                  onChange={handleInputChange}
+                  className="w-full border rounded-md p-3"
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility(field)}
+                  className="absolute right-3 top-3 text-gray-500"
+                >
+                  {showPassword[field] ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        )}
         <div className="flex justify-end space-x-4">
           <button
             onClick={handlePasswordUpdate}
@@ -153,16 +156,13 @@ const StudentSettings = () => {
   const address = getIpAddress();
 
   function getIpAddress() {
-      const hostname = window.location.hostname;
-      const indexOfColon = hostname.indexOf(':');
-      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+    const hostname = window.location.hostname;
+    const indexOfColon = hostname.indexOf(":");
+    return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
 
-  
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const navigate = useNavigate();
-
-  
 
   useEffect(() => {
     if (!authState || !authState.uid) {
@@ -248,8 +248,8 @@ const StudentSettings = () => {
                 id="email"
                 name="email"
                 value={userData.email}
-                onChange={handleInputChange}
-                className="w-full border rounded-md p-3"
+                className="w-full border rounded-md p-3 bg-gray-100 cursor-not-allowed"
+                disabled
               />
             </div>
             <div>
