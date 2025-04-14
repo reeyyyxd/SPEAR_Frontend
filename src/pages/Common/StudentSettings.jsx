@@ -4,6 +4,8 @@ import Header from "../../components/Header/Header";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../services/AuthContext";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const PasswordModal = ({ userId, token, onClose }) => {
   const [passwordData, setPasswordData] = useState({
@@ -47,12 +49,12 @@ const PasswordModal = ({ userId, token, onClose }) => {
       !passwordData.newPassword ||
       !passwordData.confirmNewPassword
     ) {
-      alert("All fields must be filled!");
+      toast.error("All fields must be filled!");
       return;
     }
 
     if (passwordData.newPassword !== passwordData.confirmNewPassword) {
-      alert("New password and confirm password do not match!");
+      toast.error("New password and confirm password do not match!");
       return;
     }
 
@@ -71,17 +73,17 @@ const PasswordModal = ({ userId, token, onClose }) => {
       );
 
       if (response.status === 200) {
-        alert("Password updated successfully!");
+        toast.success("Password updated successfully!");
         onClose();
       } else {
-        alert(response.data.message || "Failed to update password.");
+        toast.error(response.data.message || "Failed to update password.");
       }
     } catch (error) {
       console.error("Error updating password:", error);
       if (error.response?.data?.message === "Current password is incorrect.") {
-        alert("The current password you entered is incorrect.");
+        toast.error("The current password you entered is incorrect.");
       } else {
-        alert("Error updating password. Please try again.");
+        toast.error("Error updating password. Please try again.");
       }
     }
   };
@@ -212,17 +214,19 @@ const StudentSettings = () => {
       );
 
       if (response.status === 200) {
-        alert("Profile updated successfully!");
+        toast.success("Profile updated successfully!");
       } else {
-        alert(response.data.message || "Failed to update profile.");
+        toast.error(response.data.message || "Failed to update profile.");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Error updating profile. Please try again.");
+      toast.error("Error updating profile. Please try again.");
     }
   };
 
   return (
+    <>
+    <ToastContainer position="top-right" autoClose={3000} />
     <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole="STUDENT" />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
@@ -306,6 +310,7 @@ const StudentSettings = () => {
         />
       )}
     </div>
+    </>
   );
 };
 

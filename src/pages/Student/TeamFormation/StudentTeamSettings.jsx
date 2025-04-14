@@ -153,7 +153,7 @@ const StudentTeamSettings = () => {
 
   const dropAdviser = async () => {
     if (!dropReason.trim()) {
-      alert("Please provide a reason before submitting.");
+      toast.error("Please provide a reason before submitting.");
       return;
     }
 
@@ -172,7 +172,7 @@ const StudentTeamSettings = () => {
       window.location.reload(); // optional
     } catch (err) {
       console.error("Error submitting leave adviser request:", err);
-      alert(err.response?.data?.error || "Failed to submit leave request.");
+      toast.error(err.response?.data?.error || "Failed to submit leave request.");
     }
   };
 
@@ -205,8 +205,10 @@ const StudentTeamSettings = () => {
           requesterId: userId,
         }
       );
+      toast.success("Group name updated successfully!");
     } catch (error) {
       console.error("Error updating group name:", error);
+      toast.error("Failed to update group name.");
     } finally {
       setIsUpdating(false);
     }
@@ -234,7 +236,7 @@ const StudentTeamSettings = () => {
       toast.success("Member removed successfully!");
       window.location.reload();
     } catch (error) {
-      toast.error("Failed to remove member. Please try again.");
+      toast.error("Failed to remove member.");
       console.error("Error removing member:", error);
     }
   };
@@ -250,7 +252,7 @@ const StudentTeamSettings = () => {
         }
       );
 
-      alert(response.data.message);
+      toast.success(response.data.message || "Successfully left the team!");
 
       // Refresh UI after leaving the team
       window.location.reload();
@@ -271,7 +273,7 @@ const StudentTeamSettings = () => {
         `http://${address}:8080/student/delete-team/${teamDetails.tid}/requester/${userId}`
       );
 
-      alert(response.data.message);
+      toast.success(response.data.message || "Successfully deleted the team!");
       navigate("/student-dashboard");
     } catch (error) {
       console.error(

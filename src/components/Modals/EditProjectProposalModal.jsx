@@ -9,6 +9,7 @@ const EditProjectProposalModal = ({ isOpen, proposalId, onClose, refreshProposal
   const [proposalData, setProposalData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [projectNameError, setProjectNameError] = useState("");
   
   const address = window.location.hostname;
 
@@ -70,6 +71,10 @@ const EditProjectProposalModal = ({ isOpen, proposalId, onClose, refreshProposal
   };
 
   const handleUpdateProposal = async () => {
+    if (!proposalData.projectName.trim()) {
+      setProjectNameError("Project name is required!"); 
+      return; 
+    }
     try {
         const token = authState.token;
         if (!token) throw new Error("No auth token");
@@ -127,7 +132,12 @@ const EditProjectProposalModal = ({ isOpen, proposalId, onClose, refreshProposal
           <p className="text-red-500">{errorMessage}</p>
         ) : (
           <>
-            <label className="block text-sm font-medium">Project Name</label>
+           <div className="flex items-center justify-between">
+           <label className="block text-sm font-medium">Project Name</label>
+           {projectNameError && (
+             <span className="text-red-500 text-xs ml-2">{projectNameError}</span>
+           )}
+         </div>
             <input
               type="text"
               name="projectName"

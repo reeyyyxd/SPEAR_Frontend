@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import axios from "axios";
-import { Eye } from "lucide-react"
+import { Eye , ChevronLeft, ChevronRight } from "lucide-react"
 
 const Evaluations = () => {
   const { getDecryptedId, storeEncryptedId } = useContext(AuthContext);
@@ -12,6 +12,9 @@ const Evaluations = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const evaluationsPerPage = 10;
+
 
   const address = getIpAddress();
 
@@ -79,6 +82,11 @@ const Evaluations = () => {
     }
   };
 
+const totalPages = Math.ceil(evaluations.length / evaluationsPerPage);
+const startIndex = (currentPage - 1) * evaluationsPerPage;
+const currentEvaluations = evaluations.slice(startIndex, startIndex + evaluationsPerPage);
+
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen bg-white">
       <Navbar userRole="STUDENT" />
@@ -92,7 +100,7 @@ const Evaluations = () => {
         ) : evaluations.length === 0 ? (
           <div className="text-center text-gray-500">No open evaluations available.</div>
         ) : (
-          <div className="overflow-x-auto max-h-96 rounded-lg shadow-md">
+          <div className="overflow-x-auto overflow-y-hidden rounded-lg">
             <div className="min-w-[800px]">
             <table className="w-full border-collapse shadow-md rounded-lg overflow-hidden table-fixed">
               <thead className="bg-gray-700 text-white text-center">
@@ -107,7 +115,7 @@ const Evaluations = () => {
                 </tr>
               </thead>
               <tbody className="text-gray-800">
-                {evaluations.map((evalItem, index) => (
+                {currentEvaluations.map((evalItem, index) => (
                   <tr key={index} className="border-b hover:bg-gray-100 transition-colors">
                     <td className="border border-gray-300 p-3 text-center">{getEvaluationTypeLabel(evalItem.evaluationType)}</td>
                     <td className="border border-gray-300 p-3 text-center">{evalItem.courseDescription || "N/A"}</td>
@@ -137,6 +145,28 @@ const Evaluations = () => {
               </tbody>
             </table>
             </div>
+            <div className="flex justify-center items-center mt-3 space-x-2">
+  <button
+    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+    disabled={currentPage === 1}
+    className="text-gray-700 px-1 py-1 rounded-lg flex items-center opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
+  >
+    <ChevronLeft />
+    Previous
+  </button>
+
+  <span className="text-base font-medium">Page {currentPage} of {totalPages}</span>
+
+  <button
+    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+    disabled={currentPage === totalPages}
+    className="text-gray-700 px-1 py-1 rounded-lg flex items-center opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
+  >
+    Next
+    <ChevronRight />
+  </button>
+</div>
+
           </div>
         )}
       </div>
