@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import AuthContext from "../../services/AuthContext";
 import axios from "axios";
+import { PlusCircle, FileQuestion, Trash2 } from "lucide-react"
 
 const AdminQuestionTemplates = () => {
   const { authState } = useContext(AuthContext);
@@ -12,6 +13,7 @@ const AdminQuestionTemplates = () => {
   const [loading, setLoading] = useState(true);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [showSetModal, setShowSetModal] = useState(false);
+  const [confirmationModal, setConfirmationModal] = useState(false);
   const [isEditingQuestion, setIsEditingQuestion] = useState(false);
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [newQuestion, setNewQuestion] = useState({ questionText: "", questionType: "INPUT" });
@@ -132,32 +134,55 @@ const AdminQuestionTemplates = () => {
   };
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
       <div className="p-8 bg-white shadow-md rounded-md w-full">
         <div className="flex justify-between items-center mb-6">
-          <button className="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-900 transition" onClick={() => navigate(-1)}>
-            Back
-          </button>
-          <div className="space-x-2">
-            <button className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-700" onClick={() => setShowSetModal(true)}>
-              Create Template
-            </button>
-            <button className="bg-[#323c47] text-white px-4 py-2 rounded-md hover:bg-gray-900 transition" onClick={() => setShowQuestionModal(true)}>
-              Create Question
-            </button>
-          </div>
         </div>
 
-        <h1 className="text-lg font-semibold text-teal text-center mb-6">Question Templates</h1>
+        <h1 className="text-2xl font-semibold text-teal text-center mb-6">Question Templates</h1>
 
         <div className="flex justify-between mb-4">
-          <select className="border rounded p-2 w-64" value={selectedSet} onChange={(e) => setSelectedSet(e.target.value)}>
-            <option value="">Select Template</option>
-            {sets.map((set) => (<option key={set.id} value={set.id}>{set.name}</option>))}
-          </select>
-          <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700" onClick={handleDeleteSet}>Delete Template</button>
-        </div>
+
+       <select
+     className="border border-gray-300 rounded-md px-4 py-2 bg-white"
+      value={selectedSet}
+     onChange={(e) => setSelectedSet(e.target.value)}
+     >
+      <option value="">Select Template</option>
+      {sets.map((set) => (
+        <option key={set.id} value={set.id}>
+        {set.name}
+      </option>
+      ))}
+     </select>
+
+          <div className="flex space-x-2">
+          <button
+            className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center justify-center space-x-2"
+           onClick={() => setShowSetModal(true)}
+          >
+            <PlusCircle className="h-4 w-4 mr-2" /> 
+       Create Template
+          </button>
+          <button
+            className="bg-[#323c47] text-white px-4 py-2 rounded-md hover:bg-gray-900 transition flex items-center justify-center space-x-2"
+            onClick={() => setShowQuestionModal(true)}
+         >
+          <FileQuestion className="h-4 w-4 mr-2" />
+      Create Question
+    </button>
+    <button
+      className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-700 flex items-center justify-center space-x-2"
+      onClick={handleDeleteSet}
+      // onClick={() => setConfirmationModal(true)}
+    >
+      <Trash2 className="h-4 w-4 mr-2" />
+      Delete Template
+    </button>
+  </div>
+</div>
+
 
         <div className="overflow-y-auto max-h-96 rounded-lg shadow-md">
           {loading ? (
@@ -193,7 +218,15 @@ const AdminQuestionTemplates = () => {
       {showQuestionModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
-            <h2 className="text-lg font-bold mb-4">{isEditingQuestion ? "Edit Question" : "Create Question"}</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold mb-4 text-gray-700">{isEditingQuestion ? "Edit Question" : "Create Question"}</h2>
+            <button
+              className="text-gray-500 hover:text-gray-700 mb-4"
+              onClick={() => { setShowQuestionModal(false); setIsEditingQuestion(false); }}
+            >
+              ✖
+            </button>
+            </div>
             {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Question</label>
@@ -215,8 +248,8 @@ const AdminQuestionTemplates = () => {
             </select>
             </div>
             <div className="flex justify-end space-x-4">
-              <button className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400" onClick={() => { setShowQuestionModal(false); setIsEditingQuestion(false); }}>Cancel</button>
-              <button className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark" onClick={handleCreateOrUpdateQuestion}>{isEditingQuestion ? "Update" : "Create"}</button>
+              <button className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200 transition" onClick={() => { setShowQuestionModal(false); setIsEditingQuestion(false); }}>Cancel</button>
+              <button className="bg-teal text-white px-4 py-2 rounded-md hover:bg-peach transition" onClick={handleCreateOrUpdateQuestion}>{isEditingQuestion ? "Update" : "Create"}</button>
             </div>
           </div>
         </div>
@@ -225,15 +258,23 @@ const AdminQuestionTemplates = () => {
       {showSetModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
-            <h2 className="text-lg font-bold mb-4">Create Set</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold mb-4 text-gray-700">Create Set</h2>
+            <button
+              className="text-gray-500 hover:text-gray-700 mb-4"
+              onClick={() => setShowSetModal(false)}
+            >
+              ✖
+            </button>
+            </div>
             {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Set Name</label>
               <input type="text" value={newSetName} onChange={(e) => setNewSetName(e.target.value)} className="w-full border border-gray-300 px-3 py-2 rounded-lg" placeholder="Enter set name..." />
             </div>
             <div className="flex justify-end space-x-4">
-              <button className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400" onClick={() => setShowSetModal(false)}>Cancel</button>
-              <button className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark" onClick={handleCreateSet}>Create</button>
+              <button className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200 transition" onClick={() => setShowSetModal(false)}>Cancel</button>
+              <button className="bg-teal text-white px-4 py-2 rounded-md hover:bg-peach transition" onClick={handleCreateSet}>Create</button>
             </div>
           </div>
         </div>

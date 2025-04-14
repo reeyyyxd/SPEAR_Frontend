@@ -71,10 +71,10 @@ const AdminEvaluations = () => {
   };
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole="ADMIN" />
       <div className="p-8 bg-white shadow-md rounded-md w-full">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 pt-8">
           <h1 className="text-2xl font-bold text-gray-800">Student to Adviser Evaluations</h1>
         </div>
 
@@ -87,14 +87,14 @@ const AdminEvaluations = () => {
             <table className="min-w-full bg-white border border-gray-300">
               <thead className="bg-[#323c47] text-white">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold border">Course Code</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold border">Section</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold border">Period</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold border">Date Open</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold border">Date Close</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold border">Availability</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold border">Adviser Name</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold border">Action</th>
+                  <th className="px-4 py-3 text-center font-semibold border">Course Code</th>
+                  <th className="px-4 py-3 text-center font-semibold border">Section</th>
+                  <th className="px-4 py-3 text-center font-semibold border">Period</th>
+                  <th className="px-4 py-3 text-center font-semibold border">Date Open</th>
+                  <th className="px-4 py-3 text-center font-semibold border">Date Close</th>
+                  <th className="px-4 py-3 text-center font-semibold border">Availability</th>
+                  <th className="px-4 py-3 text-center font-semibold border">Adviser Name</th>
+                  <th className="px-4 py-3 text-center font-semibold border">Action</th>
                 </tr>
               </thead>
               <tbody>
