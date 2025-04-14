@@ -4,7 +4,7 @@ import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import MembersTable from "../../../components/Tables/MembersTable";
 import axios from "axios";
-import { FileText, Settings, UserPlus , ChevronRight , Users , UserRoundPlus} from "lucide-react"
+import { FileText, Settings, UserPlus , ChevronRight , Users } from "lucide-react"
 import AddTeamMembersModal from "../../../components/Modals/AddTeamMembersModal";
 
 const StudentClassPage = () => {

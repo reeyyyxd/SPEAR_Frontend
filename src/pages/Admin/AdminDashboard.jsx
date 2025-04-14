@@ -4,6 +4,21 @@ import { toast } from "react-toastify";
 import Header from "../../components/Header/Header";
 import axios from "axios";
 
+const getStatusBadge = (status) => {
+  const baseClass = "px-3 py-1 rounded-full text-white text-sm font-semibold"; 
+
+  switch (status) {
+    case "APPROVED":
+      return <span className={`${baseClass} bg-green-500`}>Approved</span>;
+    case "DENIED":
+      return <span className={`${baseClass} bg-red-500`}>Denied</span>;
+    case "OPEN":
+      return <span className={`${baseClass} bg-purple-500`}>Open</span>;
+    default:
+      return <span className={`${baseClass} bg-gray-500`}>{status}</span>;
+  }
+};
+
 const AdminDashboard = () => {
   const [proposals, setProposals] = useState([]);
   const [status, setStatus] = useState("approved"); // Default status filter
@@ -45,7 +60,7 @@ const AdminDashboard = () => {
   }, [status]);
 
   return (
-<div className="grid grid-cols-[256px_1fr] min-h-screen">
+<div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
   <Navbar userRole={"ADMIN"} />
   <div className="main-content bg-white text-teal p-11">
     {/* Header Section */}
@@ -90,34 +105,36 @@ const ProposalsTable = ({ proposals }) => {
     <div className="flex flex-col">
       <div className="overflow-x-auto">
         <div className="p-2 min-w-full inline-block align-middle">
-          <div className="overflow-hidden rounded-lg border border-gray-300">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr className="bg-teal font-medium text-white">
-                  <th className="px-6 py-2 text-start text-md font-medium">Project Name</th>
-                  <th className="px-6 py-2 text-start text-md font-medium">Description</th>
-                  <th className="px-6 py-2 text-start text-md font-medium">Status</th>
-                  <th className="px-6 py-2 text-start text-md font-medium">Reason</th>
-                  <th className="px-6 py-2 text-start text-md font-medium">Objectives</th>
+          <div className="overflow-hidden rounded-lg">
+            <table className="min-w-full border border-gray-300 border-collapse shadow-md overflow-hidden">
+              <thead className="bg-gray-700 text-white text-center">
+                <tr>
+                  <th className="border p-3 text-center font-semibold w-1/6">Project Name</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Description</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Status</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Reason</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Objectives</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {proposals.length > 0 ? (
                   proposals.map((proposal) => (
                     <tr key={proposal.pid} className="hover:bg-gray-100">
-                      <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-teal-800">
+                      <td className="px-6 py-2 border border-gray-300 whitespace-normal break-words font-medium text-teal-800">
                         {proposal.projectName || "N/A"}
                       </td>
-                      <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                      <td className="px-6 py-2 border border-gray-300 whitespace-normal break-words text-teal-800">
                         {proposal.description || "N/A"}
                       </td>
-                      <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
-                        {proposal.status || "N/A"}
+                      <td className="px-6 py-2 border border-gray-300 whitespace-normal break-words text-teal-800">
+                      <div className="flex justify-center">
+                      {getStatusBadge(proposal.status || "N/A")}
+                      </div>
                       </td>
-                      <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                      <td className="px-6 py-2 border border-gray-300 whitespace-normal break-words text-teal-800">
                         {proposal.reason || (proposal.status === "DENIED" ? "No reason provided" : "N/A")}
                       </td>
-                      <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">
+                      <td className="px-6 py-2 border border-gray-300 whitespace-normal break-words text-teal-800">
                         {proposal.features.length > 0 ? (
                           <ul className="list-disc ml-4">
                             {proposal.features.map((feature, index) => (

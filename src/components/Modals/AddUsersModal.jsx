@@ -235,7 +235,7 @@ const AddUsersModal = ({ isOpen, onClose }) => {
           <button
             type="submit"
             className={`w-full p-2 text-white rounded-md ${
-              isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-teal hover:bg-teal-dark"
+              isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-teal hover:bg-peach"
             }`}
             disabled={isLoading}
           >
