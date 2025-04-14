@@ -13,6 +13,21 @@ const address = getIpAddress();
       return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
 
+  const getStatusBadge = (status) => {
+    const baseClass = "px-3 py-1 rounded-full text-sm font-semibold"; 
+  
+    switch (status) {
+      case "ADMIN":
+        return <span className={`${baseClass} border border-violet-600 text-violet-600`}>Admin</span>;
+      case "TEACHER":
+        return <span className={`${baseClass} border border-yellow-500 text-yellow-600`}>Teacher</span>;
+      case "STUDENT":
+        return <span className={`${baseClass} border border-green-500 text-green-600`}>Student</span>;
+      default:
+        return <span className={`${baseClass} border border-gray-500`}>{status}</span>;
+    }    
+  };
+
 const UsersTable = ({ users, onUserDeleted }) => {
   const usersPerPage = 10;
 
@@ -59,12 +74,12 @@ const UsersTable = ({ users, onUserDeleted }) => {
     <div className="flex flex-col">
       <div className="overflow-x-auto">
         <div className="p-2 min-w-full inline-block align-middle">
-          <div className="overflow-hidden rounded-lg border border-gray-300">
+          <div className="overflow-hidden rounded-lg">
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr className="bg-teal font-medium text-white">
                   {["Name", "Email", "Role", "Action"].map((heading) => (
-                    <th key={heading} scope="col" className="px-6 py-2 text-start text-md font-medium">
+                    <th key={heading} scope="col" className="border p-3 text-center font-semibold w-1/6">
                       {heading}
                     </th>
                   ))}
@@ -73,12 +88,17 @@ const UsersTable = ({ users, onUserDeleted }) => {
               <tbody className="divide-y divide-gray-200">
                 {currentUsers.map((user) => (
                   <tr key={user.email} className="hover:bg-gray-100">
-                    <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-teal-800">
+                    <td className="px-6 py-2 whitespace-nowrap font-medium text-teal-800 border border-gray-300">
                       {`${user.firstname} ${user.lastname}`}
                     </td>
-                    <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">{user.email}</td>
-                    <td className="px-6 py-2 whitespace-nowrap text-sm text-teal-800">{user.role}</td>
-                    <td className="px-6 py-2 whitespace-nowrap text-start text-sm font-medium">
+                    <td className="px-6 py-2 whitespace-nowrap text-teal-800 border border-gray-300">{user.email}</td>
+                    <td className="px-6 py-2 whitespace-nowrap text-teal-800 border border-gray-300">
+                    <div className="flex justify-center">
+                    {getStatusBadge(user.role)}
+                    </div>
+                    </td>
+                    <td className="px-6 py-2 whitespace-nowrap text-start font-medium border border-gray-300">
+                    <div className="flex justify-center">
                       <button
                         type="button"
                         onClick={() => handleDelete(user.email)}
@@ -86,6 +106,7 @@ const UsersTable = ({ users, onUserDeleted }) => {
                       >
                         <img src={deleteIcon} alt="delete-icon" />
                       </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

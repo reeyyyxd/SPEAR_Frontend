@@ -5,6 +5,7 @@ import AuthContext from "../../services/AuthContext";
 import UsersTable from "../Tables/UsersTable";
 import AddUsersModal from "../Modals/AddUsersModal";
 import axios from "axios";
+import { UserPlus  } from "lucide-react"
 
 const ManageUsers = () => {
   const { authState } = useContext(AuthContext);
@@ -47,7 +48,7 @@ const ManageUsers = () => {
   };
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         <div className="header flex justify-between items-center mb-6">
@@ -57,8 +58,9 @@ const ManageUsers = () => {
         <div className="flex justify-end mt-4">
           <button
             onClick={() => setModalOpen(true)}
-            className="bg-teal text-white text-sm m-2 px-4 py-2 rounded-md hover:bg-teal-600"
+            className="bg-teal text-white text-sm m-2 px-4 py-2 rounded-md hover:bg-peach flex items-center justify-between"
           >
+            <UserPlus className="h-5 w-5 mr-2" />
             Add Users
           </button>
         </div>
