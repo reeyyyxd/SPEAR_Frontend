@@ -38,7 +38,7 @@ const RejectModal = ({ onClose, onSubmit, rejectReason, setRejectReason }) => {
             {/* Confirmation Buttons */}
             <div className="flex justify-end gap-2 mt-6">
               <button
-                className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+                className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200 transition"
                 onClick={() => setConfirmReject(false)}
               >
                 Cancel
@@ -72,7 +72,7 @@ const RejectModal = ({ onClose, onSubmit, rejectReason, setRejectReason }) => {
             {/* Action Buttons */}
             <div className="flex justify-end gap-2 mt-6">
               <button
-                className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+                className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200 transition"
                 onClick={onClose}
               >
                 Cancel

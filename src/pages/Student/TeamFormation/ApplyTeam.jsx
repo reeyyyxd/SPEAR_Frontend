@@ -80,10 +80,10 @@ const ApplyTeam = () => {
                 <th className="border border-gray-300 px-6 py-3"> </th>  
               </tr>
             </thead>
-            <tbody className="text-center bg-gray-100">
+            <tbody className="text-center">
               {openTeams.length > 0 ? (
                 openTeams.map((team) => (
-                  <tr key={team.tid} className="hover:bg-gray-200">
+                  <tr key={team.tid} className="hover:bg-gray-100">
                     <td className="border border-gray-300 px-6 py-3 text-gray-900">{team.groupName}</td>
                     <td className="border border-gray-300 px-6 py-3 text-gray-900">{team.leaderName}</td>
 
@@ -97,7 +97,7 @@ const ApplyTeam = () => {
                     {/* Apply Button */}
                     <td className="border border-gray-300 px-6 py-3 text-center">
                       <button 
-                        className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                        className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200 transition"
                         onClick={() => setSelectedTeam(team.tid)} // Open modal with team ID
                       >
                         Apply Team

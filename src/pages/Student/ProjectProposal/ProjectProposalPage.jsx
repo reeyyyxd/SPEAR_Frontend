@@ -80,7 +80,7 @@ const ProjectProposalPage = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
-      <div className="main-content bg-white text-teal px-4 md:px-20 lg:px-28 pt-8 md:pt-12 flex flex-col min-h-screen">
+      <div className="p-8 bg-white shadow-md rounded-md w-full">
       <button
           onClick={() => navigate(-1)}
           className="bg-gray-700 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-500 transition"

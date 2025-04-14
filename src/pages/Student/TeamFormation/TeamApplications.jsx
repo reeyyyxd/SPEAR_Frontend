@@ -92,7 +92,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
         <p className="text-gray-600">Are you sure you want to accept this application?</p>
         <div className="flex justify-end gap-3 mt-4">
           <button
-            className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+            className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200 transition"
             onClick={onClose}
           >
             Cancel
@@ -167,10 +167,10 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
                 <th className="border border-gray-300 px-6 py-3">Actions</th>
               </tr>
             </thead>
-              <tbody className="bg-gray-100 text-center">
+              <tbody className="text-center">
             {pendingApplications.length > 0 ? (
               pendingApplications.map((app) => (
-                <tr key={app.trid} className="hover:bg-gray-200">
+                <tr key={app.trid} className="hover:bg-gray-100">
                   <td className="border border-gray-300 px-6 py-3 text-gray-900">{app.studentName || "Unknown"}</td>
                   <td className="border border-gray-300 px-6 py-3 text-gray-900">{app.groupName || "No Team Name"}</td>
                   <td className="border border-gray-300 px-6 py-3 text-gray-900">{app.classDescription || "No Class Info"}</td>
@@ -233,10 +233,10 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
                 <th className="border border-gray-300 px-6 py-3">Status</th>
               </tr>
             </thead>
-            <tbody className="text-center bg-gray-100">
+            <tbody className="text-center">
               {myApplications.length > 0 ? (
                 myApplications.map((app) => (
-                  <tr key={app.trid}>
+                  <tr key={app.trid}  className="hover:bg-gray-100 transition-colors">
                     <td className="border border-gray-300 px-6 py-3 text-gray-900">{app.classDescription}</td>
                     <td className="border border-gray-300 px-6 py-3 text-gray-900">{app.groupName}</td>
                     <td className="border border-gray-300 px-6 py-3 text-gray-900">{app.leaderName}</td>

@@ -249,7 +249,7 @@ const ViewProjectProposal = () => {
           <p className="text-gray-600 mt-2">{message}</p>
           <div className="flex justify-end gap-3 mt-6">
             <button
-              className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+              className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200 transition"
               onClick={onClose}
             >
               Cancel
@@ -332,13 +332,13 @@ const ViewProjectProposal = () => {
               <th className="border p-3 text-center font-semibold w-1/6">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-gray-100 bg-white text-gray-800">
+          <tbody className="text-gray-800">
           {teamProposals.length > 0 ? (
                 teamProposals.map((proposal, index) => (
                   <tr
                   key={proposal.pid}
-                  className={`border p-3 text-center ${
-                    proposal.pid === officialProjectId ? "bg-gray-100 text-gray-900" : index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                  className={`border p-3 text-center hover:bg-gray-100 transition-colors ${
+                  proposal.pid === officialProjectId ? "bg-gray-100 text-gray-900" : ""
                   }`}
                 >
                   <td className="border border-gray-300 text-center border p-3">
@@ -483,10 +483,10 @@ const ViewProjectProposal = () => {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="bg-white text-gray-800 text-center">
+                <tbody className="text-gray-800 text-center">
                   {openProposals.length > 0 ? (
                     openProposals.map((proposal, index) => (
-                      <tr key={proposal.pid} className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}>
+                      <tr key={proposal.pid} className="hover:bg-gray-100 transition-colors">
                         <td className="border border-gray-300 text-center border p-3">{proposal.projectName}</td>
                         <td className="border border-gray-300 text-center border p-3">{proposal.description}</td>
                         <td className="border border-gray-300 text-center border p-3">

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import axios from "axios";
+import { Eye } from "lucide-react"
 
 const Evaluations = () => {
   const { getDecryptedId, storeEncryptedId } = useContext(AuthContext);
@@ -82,7 +83,7 @@ const Evaluations = () => {
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole="STUDENT" />
       <div className="p-8 bg-white shadow-md rounded-md w-full">
-        <h1 className="text-lg font-semibold text-teal text-center mb-6">Available Evaluations</h1>
+        <h1 className="text-3xl font-bold text-teal mb-6 pt-8">Available Evaluations</h1>
 
         {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 
@@ -91,33 +92,34 @@ const Evaluations = () => {
         ) : evaluations.length === 0 ? (
           <div className="text-center text-gray-500">No open evaluations available.</div>
         ) : (
-          <div className="overflow-y-auto max-h-96 rounded-lg shadow-md">
-            <table className="min-w-full border border-gray-300">
-              <thead className="sticky top-0 bg-[#323c47] text-white shadow-md">
+          <div className="overflow-x-auto max-h-96 rounded-lg shadow-md">
+            <table className="w-full border-collapse shadow-md rounded-lg overflow-hidden table-fixed">
+              <thead className="bg-gray-700 text-white text-center">
                 <tr>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Evaluation Type</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Course Description</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Period</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Date Open</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Date Close</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Availability</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Actions</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Evaluation Type</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Course Description</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Period</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Date Open</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Date Close</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Availability</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-gray-800">
                 {evaluations.map((evalItem, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="px-4 py-2">{getEvaluationTypeLabel(evalItem.evaluationType)}</td>
-                    <td className="px-4 py-2">{evalItem.courseDescription || "N/A"}</td>
-                    <td className="px-4 py-2">{evalItem.period || "N/A"}</td>
-                    <td className="px-4 py-2">{evalItem.dateOpen || "N/A"}</td>
-                    <td className="px-4 py-2">{evalItem.dateClose || "N/A"}</td>
-                    <td className="px-4 py-2">{evalItem.availability || "N/A"}</td>
-                    <td className="px-4 py-2">
+                  <tr key={index} className="border-b hover:bg-gray-100 transition-colors">
+                    <td className="border border-gray-300 p-3 text-center">{getEvaluationTypeLabel(evalItem.evaluationType)}</td>
+                    <td className="border border-gray-300 p-3 text-center">{evalItem.courseDescription || "N/A"}</td>
+                    <td className="border border-gray-300 p-3 text-center">{evalItem.period || "N/A"}</td>
+                    <td className="border border-gray-300 p-3 text-center">{evalItem.dateOpen || "N/A"}</td>
+                    <td className="border border-gray-300 p-3 text-center">{evalItem.dateClose || "N/A"}</td>
+                    <td className="border border-gray-300 p-3 text-center">{evalItem.availability || "N/A"}</td>
+                    <td className="border border-gray-300 p-3 text-center">
                       <button
-                        className="bg-[#323c47] text-white px-3 py-1 rounded-lg hover:bg-teal-700 transition-all"
+                        className="border border-gray-300 text-black px-3 py-1 rounded-lg hover:bg-gray-200 transition"
                         onClick={() => handleViewStatus(evalItem.eid, evalItem.classId, evalItem.evaluationType)}
                       >
+                        <Eye className="h-4 w-4 inline mr-1" />  {/* Eye icon from lucide-react */}
                         View Status
                       </button>
                     </td>

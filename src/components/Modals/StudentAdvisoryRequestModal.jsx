@@ -243,7 +243,7 @@ const StudentAdvisoryRequestModal = ({ teamId, closeModal }) => {
         <button
           onClick={handleRequest}
           disabled={!selectedAdviser || !selectedSchedule}
-          className="bg-[#323c47] text-white px-6 py-3 rounded-md hover:bg-gray-900 transition w-full mt-4"
+          className="bg-teal text-white px-6 py-3 rounded-md hover:bg-peach transition w-full mt-4"
         >
           Submit Request
         </button>
@@ -251,9 +251,9 @@ const StudentAdvisoryRequestModal = ({ teamId, closeModal }) => {
         {teamRequests.length > 0 && (
           <div className="mt-8">
             <h3 className="text-md font-semibold mb-2">Team Advisory Requests</h3>
-            <table className="w-full text-left border border-gray-300 rounded-md overflow-hidden">
-              <thead className="bg-gray-200">
-                <tr>
+            <table className="w-full text-left border border-gray-300 rounded-lg overflow-hidden">
+              <thead className="bg-gray-700">
+                <tr className="text-white">
                   <th className="px-4 py-2">Adviser</th>
                   <th className="px-4 py-2">Schedule</th>
                   <th className="px-4 py-2">Status</th>
@@ -276,7 +276,7 @@ const StudentAdvisoryRequestModal = ({ teamId, closeModal }) => {
                     {["ACCEPTED","PENDING", "REJECTED", "REQUEST_TO_LEAVE", "DROP"].includes(req.status) && (
                         <button
                         onClick={() => handleDelete(req.requestId)}
-                        className="bg-[#323c47] text-white whitespace-nowrap px-3 py-1 rounded hover:bg-gray-900 transition"
+                        className="bg-teal text-white whitespace-nowrap px-3 py-1 rounded-md hover:bg-peach transition"
                         >
                         Remove Request
                         </button>

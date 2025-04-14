@@ -177,7 +177,7 @@ const EditProjectProposalModal = ({ isOpen, proposalId, onClose, refreshProposal
             </button>
             <div className="flex justify-end gap-3 mt-4">
               <button
-                className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition"
+                className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200 transition"
                 onClick={onClose}
               >
                 Cancel
