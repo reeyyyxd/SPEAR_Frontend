@@ -95,7 +95,7 @@ const EvaluationStatus = () => {
         </div>
 
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-lg font-semibold text-teal flex-grow text-center">Evaluation Team Tracker</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-5 pt-8">Evaluation Team Tracker</h1>
           <button
           className={`px-4 py-2 rounded-md transition ${
             hasSubmitted() ? "bg-gray-400 cursor-not-allowed" : "bg-[#323c47] hover:bg-gray-900 text-white"
@@ -115,22 +115,22 @@ const EvaluationStatus = () => {
           <div className="text-center text-gray-500">Loading team details...</div>
         ) : (
           <div className="overflow-y-auto max-h-96 rounded-lg shadow-md">
-            <table className="min-w-full border border-gray-300">
-              <thead className="sticky top-0 bg-[#323c47] text-white shadow-md">
+            <table className="w-full border-collapse shadow-md rounded-lg overflow-hidden table-fixed">
+              <thead className="bg-gray-700 text-white text-center">
                 <tr>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Member Name</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Date Submitted</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Status</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Member Name</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Date Submitted</th>
+                  <th className="border p-3 text-center font-semibold w-1/6">Status</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-gray-800">
                 {team.map((member, index) => (
-                  <tr key={index} className="border-b">
-                    <td className={`px-4 py-2 ${member === studentId ? "font-bold text-blue-600" : ""}`}>
+                  <tr key={index} className="border-b hover:bg-gray-100 transition-colors">
+                    <td className={`border border-gray-300 p-3 text-center ${member === studentId ? "font-bold text-blue-600" : ""}`}>
                       {member === studentId ? `${member} (You)` : member}
                     </td>
-                    <td className="px-4 py-2">{getSubmissionDateByName(member)}</td>
-                    <td className="px-4 py-2">{getStatusByName(member)}</td>
+                    <td className="border border-gray-300 p-3 text-center">{getSubmissionDateByName(member)}</td>
+                    <td className="border border-gray-300 p-3 text-center">{getStatusByName(member)}</td>
                   </tr>
                 ))}
               </tbody>
