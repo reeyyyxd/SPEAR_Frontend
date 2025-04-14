@@ -15,11 +15,10 @@ const PasswordModal = ({ userId, token, onClose, correctCurrentPassword }) => {
   const address = getIpAddress();
 
   function getIpAddress() {
-      const hostname = window.location.hostname;
-      const indexOfColon = hostname.indexOf(':');
-      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+    const hostname = window.location.hostname;
+    const indexOfColon = hostname.indexOf(":");
+    return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
   }
-
 
   const [showPassword, setShowPassword] = useState({
     currentPassword: false,
@@ -46,7 +45,11 @@ const PasswordModal = ({ userId, token, onClose, correctCurrentPassword }) => {
 
   const handlePasswordUpdate = async () => {
     // Ensure all fields are filled
-    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmNewPassword) {
+    if (
+      !passwordData.currentPassword ||
+      !passwordData.newPassword ||
+      !passwordData.confirmNewPassword
+    ) {
       alert("All fields must be filled!");
       return;
     }
@@ -55,7 +58,7 @@ const PasswordModal = ({ userId, token, onClose, correctCurrentPassword }) => {
       alert("New password and confirm password do not match!");
       return;
     }
-  
+
     try {
       const response = await axios.put(
         `http://${address}:8080/user/update-password/${userId}`,
@@ -76,9 +79,14 @@ const PasswordModal = ({ userId, token, onClose, correctCurrentPassword }) => {
       }
     } catch (error) {
       if (error.response?.data?.message === "Current password is incorrect.") {
-        alert("The current password you entered is incorrect. Please try again.");
+        alert(
+          "The current password you entered is incorrect. Please try again."
+        );
       } else {
-        alert(error.response?.data?.message || "An error occurred while updating the password.");
+        alert(
+          error.response?.data?.message ||
+            "An error occurred while updating the password."
+        );
       }
     }
   };
@@ -87,38 +95,42 @@ const PasswordModal = ({ userId, token, onClose, correctCurrentPassword }) => {
     <div className="modal bg-gray-800 bg-opacity-75 fixed inset-0 flex justify-center items-center">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-lg font-semibold mb-4">Update Password</h2>
-        {["currentPassword", "newPassword", "confirmNewPassword"].map((field) => (
-          <div key={field} className="mb-4">
-            <label
-              htmlFor={field}
-              className="block mb-2 font-medium capitalize"
-            >
-              {field.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword[field] ? "text" : "password"}
-                id={field}
-                name={field}
-                placeholder={
-                  field === "currentPassword"
-                    ? "Enter current password"
-                    : "Enter new password"
-                }
-                value={passwordData[field]}
-                onChange={handleInputChange}
-                className="w-full border rounded-md p-3"
-              />
-              <button
-                type="button"
-                onClick={() => togglePasswordVisibility(field)}
-                className="absolute right-3 top-3 text-gray-500"
+        {["currentPassword", "newPassword", "confirmNewPassword"].map(
+          (field) => (
+            <div key={field} className="mb-4">
+              <label
+                htmlFor={field}
+                className="block mb-2 font-medium capitalize"
               >
-                {showPassword[field] ? "Hide" : "Show"}
-              </button>
+                {field
+                  .replace(/([A-Z])/g, " $1")
+                  .replace(/^./, (str) => str.toUpperCase())}
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword[field] ? "text" : "password"}
+                  id={field}
+                  name={field}
+                  placeholder={
+                    field === "currentPassword"
+                      ? "Enter current password"
+                      : "Enter new password"
+                  }
+                  value={passwordData[field]}
+                  onChange={handleInputChange}
+                  className="w-full border rounded-md p-3"
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility(field)}
+                  className="absolute right-3 top-3 text-gray-500"
+                >
+                  {showPassword[field] ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        )}
         <div className="flex justify-end space-x-4">
           <button
             onClick={handlePasswordUpdate}
@@ -149,11 +161,11 @@ const departmentsList = [
 
 const address = getIpAddress();
 
-  function getIpAddress() {
-      const hostname = window.location.hostname;
-      const indexOfColon = hostname.indexOf(':');
-      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
-  }
+function getIpAddress() {
+  const hostname = window.location.hostname;
+  const indexOfColon = hostname.indexOf(":");
+  return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+}
 const Settings = () => {
   const { authState } = useContext(AuthContext);
   const [userData, setUserData] = useState({
@@ -161,8 +173,8 @@ const Settings = () => {
     firstname: "",
     lastname: "",
     interests: "",
-    department:"",
-    role:""
+    department: "",
+    role: "",
   });
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -185,7 +197,8 @@ const Settings = () => {
           },
         }
       );
-      const { email, firstname, lastname, interests, department, role} = response.data;
+      const { email, firstname, lastname, interests, department, role } =
+        response.data;
       setUserData({ email, firstname, lastname, interests, department, role });
     } catch (error) {
       console.error("Failed to fetch user data:", error);
@@ -211,9 +224,9 @@ const Settings = () => {
         department: userData.department || "N/A",
         role: userData.role || "TEACHER", // Always ensure role is included
       };
-  
+
       //console.log("Sending update request:", updatedUserData);
-  
+
       const response = await axios.put(
         `http://${address}:8080/teacher/update/${authState.uid}`,
         updatedUserData,
@@ -224,7 +237,7 @@ const Settings = () => {
           },
         }
       );
-  
+
       if (response.status === 200) {
         alert("Profile updated successfully!");
         window.location.reload();
@@ -233,11 +246,12 @@ const Settings = () => {
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert(error.response?.data?.message || "Error updating profile. Please try again.");
+      alert(
+        error.response?.data?.message ||
+          "Error updating profile. Please try again."
+      );
     }
   };
-  
-  
 
   return (
     <div className="grid grid-cols-[256px_1fr] min-h-screen">
@@ -266,7 +280,8 @@ const Settings = () => {
                 name="email"
                 value={userData.email}
                 onChange={handleInputChange}
-                className="w-full border rounded-md p-3"
+                className="w-full border rounded-md p-3 bg-gray-100 cursor-not-allowed"
+                disabled
               />
             </div>
 
@@ -312,25 +327,26 @@ const Settings = () => {
               />
             </div>
             <div>
-            <label htmlFor="department" className="block mb-2 font-medium">
-              Department
-            </label>
-            <select
-              id="department"
-              name="department"
-              value={userData.department}
-              onChange={handleInputChange}
-              className="w-full border rounded-md p-3 bg-white"
-            >
-              <option value="" disabled>Select a department</option>
-              {departmentsList.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
+              <label htmlFor="department" className="block mb-2 font-medium">
+                Department
+              </label>
+              <select
+                id="department"
+                name="department"
+                value={userData.department}
+                onChange={handleInputChange}
+                className="w-full border rounded-md p-3 bg-white"
+              >
+                <option value="" disabled>
+                  Select a department
                 </option>
-              ))}
-            </select>
-          </div>
-
+                {departmentsList.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="flex justify-between mt-6">
