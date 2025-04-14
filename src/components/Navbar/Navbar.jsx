@@ -160,7 +160,7 @@ const Navbar = ({ userRole }) => {
       )}
 
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex h-full w-64 bg-teal text-white p-6 flex-col items-center fixed top-0 left-0">
+      <div className="hidden md:flex h-full w-64 bg-teal bg-opacity- text-white p-6 flex-col items-center fixed top-0 left-0">
         <div className="flex flex-col items-center mb-8">
           <img
             src={logo}

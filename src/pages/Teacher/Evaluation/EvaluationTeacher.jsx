@@ -65,56 +65,90 @@ const EvaluationTeacher = () => {
   };
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen">
+    <div className="flex flex-col lg:grid lg:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole="TEACHER" />
-      <div className="p-8 bg-white shadow-md rounded-md w-full">
-        <h1 className="text-lg font-semibold text-teal text-center mb-6">Advisory Teams</h1>
+
+      <div className="p-4 sm:p-6 md:p-8 bg-white shadow-md rounded-md w-full">
+        <h1 className="text-lg sm:text-xl font-semibold text-teal text-center mb-6">
+          Advisory Teams
+        </h1>
 
         {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 
         {loading ? (
-          <div className="text-center text-gray-500">Loading advisory teams...</div>
+          <div className="text-center text-gray-500">
+            Loading advisory teams...
+          </div>
         ) : evaluations.length === 0 ? (
-          <div className="text-center text-gray-500">No advisory teams available.</div>
+          <div className="text-center text-gray-500">
+            No advisory teams available.
+          </div>
         ) : (
-          <div className="overflow-y-auto max-h-96 rounded-lg shadow-md">
-            <table className="min-w-full border border-gray-300">
-            <thead className="sticky top-0 bg-[#323c47] text-white shadow-md">
+          <div className="overflow-x-auto rounded-lg shadow-md">
+            <table className="min-w-full text-sm sm:text-base border border-gray-300">
+              <thead className="sticky top-0 bg-[#323c47] text-white shadow-md text-xs sm:text-sm">
                 <tr>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Team Name</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Course Description</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Period</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Date Open</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Date Close</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Availability</th>
-                  
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Actions</th>
+                  <th className="px-3 sm:px-4 py-2 text-left font-semibold">
+                    Team Name
+                  </th>
+                  <th className="px-3 sm:px-4 py-2 text-left font-semibold">
+                    Course Description
+                  </th>
+                  <th className="px-3 sm:px-4 py-2 text-left font-semibold">
+                    Period
+                  </th>
+                  <th className="px-3 sm:px-4 py-2 text-left font-semibold">
+                    Date Open
+                  </th>
+                  <th className="px-3 sm:px-4 py-2 text-left font-semibold">
+                    Date Close
+                  </th>
+                  <th className="px-3 sm:px-4 py-2 text-left font-semibold">
+                    Availability
+                  </th>
+                  <th className="px-3 sm:px-4 py-2 text-left font-semibold">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
-  {evaluations.map((evalItem, index) => {
-    console.log("Evaluation Item:", evalItem); // Debugging log
-
-    return (
-      <tr key={index} className="border-b">
-        <td className="px-4 py-2 font-semibold">{evalItem.teamName || "N/A"}</td>
-        <td className="px-4 py-2">{evalItem.courseDescription || "N/A"}</td>
-        <td className="px-4 py-2">{evalItem.period || "N/A"}</td>
-        <td className="px-4 py-2">{evalItem.dateOpen || "N/A"}</td>
-        <td className="px-4 py-2">{evalItem.dateClose || "N/A"}</td>
-        <td className="px-4 py-2">{evalItem.availability || "N/A"}</td>
-        <td className="px-4 py-2">
-        <button
-          className="bg-[#323c47] text-white px-3 py-1 rounded-lg hover:bg-teal-700 transition-all"
-          onClick={() => handleViewStatus(evalItem.eid, evalItem.classId, evalItem.teamName)}
-        >
-          View Details
-        </button>
-        </td>
-      </tr>
-    );
-  })}
-</tbody>
+                {evaluations.map((evalItem, index) => (
+                  <tr key={index} className="border-b hover:bg-gray-50">
+                    <td className="px-3 sm:px-4 py-2 font-medium">
+                      {evalItem.teamName || "N/A"}
+                    </td>
+                    <td className="px-3 sm:px-4 py-2">
+                      {evalItem.courseDescription || "N/A"}
+                    </td>
+                    <td className="px-3 sm:px-4 py-2">
+                      {evalItem.period || "N/A"}
+                    </td>
+                    <td className="px-3 sm:px-4 py-2">
+                      {evalItem.dateOpen || "N/A"}
+                    </td>
+                    <td className="px-3 sm:px-4 py-2">
+                      {evalItem.dateClose || "N/A"}
+                    </td>
+                    <td className="px-3 sm:px-4 py-2">
+                      {evalItem.availability || "N/A"}
+                    </td>
+                    <td className="px-3 sm:px-4 py-2">
+                      <button
+                        className="bg-[#323c47] text-white px-3 py-1 rounded hover:bg-teal-700 transition"
+                        onClick={() =>
+                          handleViewStatus(
+                            evalItem.eid,
+                            evalItem.classId,
+                            evalItem.teamName
+                          )
+                        }
+                      >
+                        View Details
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
           </div>
         )}

@@ -22,10 +22,14 @@ const TeacherAdvisoryRequest = () => {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const statusParam = statusFilter === "ALL" ? "all-requests" : `requests/${statusFilter}`;
-      const res = await axios.get(`http://${address}:8080/adviser/${authState.uid}/${statusParam}`, {
-        headers: { Authorization: `Bearer ${authState.token}` }
-      });
+      const statusParam =
+        statusFilter === "ALL" ? "all-requests" : `requests/${statusFilter}`;
+      const res = await axios.get(
+        `http://${address}:8080/adviser/${authState.uid}/${statusParam}`,
+        {
+          headers: { Authorization: `Bearer ${authState.token}` },
+        }
+      );
       setRequests(res.data || []);
     } catch (error) {
       console.error("Failed to fetch advisory requests", error);
@@ -36,7 +40,9 @@ const TeacherAdvisoryRequest = () => {
 
   const handleAccept = async (requestId) => {
     try {
-      await axios.post(`http://${address}:8080/advisory-requests/${requestId}/accept`);
+      await axios.post(
+        `http://${address}:8080/advisory-requests/${requestId}/accept`
+      );
       alert("Request accepted");
       fetchRequests();
     } catch (err) {
@@ -71,15 +77,19 @@ const TeacherAdvisoryRequest = () => {
     return `${h}:${minute} ${ampm}`;
   };
 
-  const filteredRequests = statusFilter === "ALL"
-  ? requests
-  : requests.filter((r) => r.status === statusFilter);
+  const filteredRequests =
+    statusFilter === "ALL"
+      ? requests
+      : requests.filter((r) => r.status === statusFilter);
 
   const handleApproveLeave = async (requestId) => {
     try {
-      await axios.post(`http://${address}:8080/advisory-requests/${requestId}/handle-leave`, {
-        approve: true
-      });
+      await axios.post(
+        `http://${address}:8080/advisory-requests/${requestId}/handle-leave`,
+        {
+          approve: true,
+        }
+      );
       alert("Adviser dropped. Team is now unassigned.");
       fetchRequests();
     } catch (err) {
@@ -87,13 +97,16 @@ const TeacherAdvisoryRequest = () => {
       alert("Failed to drop adviser and schedule.");
     }
   };
-  
+
   const handleDeclineLeave = async (requestId) => {
     try {
-      await axios.post(`http://${address}:8080/advisory-requests/${requestId}/handle-leave`, {
-        approve: false,
-        reason: "Leave request denied. Adviser remains assigned."
-      });
+      await axios.post(
+        `http://${address}:8080/advisory-requests/${requestId}/handle-leave`,
+        {
+          approve: false,
+          reason: "Leave request denied. Adviser remains assigned.",
+        }
+      );
       alert("Leave request rejected. Adviser remains.");
       fetchRequests();
     } catch (err) {
@@ -103,10 +116,13 @@ const TeacherAdvisoryRequest = () => {
   };
 
   const handleDelete = async (requestId) => {
-    if (!window.confirm("Are you sure you want to delete this request?")) return;
-  
+    if (!window.confirm("Are you sure you want to delete this request?"))
+      return;
+
     try {
-      await axios.delete(`http://${address}:8080/advisory-requests/${requestId}`);
+      await axios.delete(
+        `http://${address}:8080/advisory-requests/${requestId}`
+      );
       alert("Request deleted successfully.");
       fetchRequests();
     } catch (err) {
@@ -115,37 +131,37 @@ const TeacherAdvisoryRequest = () => {
     }
   };
 
-  
-
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState?.role} />
-      <div className="main-content p-8 bg-white w-full">
-      <button
-        onClick={() => window.history.back()}
-        className="mb-4 bg-[#323c47] text-white  px-4 py-2 rounded hover:opacity-90"
+
+      <div className="main-content bg-white p-4 sm:p-6 md:p-8 w-full">
+        <button
+          onClick={() => window.history.back()}
+          className="mb-4 bg-[#323c47] text-white px-4 py-2 rounded hover:opacity-90"
         >
-        Back
+          Back
         </button>
-        <h1 className="text-2xl font-bold mb-6 text-center">Team Advisory Requests</h1>
+
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
+          Team Advisory Requests
+        </h1>
 
         <div className="flex justify-center gap-4 mb-4">
-        {["ALL", "PENDING", "ACCEPTED", "REJECTED"].map((status) => (
+          {["ALL", "PENDING", "ACCEPTED", "REJECTED"].map((status) => (
             <button
-            key={status}
-            className={`px-4 py-2 rounded border ${
-                statusFilter === status ? "bg-[#323c47] text-white" : "bg-white text-gray-700"
-            }`}
-            onClick={() => setStatusFilter(status)}
+              key={status}
+              className={`px-4 py-2 rounded border ${
+                statusFilter === status
+                  ? "bg-[#323c47] text-white"
+                  : "bg-white text-gray-700"
+              }`}
+              onClick={() => setStatusFilter(status)}
             >
-            {status}
+              {status}
             </button>
-        ))}
+          ))}
         </div>
-
-
-
-
 
         {loading ? (
           <p className="text-center text-gray-500">Loading requests...</p>
@@ -156,88 +172,103 @@ const TeacherAdvisoryRequest = () => {
             <table className="min-w-full border border-gray-300">
               <thead className="bg-[#323c47] text-white">
                 <tr>
-                  <th className="px-4 py-2 text-left">Class Description</th>
-                  <th className="px-4 py-2 text-left">Group Name</th>
-                  <th className="px-4 py-2 text-left">Leader</th>
-                  <th className="px-4 py-2 text-left">Members</th>
-                  <th className="px-4 py-2 text-left">Schedule</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                  <th className="px-4 py-2 text-left">Reason</th>
-                  <th className="px-4 py-2 text-left"></th>
+                  <th className="px-4 py-2 text-left text-sm">
+                    Class Description
+                  </th>
+                  <th className="px-4 py-2 text-left text-sm">Group Name</th>
+                  <th className="px-4 py-2 text-left text-sm">Leader</th>
+                  <th className="px-4 py-2 text-left text-sm">Members</th>
+                  <th className="px-4 py-2 text-left text-sm">Schedule</th>
+                  <th className="px-4 py-2 text-left text-sm">Status</th>
+                  <th className="px-4 py-2 text-left text-sm">Reason</th>
+                  <th className="px-4 py-2 text-left text-sm"></th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRequests.map((req) => (
                   <tr key={req.requestId} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-2">{req.classDescription}</td>
-                    <td className="px-4 py-2">{req.groupName}</td>
-                    <td className="px-4 py-2">{req.leaderName}</td>
-                    <td className="px-4 py-2">
+                    <td className="px-4 py-2 text-sm">
+                      {req.classDescription}
+                    </td>
+                    <td className="px-4 py-2 text-sm">{req.groupName}</td>
+                    <td className="px-4 py-2 text-sm">{req.leaderName}</td>
+                    <td className="px-4 py-2 text-sm">
                       <ul className="list-disc ml-4">
                         {req.memberNames.map((name, i) => (
-                          <li key={i}>{name}</li>
+                          <li key={i} className="text-sm">
+                            {name}
+                          </li>
                         ))}
                       </ul>
                     </td>
-                    <td className="px-4 py-2">
-                    {req.scheduleDay} - {formatTime(req.scheduleTime?.split(" - ")[0])} - {formatTime(req.scheduleTime?.split(" - ")[1])}
+                    <td className="px-4 py-2 text-sm">
+                      {req.scheduleDay} -{" "}
+                      {formatTime(req.scheduleTime?.split(" - ")[0])} -{" "}
+                      {formatTime(req.scheduleTime?.split(" - ")[1])}
                     </td>
                     <td className="px-4 py-2">
-                    <span className={`text-sm px-2 py-1 rounded ${
-                        req.status === "PENDING" ? "bg-yellow-500 text-white" :
-                        req.status === "ACCEPTED" ? "bg-green-600 text-white" :
-                        req.status === "REJECTED" ? "bg-red-500 text-white" :
-                        req.status === "REQUEST_TO_LEAVE" ? "bg-orange-500 text-white" :
-                        "bg-gray-400 text-white"
-                        }`}>
-                        {req.status === "REQUEST_TO_LEAVE" ? "Request to Leave" : req.status}
-                    </span>
+                      <span
+                        className={`text-sm px-2 py-1 rounded ${
+                          req.status === "PENDING"
+                            ? "bg-yellow-500 text-white"
+                            : req.status === "ACCEPTED"
+                            ? "bg-green-600 text-white"
+                            : req.status === "REJECTED"
+                            ? "bg-red-500 text-white"
+                            : req.status === "REQUEST_TO_LEAVE"
+                            ? "bg-orange-500 text-white"
+                            : "bg-gray-400 text-white"
+                        }`}
+                      >
+                        {req.status === "REQUEST_TO_LEAVE"
+                          ? "Request to Leave"
+                          : req.status}
+                      </span>
                     </td>
                     <td className="px-4 py-2 text-sm">{req.reason || "—"}</td>
                     <td className="px-4 py-2 space-x-2">
-                        {req.status === "PENDING" && (
-                            <>
-                            <button
-                                className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-800"
-                                onClick={() => handleAccept(req.requestId)}
-                            >
-                                Accept
-                            </button>
-                            <button
-                                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-800"
-                                onClick={() => setDeclineModal(req.requestId)}
-                            >
-                                Decline
-                            </button>
-                            </>
-                        )}
+                      {req.status === "PENDING" && (
+                        <>
+                          <button
+                            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-800"
+                            onClick={() => handleAccept(req.requestId)}
+                          >
+                            Accept
+                          </button>
+                          <button
+                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-800"
+                            onClick={() => setDeclineModal(req.requestId)}
+                          >
+                            Decline
+                          </button>
+                        </>
+                      )}
 
-                        {req.status === "REQUEST_TO_LEAVE" && (
-                            <>
-                            <button
-                                className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-800"
-                                onClick={() => handleApproveLeave(req.requestId)}
-                            >
-                                Drop Team
-                            </button>
-                            <button
-                                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-blue-800"
-                                onClick={() => handleDeclineLeave(req.requestId)}
-                            >
-                                Decline Leave
-                            </button>
-                            </>
-                        )}
+                      {req.status === "REQUEST_TO_LEAVE" && (
+                        <>
+                          <button
+                            className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-800"
+                            onClick={() => handleApproveLeave(req.requestId)}
+                          >
+                            Drop Team
+                          </button>
+                          <button
+                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-blue-800"
+                            onClick={() => handleDeclineLeave(req.requestId)}
+                          >
+                            Decline Leave
+                          </button>
+                        </>
+                      )}
 
-                        {["REJECTED", "DROP"].includes(req.status) && (
+                      {["REJECTED", "DROP"].includes(req.status) && (
                         <button
-                            className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-700"
-                            onClick={() => handleDelete(req.requestId)}
+                          className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-700"
+                          onClick={() => handleDelete(req.requestId)}
                         >
-                            Delete
+                          Delete
                         </button>
-                        )}
-
+                      )}
                     </td>
                   </tr>
                 ))}

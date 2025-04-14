@@ -14,11 +14,11 @@ const semesterOptions = [
 
 const address = getIpAddress();
 
-  function getIpAddress() {
-      const hostname = window.location.hostname;
-      const indexOfColon = hostname.indexOf(':');
-      return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
-  }
+function getIpAddress() {
+  const hostname = window.location.hostname;
+  const indexOfColon = hostname.indexOf(":");
+  return indexOfColon !== -1 ? hostname.substring(0, indexOfColon) : hostname;
+}
 
 const generateSchoolYears = () => {
   const currentYear = new Date().getFullYear();
@@ -27,7 +27,10 @@ const generateSchoolYears = () => {
   for (let i = 0; i < 5; i++) {
     const startYear = currentYear + i;
     const endYear = startYear + 1;
-    years.push({ value: `${startYear}-${endYear}`, label: `${startYear}-${endYear}` });
+    years.push({
+      value: `${startYear}-${endYear}`,
+      label: `${startYear}-${endYear}`,
+    });
   }
 
   return years;
@@ -64,7 +67,13 @@ const CreateClass = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!courseCode || !section || !schoolYear || !semester || !courseDescription) {
+    if (
+      !courseCode ||
+      !section ||
+      !schoolYear ||
+      !semester ||
+      !courseDescription
+    ) {
       alert("Please fill in all fields.");
       return;
     }
@@ -104,7 +113,9 @@ const CreateClass = () => {
         { headers: { Authorization: `Bearer ${authState.token}` } }
       );
 
-      alert(`Class created successfully!\nClass Key: ${response.data.classKey}`);
+      alert(
+        `Class created successfully!\nClass Key: ${response.data.classKey}`
+      );
       navigate("/teacher-dashboard");
     } catch (err) {
       alert(err.response?.data?.message || "Failed to create class.");
@@ -112,27 +123,37 @@ const CreateClass = () => {
   };
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
-      <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
+
+      <div className="main-content bg-white text-teal px-4 sm:px-6 md:px-20 lg:px-28 pt-8 md:pt-12">
+        {/* Back Button */}
         <div className="flex justify-start mb-4">
           <button
-            className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-all duration-300"
+            className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full sm:w-auto"
             onClick={() => navigate(-1)}
           >
             Back
           </button>
         </div>
-        <div className="header flex justify-between items-center mb-6">
-          <h1 className="text-lg font-semibold flex justify-center items-center h-full">Create Class</h1>
+
+        {/* Header */}
+        <div className="header flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <h1 className="text-md sm:text-lg font-semibold">Create Class</h1>
           <Header />
         </div>
 
         {/* Form */}
-        <form className="grid grid-cols-2 gap-8" onSubmit={handleSubmit}>
+        <form
+          className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8"
+          onSubmit={handleSubmit}
+        >
           {/* Course Code */}
           <div>
-            <label htmlFor="courseCode" className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="courseCode"
+              className="block text-sm font-medium mb-1"
+            >
               Course Code
             </label>
             <input
@@ -153,19 +174,27 @@ const CreateClass = () => {
             <input
               type="text"
               id="section"
-              className={`w-full border rounded-md p-2 ${invalidSection ? "border-red-500" : "border-gray-300"}`}
+              className={`w-full border rounded-md p-2 ${
+                invalidSection ? "border-red-500" : "border-gray-300"
+              }`}
               placeholder="Enter section"
               value={section}
               onChange={handleSectionChange}
             />
-            <p className={`text-xs mt-1 ${invalidSection ? "text-red-500" : "text-gray-500"}`}>
-              To add multiple sections, please use "-" and "_" as indicators
+            <p
+              className={`text-xs mt-1 ${
+                invalidSection ? "text-red-500" : "text-gray-500"
+              }`}
+            >
+              To add multiple sections, use "-" and "_" as indicators.
             </p>
           </div>
 
           {/* School Year */}
           <div>
-            <label className="block text-sm font-medium mb-1">School Year</label>
+            <label className="block text-sm font-medium mb-1">
+              School Year
+            </label>
             <Select
               options={schoolYearOptions}
               value={schoolYear}
@@ -188,8 +217,11 @@ const CreateClass = () => {
           </div>
 
           {/* Course Description */}
-          <div className="col-span-2">
-            <label htmlFor="courseDescription" className="block text-sm font-medium mb-1">
+          <div className="sm:col-span-2">
+            <label
+              htmlFor="courseDescription"
+              className="block text-sm font-medium mb-1"
+            >
               Course Description
             </label>
             <textarea
@@ -204,10 +236,12 @@ const CreateClass = () => {
 
           {/* Needs Advisory Toggle */}
           <div className="flex flex-col">
-            <label className="block text-sm font-medium mb-1">Class Needs Advisory?</label>
+            <label className="block text-sm font-medium mb-1">
+              Class Needs Advisory?
+            </label>
             <div
               onClick={() => setNeedsAdvisory((prev) => !prev)}
-              className={`w-14 h-8 flex items-center bg-gray-300 rounded-full p-1 cursor-pointer transition-colors duration-300 ${
+              className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${
                 needsAdvisory ? "bg-green-500" : "bg-gray-400"
               }`}
             >
@@ -218,13 +252,18 @@ const CreateClass = () => {
               ></div>
             </div>
             <span className="text-sm mt-1 text-gray-700">
-              {needsAdvisory ? "This class requires advisory." : "No advisory needed for this class."}
+              {needsAdvisory
+                ? "This class requires advisory."
+                : "No advisory needed for this class."}
             </span>
           </div>
 
           {/* Submit Button */}
-          <div className="col-span-2 flex justify-end mt-4">
-            <button type="submit" className="bg-teal text-white px-6 py-3 rounded-md">
+          <div className="sm:col-span-2 flex justify-end mt-4">
+            <button
+              type="submit"
+              className="bg-teal text-white px-6 py-3 rounded-md w-full sm:w-auto"
+            >
               Create Class
             </button>
           </div>
