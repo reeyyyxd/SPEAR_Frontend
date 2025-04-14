@@ -148,11 +148,12 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
   
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen bg-gray-100">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen bg-white">
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-gray-900 md:px-20 lg:px-28 pt-8 md:pt-12">
       <div className="overflow-x-auto">
       {/* Pending Applications Table */}
+      <div className="min-w-[800px]">
       <h1 className="text-3xl font-bold text-gray-700 mb-4">Team Applications</h1>
     <h2 className="text-xl font-semibold text-gray-600 mb-2">Pending Applications for My Team</h2>
     <div className="overflow-x-auto mb-8">
@@ -183,7 +184,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
 
                   {/* Action Buttons - Ensuring proper spacing */}
                   <td className="border border-gray-300 px-6 py-3 text-center">
-                  <div className="flex justify-center gap-2">
+                  <div className="flex flex-col sm:flex-row justify-center gap-2">
                     {/* Accept Button */}
                     <button
                       className="bg-white border border-green-500 px-4 py-2 rounded-lg hover:bg-green-100 transition-all flex items-center space-x-2 group"
@@ -258,6 +259,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
               )}
             </tbody>
           </table>
+        </div>
         </div>
 
       {isModalOpen && (

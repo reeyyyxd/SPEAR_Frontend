@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AuthContext from "../../../services/AuthContext";
 import ApplyTeamModal from "../../../components/Modals/ApplyTeamModal";
 import axios from "axios";
+import { Check } from "lucide-react"
 
 const ApplyTeam = () => {
   const { authState } = useContext(AuthContext);
@@ -47,9 +48,9 @@ const ApplyTeam = () => {
   }
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
-      <div className="main-content bg-white text-gray-900 md:px-20 lg:px-28 pt-8 md:pt-12">
+      <div className="main-content bg-white text-gray-900 md:px-20 lg:px-28 pt-8 md:pt-12 flex flex-col min-h-screen">
   
           {/* Back Button at the Top */}
           <div className="mb-4">
@@ -97,11 +98,12 @@ const ApplyTeam = () => {
                     {/* Apply Button */}
                     <td className="border border-gray-300 px-6 py-3 text-center">
                       <button 
-                        className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200 transition"
+                        className="bg-white border border-green-500 px-4 py-2 rounded-lg hover:bg-green-100 transition-all flex items-center space-x-2 group"
                         onClick={() => setSelectedTeam(team.tid)} // Open modal with team ID
                       >
-                        Apply Team
-                      </button>
+                      <Check className="h-4 w-4 text-green-500 group-hover:text-gray-800 transition-colors" />
+                     <span className="text-green-500 group-hover:text-gray-800 transition-colors">Apply Team</span>
+                    </button>
                     </td>
                   </tr>
                 ))

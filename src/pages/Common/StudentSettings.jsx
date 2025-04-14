@@ -223,7 +223,7 @@ const StudentSettings = () => {
   };
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole="STUDENT" />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12">
         <div className="header flex justify-between items-center mb-8">
@@ -280,7 +280,7 @@ const StudentSettings = () => {
             </div>
           </div>
 
-          <div className="flex justify-between mt-6">
+          <div className="flex flex-col sm:flex-row justify-between mt-6 space-y-3 sm:space-y-0 sm:space-x-4">
             <button
               type="button"
               onClick={() => setIsPasswordModalOpen(true)}

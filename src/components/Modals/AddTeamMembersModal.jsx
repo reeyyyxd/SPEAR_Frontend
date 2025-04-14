@@ -193,8 +193,7 @@ const AddTeamMembersModal = ({ isOpen, onClose, teamId, classId }) => {
                   {student.firstname} {student.lastname} ({student.email})
                   <button
                     onClick={() => addMember(student.uid)}
-                    className="border border-gray-300 text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-300 disabled:bg-gray-400"
-                    // "text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-300 disabled:bg-gray-400"
+                    className="border border-green-500 text-gray-700 px-3 py-1 rounded-lg hover:bg-green-100 disabled:bg-gray-400"
                     disabled={addingId === student.uid}
                   >
                     {addingId === student.uid ? "Inviting..." : "Invite"}

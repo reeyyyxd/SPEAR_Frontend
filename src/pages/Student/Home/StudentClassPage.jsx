@@ -180,7 +180,7 @@ const StudentClassPage = () => {
   } 
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen bg-white">
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-teal px-6 sm:px-12 md:px-20 lg:px-28 pt-8 md:pt-12">
         {/* Header Section */}

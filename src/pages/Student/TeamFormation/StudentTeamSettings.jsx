@@ -345,13 +345,14 @@ console.log("teamDetails:", teamDetails?.tid);
     <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
       <Navbar userRole={authState.role} />
   
-      <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-4">
+      <div className="w-full max-w-4xl mx-auto px-4 py-8 rounded-lg mt-4">
         <button
           onClick={() => navigate(-1)}
           className="bg-gray-700 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-500 transition"
         >
           <FiArrowLeft />
         </button>
+        
         <h2 className="text-xl font-semibold text-teal-700 mb-6">Team Settings</h2>
 
   

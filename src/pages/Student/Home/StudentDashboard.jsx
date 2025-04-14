@@ -133,7 +133,7 @@ const StudentDashboard = () => {
           <div className="pagination flex justify-between gap-4 mt-14">
             <button
               onClick={prevPage}
-              className="w-[45%] sm:w-1/3 md:w-1/6 bg-slate-100 text-gray-400 rounded-lg py-2 px-4 text-sm"
+              className="w-[45%] w-full sm:w-1/3 md:w-1/6 bg-slate-100 text-gray-400 rounded-lg py-2 px-4 text-sm"
               disabled={currentPage === 1}
             >
               Prev

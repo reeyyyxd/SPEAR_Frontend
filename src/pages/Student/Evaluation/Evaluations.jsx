@@ -80,7 +80,7 @@ const Evaluations = () => {
   };
 
   return (
-    <div className="grid grid-cols-[256px_1fr] min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen bg-white">
       <Navbar userRole="STUDENT" />
       <div className="p-8 bg-white shadow-md rounded-md w-full">
         <h1 className="text-3xl font-bold text-teal mb-6 pt-8">Available Evaluations</h1>
@@ -93,6 +93,7 @@ const Evaluations = () => {
           <div className="text-center text-gray-500">No open evaluations available.</div>
         ) : (
           <div className="overflow-x-auto max-h-96 rounded-lg shadow-md">
+            <div className="min-w-[800px]">
             <table className="w-full border-collapse shadow-md rounded-lg overflow-hidden table-fixed">
               <thead className="bg-gray-700 text-white text-center">
                 <tr>
@@ -113,7 +114,15 @@ const Evaluations = () => {
                     <td className="border border-gray-300 p-3 text-center">{evalItem.period || "N/A"}</td>
                     <td className="border border-gray-300 p-3 text-center">{evalItem.dateOpen || "N/A"}</td>
                     <td className="border border-gray-300 p-3 text-center">{evalItem.dateClose || "N/A"}</td>
-                    <td className="border border-gray-300 p-3 text-center">{evalItem.availability || "N/A"}</td>
+                    <td className="border border-gray-300 p-3 text-center">
+                    <span
+                    className={`px-3 py-1 rounded-full text-sm font-semibold inline-block ${
+                    evalItem.availability === "Open" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                    }`}
+                   >
+                {evalItem.availability || "N/A"}
+                </span>
+                    </td>
                     <td className="border border-gray-300 p-3 text-center">
                       <button
                         className="border border-gray-300 text-black px-3 py-1 rounded-lg hover:bg-gray-200 transition"
@@ -127,6 +136,7 @@ const Evaluations = () => {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>
