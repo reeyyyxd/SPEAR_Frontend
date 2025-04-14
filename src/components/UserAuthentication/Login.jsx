@@ -55,7 +55,7 @@ const Login = () => {
     <div>
       {/* Login Form Section */}
       <div className="flex items-center justify-center min-h-screen">
-        <div className="main-content grid grid-cols-2 gap-0 bg-teal w-[928px] h-[696px] rounded-lg items-center">
+        <div className="main-content grid grid-cols-2 gap-0 bg-teal w-[928px] h-[696px] rounded-lg items-center drop-shadow-2xl">
           {/* Logo */}
           <div className="logo flex flex-col items-center justify-center bg-white h-full p-4 rounded-l-lg">
             <img src={logo} alt="logo" className="w-1/2 justify-items-center" />

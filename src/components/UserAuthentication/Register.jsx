@@ -92,7 +92,7 @@ const Register = () => {
   return (
     <div>
       <div className="flex items-center justify-center min-h-screen">
-        <div className="main-content grid grid-cols-1 bg-teal w-[928px] h-[696px] rounded-lg items-center">
+        <div className="main-content grid grid-cols-1 bg-teal w-[928px] h-[696px] rounded-lg items-center drop-shadow-2xl">
           {/* Header */}
           <div className="header flex items-center justify-center bg-white rounded-t-lg w-full h-full">
             <img src={logo} alt="logo" className="w-20 h-20 object-contain" />

@@ -1,14 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import Facebook from '../../assets/icons/Facebook.svg';
-import Instagram from '../../assets/icons/Instagram.svg';
-import Tiktok from '../../assets/icons/Tiktok.svg';
-import Youtube from '../../assets/icons/Youtube.svg';
 import logo from "../../assets/imgs/logo-dark.png";
-import AboutUs from "./AboutUs";
 import Home from "./Home";
-import Services from "./Services";
-
 
 const LandingPage = () => {
   const [openNav, setOpenNav] = useState(false);
@@ -24,18 +17,6 @@ const LandingPage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const scrollToHome = () => {
-    homeRef.current.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const scrollToAboutUs = () => {
-    aboutUsRef.current.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const scrollToServices = () => {
-    servicesRef.current.scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
     <div>
       <nav className="bg-white w-full px-4 py-2 lg:px-8 lg:py-4 shadow-md">
@@ -50,24 +31,6 @@ const LandingPage = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex ml-auto space-x-6">
-          <button
-              className="text-blue-gray-900 px-4 py-2 rounded hover:text-teal-700 transition duration-300"
-              onClick={scrollToHome}
-            >
-              Home
-            </button>
-            <button
-              className="text-blue-gray-900 px-4 py-2 rounded hover:text-teal-700 transition duration-300"
-              onClick={scrollToServices}
-          >
-              Services
-          </button>
-          <button
-              className="text-blue-gray-900 px-4 py-2 rounded hover:text-teal-700 transition duration-300"
-              onClick={scrollToAboutUs}
-            >
-              About Us
-            </button>
             <Link to="/login">
               <button className="bg-teal text-white px-4 py-2 rounded hover:bg-teal-700 transition-colors">
                 Go to App
@@ -132,53 +95,13 @@ const LandingPage = () => {
       </nav>
 
       {/* Home Section */}
-      <div className="min-h-screen flex items-center justify-center bg-gray-100" ref={homeRef}>
+      <div
+        className="min-h-screen flex items-center justify-center bg-gray-100"
+        ref={homeRef}
+      >
         <Home />
       </div>
-      
-      {/* Services Section */}
-      <div className="min-h-screen flex items-center justify-center" ref={servicesRef}>
-        <Services />
-      </div>
-
-      {/* About Us Section */}
-      <div className="min-h-screen flex items-center justify-center" ref={aboutUsRef}>
-        <AboutUs />
-      </div>
-
-      {/* Footer Section */}
-      <footer className="bg-white text-gray-800 py-4">
-       <div className="container mx-auto flex flex-col items-center justify-center">
-      <div className="text-center mb-8 lg:mb-0">
-      <p className="text-lg font-semibold mb-1">Capstone 1 Project</p>
-      <p className="text-sm text-gray-500">Student Peer Evaluation and Review System</p>
     </div>
-
-    {/* Right Section: Social Media Links */}
-    <div className="text-center lg:text-center">
-      <p className="text-lg font-bold mb-1">Get in Touch</p>
-      <div className="flex justify-center lg:justify-start space-x-6">
-        <a href="https://www.facebook.com/CITUniversity/" className="text-gray-800 hover:text-gray-600">
-          <img src={Facebook} alt="Facebook Icon" className="h-7 w-7" />
-        </a>
-        <a href="https://www.tiktok.com/@cituniversity?lang=en" className="text-gray-800 hover:text-gray-600">
-          <img src={Tiktok} alt="TikTok Icon" className="h-7 w-7" />
-        </a>
-        <a href="https://www.instagram.com/cituniversity/?hl=en" className="text-gray-800 hover:text-gray-600">
-          <img src={Instagram} alt="Instagram Icon" className="h-7 w-7" />
-        </a>
-        <a href="https://www.youtube.com/@cit.university" className="text-gray-800 hover:text-gray-600">
-          <img src={Youtube} alt="YouTube Icon" className="h-7 w-7" />
-        </a>
-      </div>
-    </div>
-  </div>
-  {/* Bottom Section */}
-  <div className="text-center mt-4 text-sm text-gray-500">
-    <p>© 2024 Cebu Institute of Technology University. All rights reserved.</p>
-  </div>
-</footer>
-</div>
   );
 };
 
