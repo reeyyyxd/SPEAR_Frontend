@@ -6,8 +6,6 @@ import Home from "./Home";
 const LandingPage = () => {
   const [openNav, setOpenNav] = useState(false);
   const homeRef = useRef(null);
-  const aboutUsRef = useRef(null);
-  const servicesRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => {
