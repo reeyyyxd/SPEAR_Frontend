@@ -102,7 +102,16 @@ const TeacherAddSchedule = ({ closeModal, fetchSchedules }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+      <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold mb-4">Add New Schedule</h2>
+        <button
+              type="button"
+              onClick={closeModal}
+              className="text-gray-500 hover:text-gray-700 mb-4"
+            >
+              ✖
+            </button>
+            </div>
 
         {/* Day Dropdown */}
         <label className="block mb-2">Day:</label>
@@ -163,11 +172,11 @@ const TeacherAddSchedule = ({ closeModal, fetchSchedules }) => {
         )} */}
 
         {/* Buttons */}
-        <div className="flex justify-end">
-          <button className="bg-gray-500 text-white px-4 py-2 rounded mr-2" onClick={closeModal}>
+        <div className="flex justify-end space-x-3">
+          <button className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200 transition" onClick={closeModal}>
             Cancel
           </button>
-          <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={handleCreateSchedule}>
+          <button className="bg-teal text-white px-4 py-2 rounded-md hover:bg-peach transition" onClick={handleCreateSchedule}>
             Add
           </button>
         </div>

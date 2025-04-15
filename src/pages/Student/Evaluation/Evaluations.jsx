@@ -136,7 +136,7 @@ const currentEvaluations = evaluations.slice(startIndex, startIndex + evaluation
                         className="border border-gray-300 text-black px-3 py-1 rounded-lg hover:bg-gray-200 transition"
                         onClick={() => handleViewStatus(evalItem.eid, evalItem.classId, evalItem.evaluationType)}
                       >
-                        <Eye className="h-4 w-4 inline mr-1" />  {/* Eye icon from lucide-react */}
+                        <Eye className="h-4 w-4 inline mr-1" />  
                         View Status
                       </button>
                     </td>

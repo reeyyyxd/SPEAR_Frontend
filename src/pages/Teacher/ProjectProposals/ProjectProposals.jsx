@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ChevronLeft, ChevronRight , Check, X  } from "lucide-react"
 
 const ProjectProposals = () => {
   const { authState, getDecryptedId } = useContext(AuthContext);
@@ -59,7 +62,7 @@ const ProjectProposals = () => {
   const handleApprove = async (proposalId) => {
     const proposal = proposals.find((p) => p.pid === proposalId);
     if (proposal?.status === "APPROVED") {
-      alert("This proposal is already approved.");
+      toast.error("This proposal is already approved.");
       return;
     }
 
@@ -69,7 +72,7 @@ const ProjectProposals = () => {
         { status: "APPROVED", reason: null },
         { headers: { Authorization: `Bearer ${authState.token}` } }
       );
-      alert("Proposal approved successfully.");
+      toast.success("Proposal approved successfully.");
       setProposals((prev) =>
         prev.map((p) =>
           p.pid === proposalId ? { ...p, status: "APPROVED", reason: null } : p
@@ -83,7 +86,7 @@ const ProjectProposals = () => {
   const handleReject = async () => {
     const proposal = proposals.find((p) => p.pid === selectedProposalId);
     if (proposal?.status === "DENIED") {
-      alert("This proposal has already been rejected.");
+      toast.error("This proposal has already been rejected.");
       return;
     }
 
@@ -93,7 +96,7 @@ const ProjectProposals = () => {
         { status: "DENIED", reason: rejectReason },
         { headers: { Authorization: `Bearer ${authState.token}` } }
       );
-      alert("Proposal rejected successfully.");
+      toast.success("Proposal rejected successfully.");
       setProposals((prev) =>
         prev.map((p) =>
           p.pid === selectedProposalId
@@ -117,6 +120,8 @@ const ProjectProposals = () => {
   }
 
   return (
+<>
+<ToastContainer position="top-right" autoClose={3000} />
     <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
       <div className="main-content bg-white text-teal md:px-20 lg:px-28 pt-8 md:pt-12 font-medium">
@@ -135,7 +140,7 @@ const ProjectProposals = () => {
         </h1>
 
         {/* Proposals Table */}
-        <div className="overflow-x-auto max-h-96 rounded-lg shadow-md">
+        <div className="overflow-x-auto overflow-y-hidden rounded-lg shadow-md">
           {proposals.length > 0 ? (
             <table className="min-w-full divide-y divide-gray-200">
               {/* Table Header */}
@@ -223,32 +228,36 @@ const ProjectProposals = () => {
                       <div className="flex justify-center space-x-2">
                         {/* Approve Button */}
                         <button
-                          onClick={() => handleApprove(proposal.pid)}
-                          className={`px-3 py-2 sm:px-4 sm:py-3 rounded-lg transition-all ${
+                        onClick={() => handleApprove(proposal.pid)}
+                        disabled={proposal.status === "OPEN"}
+                        className={`border border-green-500 px-2 py-1 rounded-lg transition-all flex items-center space-x-2 group 
+                          ${
                             proposal.status === "OPEN"
-                              ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-                              : "bg-green-500 text-white hover:bg-green-700"
+                              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                              : "bg-white hover:bg-green-100"
                           }`}
-                          disabled={proposal.status === "OPEN"}
-                        >
-                          Approve
-                        </button>
+                      >
+                        <Check className="h-4 w-4 text-green-500 group-hover:text-gray-800 transition-colors" />
+                        <span className="text-green-500 group-hover:text-gray-800 transition-colors">Approve</span>
+                      </button>
 
-                        {/* Reject Button */}
-                        <button
-                          onClick={() => {
-                            setSelectedProposalId(proposal.pid);
-                            setShowModal(true);
-                          }}
-                          className={`px-3 py-2 sm:px-4 sm:py-3 rounded-lg transition-all ${
-                            proposal.status === "OPEN"
-                              ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-                              : "bg-red-500 text-white hover:bg-red-700"
-                          }`}
-                          disabled={proposal.status === "OPEN"}
-                        >
-                          Reject
-                        </button>
+                      {/* Reject Button */}
+                      <button
+                        onClick={() => {
+                          setSelectedProposalId(proposal.pid);
+                          setShowModal(true);
+                        }}
+                        disabled={proposal.status === "OPEN"}
+                        className={`border border-red-500 px-2 py-1 rounded-lg transition-all flex items-center space-x-2 group ${
+                          proposal.status === "OPEN"
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-white hover:bg-red-100"
+                        }`}
+                      >
+                        <X className="h-4 w-4 text-red-500 group-hover:text-gray-800 transition-colors" />
+                        <span className="text-red-500 group-hover:text-gray-800 transition-colors">Reject</span>
+                      </button>
+
                       </div>
                     </td>
                   </tr>
@@ -267,9 +276,18 @@ const ProjectProposals = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-[90%] sm:w-[550px] animate-fadeIn">
+          <div className="flex items-center justify-between">
             <h2 className="text-lg sm:text-xl font-bold mb-4 text-center text-gray-800">
               Reason for Rejection
             </h2>
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="text-gray-500 hover:text-gray-700 mb-4"
+            >
+              ✖
+            </button>
+            </div>
 
             <textarea
               value={rejectReason}
@@ -284,13 +302,13 @@ const ProjectProposals = () => {
             {/* Action Buttons */}
             <div className="flex justify-end gap-3 mt-6">
               <button
-                className="bg-gray-500 text-white px-5 py-2 rounded-md hover:bg-gray-700 transition-all"
+                className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200 transition"
                 onClick={() => setShowModal(false)}
               >
                 Cancel
               </button>
               <button
-                className="bg-red-600 text-white px-5 py-2 rounded-md hover:bg-red-700 transition-all"
+                className="bg-teal text-white px-4 py-2 rounded-md hover:bg-peach transition"
                 onClick={handleReject}
               >
                 Submit
@@ -300,6 +318,7 @@ const ProjectProposals = () => {
         </div>
       )}
     </div>
+    </>
   );
 };
 

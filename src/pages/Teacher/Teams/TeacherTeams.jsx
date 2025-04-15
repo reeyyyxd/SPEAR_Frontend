@@ -4,6 +4,7 @@ import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import OfficialProjectModal from "../../../components/Modals/OfficialProjectModal";
 import axios from "axios";
+import { Eye } from "lucide-react"
 
 const TeacherTeams = () => {
   const { authState, getDecryptedId, storeEncryptedId } =
@@ -101,12 +102,12 @@ const TeacherTeams = () => {
           Teams
         </h1>
 
-        <div className="bg-gray-100 shadow-md rounded-lg p-6">
+        <div className="overflow-x-auto overflow-y-auto rounded-lg shadow-md">
           {teams.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead>
-                  <tr className="bg-teal-500 text-black">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="sticky top-0 bg-teal text-white z-20 shadow-lg">
+                  <tr>
                     <th className="px-6 py-3 text-left text-sm font-bold">
                       Group Name
                     </th>
@@ -186,11 +187,12 @@ const TeacherTeams = () => {
                       {/* View Details Button */}
                       <td className="px-6 py-4 text-sm text-gray-900">
                         <button
-                          className="bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
+                          className="border border-gray-300 text-black px-3 py-1 rounded-lg hover:bg-gray-200 transition"
                           onClick={() =>
                             handleViewProject(team.tid, team.projectId)
                           }
                         >
+                          <Eye className="h-4 w-4 inline mr-1" />  
                           View Details
                         </button>
                       </td>

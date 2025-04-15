@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import axios from "axios";
+import { Eye } from "lucide-react"
 
 const EvaluationTeacher = () => {
   const { getDecryptedId, storeEncryptedId } = useContext(AuthContext);
@@ -130,11 +131,17 @@ const EvaluationTeacher = () => {
                       {evalItem.dateClose || "N/A"}
                     </td>
                     <td className="px-3 sm:px-4 py-2">
+                    <span
+                    className={`px-3 py-1 rounded-full text-sm font-semibold inline-block ${
+                    evalItem.availability === "Open" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                    }`}
+                   >
                       {evalItem.availability || "N/A"}
+                      </span>
                     </td>
                     <td className="px-3 sm:px-4 py-2">
                       <button
-                        className="bg-[#323c47] text-white px-3 py-1 rounded hover:bg-teal-700 transition"
+                        className="border border-gray-300 text-black px-3 py-1 rounded-lg hover:bg-gray-200 transition"
                         onClick={() =>
                           handleViewStatus(
                             evalItem.eid,
@@ -143,6 +150,7 @@ const EvaluationTeacher = () => {
                           )
                         }
                       >
+                         <Eye className="h-4 w-4 inline mr-1" />  
                         View Details
                       </button>
                     </td>

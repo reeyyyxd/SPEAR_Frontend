@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import logo from "../../assets/imgs/logo-dark.png";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -38,7 +40,7 @@ const Register = () => {
   
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match!");
-      alert("Passwords do not match!");
+      toast.error("Passwords do not match!");
       return;
     }
   
@@ -63,8 +65,10 @@ const Register = () => {
       });
   
       if (response.status === 200) {
-        alert("User created successfully");
-        navigate("/login");
+        toast.success("User created successfully");
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
       } else {
         const errorMessage = response.data?.message || "Registration failed.";
         setError(errorMessage);
@@ -91,6 +95,7 @@ const Register = () => {
   
   return (
     <div>
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="flex items-center justify-center min-h-screen">
         <div className="main-content grid grid-cols-1 bg-teal w-[928px] h-[696px] rounded-lg items-center drop-shadow-2xl">
           {/* Header */}

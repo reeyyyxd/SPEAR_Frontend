@@ -4,6 +4,7 @@ import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import * as XLSX from "xlsx";
 import axios from "axios";
+import { Eye } from "lucide-react"
 
 const TeacherEvaluations = () => {
   const { getDecryptedId, storeEncryptedId } = useContext(AuthContext);
@@ -332,16 +333,23 @@ const TeacherEvaluations = () => {
                   <td className="px-4 py-2">{evalItem.dateOpen || "N/A"}</td>
                   <td className="px-4 py-2">{evalItem.dateClose || "N/A"}</td>
                   <td className="px-4 py-2">
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-semibold inline-block ${
+                    evalItem.availability === "Open" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                    }`}
+                   >
                     {evalItem.availability || "N/A"}
+                  </span>
                   </td>
                   <td className="px-4 py-2">
                     <button
-                      className="text-blue-500 hover:text-blue-700"
+                      className="border border-gray-300 text-black px-3 py-1 rounded-lg hover:bg-gray-200 transition"
                       onClick={() => {
                         storeEncryptedId("eid", evalItem.eid);
                         window.location.href = `/teacher/questions/${evalItem.eid}`;
                       }}
                     >
+                      <Eye className="h-4 w-4 inline mr-1" />  
                       View
                     </button>
                   </td>
@@ -381,9 +389,18 @@ const TeacherEvaluations = () => {
         {showModal && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 px-4">
             <div className="bg-white w-full sm:w-3/4 md:w-2/3 lg:w-1/3 p-6 rounded-lg shadow-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold mb-4">
                 {newEvaluation.eid ? "Edit Evaluation" : "Create Evaluation"}
               </h2>
+              <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="text-gray-500 hover:text-gray-700 mb-4"
+            >
+              ✖
+            </button>
+              </div>
               {error && (
                 <div className="mb-4 text-red-500 text-sm">{error}</div>
               )}
@@ -472,13 +489,13 @@ const TeacherEvaluations = () => {
 
               <div className="flex justify-end gap-4">
                 <button
-                  className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 w-full sm:w-auto"
+                  className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200 transition"
                   onClick={() => setShowModal(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark w-full sm:w-auto"
+                  className="bg-teal text-white px-4 py-2 rounded-md hover:bg-peach transition"
                   onClick={() => {
                     if (newEvaluation?.eid) {
                       handleEditEvaluation();

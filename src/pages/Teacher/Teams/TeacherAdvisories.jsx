@@ -130,12 +130,12 @@ const TeacherAdvisories = () => {
           </button>
         </div>
 
-        <div className="bg-gray-100 shadow-md rounded-lg p-6">
+        <div className="overflow-x-auto overflow-y-auto rounded-lg shadow-md">
           {advisoryTeams.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="min-w-full border border-gray-300 rounded-lg shadow-md">
-                <thead>
-                  <tr className="bg-teal-500 text-black">
+              <table className="min-w-full rounded-lg shadow-md">
+                <thead className="sticky top-0 bg-teal text-white z-20 shadow-lg">
+                  <tr>
                     <th className="px-6 py-3 text-left text-sm font-bold">
                       Group Name
                     </th>
@@ -199,7 +199,7 @@ const TeacherAdvisories = () => {
                       {/* View proposals and drop team */}
                       <td className="px-6 py-4 text-sm text-gray-900 space-y-2">
                         <button
-                          className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all block w-full"
+                          className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-700 transition-all block w-full"
                           onClick={() => handleViewProposals(team.tid)}
                         >
                           View Proposals

@@ -180,7 +180,7 @@ const TeacherSchedules = () => {
         {/* Add Schedule Button */}
         <div className="flex flex-col sm:flex-row justify-end mb-4">
           <button
-            className="bg-green-500 text-white px-4 py-2 rounded w-full sm:w-auto"
+            className="bg-green-500 text-white px-4 py-2 rounded w-full sm:w-auto hover:bg-green-700 transition"
             onClick={() => setIsAddModalOpen(true)}
           >
             + Add Schedule
@@ -221,17 +221,21 @@ const TeacherSchedules = () => {
         {/* Confirm Delete Modal */}
         {isConfirmDeleteOpen && (
           <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg w-11/12 sm:w-auto">
-              <p>Are you sure you want to delete this schedule?</p>
+            <div className="bg-white p-6 rounded-lg w-11/12 sm:w-auto max-w-md">
+            <h2 className="text-xl text-teal font-semibold mb-4">Delete Schedule</h2>
+            <p>
+            Are you sure you want to delete this schedule? This action cannot be undone.
+            </p>
+
               <div className="flex justify-end space-x-2 mt-4">
                 <button
-                  className="bg-gray-500 text-white px-3 py-1 rounded"
+                  className="border border-gray-300 px-3 py-2 rounded-md hover:bg-gray-200 transition"
                   onClick={() => setIsConfirmDeleteOpen(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  className="bg-red-600 text-white px-3 py-1 rounded"
+                  className="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 transition"
                   onClick={confirmDelete}
                 >
                   Delete
