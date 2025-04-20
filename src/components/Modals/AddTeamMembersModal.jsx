@@ -116,7 +116,7 @@ const AddTeamMembersModal = ({ isOpen, onClose, teamId, classId }) => {
         setFilteredStudents((prev) => prev.filter((student) => student.uid !== memberId));
   
         await refreshTeamData();
-        toast.success("Student added successfully!");
+        toast.success("Student Invited Successfully!");
       }
     } catch (error) {
       console.error("Error adding member:", error.response?.data || error);

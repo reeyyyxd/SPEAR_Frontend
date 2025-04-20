@@ -20,6 +20,7 @@ const TeacherEvaluations = () => {
     period: "Prelims",
   });
   const [customPeriodInput, setCustomPeriodInput] = useState("");
+  const [expandedIndex, setExpandedIndex] = useState(null);
 
   useEffect(() => {
     if (showModal) {
@@ -318,69 +319,102 @@ const TeacherEvaluations = () => {
               </tr>
             </thead>
             <tbody>
-              {evaluations.map((evalItem, index) => (
-                <tr key={index} className="border-b">
-                  <td className="px-4 py-2">
-                    {evalItem.evaluationType === "STUDENT_TO_STUDENT"
-                      ? "Student to Student"
-                      : evalItem.evaluationType === "STUDENT_TO_ADVISER"
-                      ? "Student to Adviser"
-                      : evalItem.evaluationType === "ADVISER_TO_STUDENT"
-                      ? "Adviser to Student"
-                      : "N/A"}
-                  </td>
-                  <td className="px-4 py-2">{evalItem.period || "N/A"}</td>
-                  <td className="px-4 py-2">{evalItem.dateOpen || "N/A"}</td>
-                  <td className="px-4 py-2">{evalItem.dateClose || "N/A"}</td>
-                  <td className="px-4 py-2">
+            {evaluations.map((evalItem, index) => (
+            <React.Fragment key={index}>
+              <tr
+                className="border-b cursor-pointer hover:bg-gray-50"
+                onClick={() =>
+                  setExpandedIndex(expandedIndex === index ? null : index)
+                }
+              >
+                <td className="px-4 py-2">
+                  {evalItem.evaluationType === "STUDENT_TO_STUDENT"
+                    ? "Student to Student"
+                    : evalItem.evaluationType === "STUDENT_TO_ADVISER"
+                    ? "Student to Adviser"
+                    : evalItem.evaluationType === "ADVISER_TO_STUDENT"
+                    ? "Adviser to Student"
+                    : "N/A"}
+                </td>
+                <td className="px-4 py-2">{evalItem.period || "N/A"}</td>
+                <td className="px-4 py-2">{evalItem.dateOpen || "N/A"}</td>
+                <td className="px-4 py-2">{evalItem.dateClose || "N/A"}</td>
+                <td className="px-4 py-2">
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-semibold inline-block ${
-                    evalItem.availability === "Open" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                      evalItem.availability === "Open"
+                        ? "bg-green-500 text-white"
+                        : "bg-red-500 text-white"
                     }`}
-                   >
+                  >
                     {evalItem.availability || "N/A"}
                   </span>
-                  </td>
-                  <td className="px-4 py-2">
+                </td>
+                <td className="px-4 py-2">
+                  <button
+                    className="border border-gray-300 text-black px-3 py-1 rounded-lg hover:bg-gray-200 transition"
+                    onClick={(e) => {
+                      e.stopPropagation(); // prevent row toggle
+                      storeEncryptedId("eid", evalItem.eid);
+                      window.location.href = `/teacher/questions/${evalItem.eid}`;
+                    }}
+                  >
+                    <Eye className="h-4 w-4 inline mr-1" />
+                    View
+                  </button>
+                </td>
+                <td className="px-4 py-2 flex flex-wrap gap-2">
+                  <button
+                    className="text-red-500 hover:text-red-700"
+                    onClick={(e) => {
+                      e.stopPropagation(); // prevent row toggle
+                      handleDeleteEvaluation(evalItem.eid);
+                    }}
+                  >
+                    <i className="fa fa-trash"></i>
+                  </button>
+                  <button
+                    className="text-blue-500 hover:text-blue-700"
+                    onClick={(e) => {
+                      e.stopPropagation(); // prevent row toggle
+                      setShowModal(true);
+                      setNewEvaluation(evalItem);
+                      storeEncryptedId("eid", evalItem.eid);
+                    }}
+                  >
+                    <i className="fa fa-edit"></i>
+                  </button>
+                  {evalItem.evaluationType !== "STUDENT_TO_ADVISER" && (
                     <button
-                      className="border border-gray-300 text-black px-3 py-1 rounded-lg hover:bg-gray-200 transition"
-                      onClick={() => {
-                        storeEncryptedId("eid", evalItem.eid);
-                        window.location.href = `/teacher/questions/${evalItem.eid}`;
+                      className="text-green-500 hover:text-green-700"
+                      onClick={(e) => {
+                        e.stopPropagation(); // prevent row toggle
+                        handleDownload(evalItem.eid);
                       }}
                     >
-                      <Eye className="h-4 w-4 inline mr-1" />  
-                      View
+                      <i className="fa fa-download"></i>
                     </button>
-                  </td>
-                  <td className="px-4 py-2 flex flex-wrap gap-2">
-                    <button
-                      className="text-red-500 hover:text-red-700"
-                      onClick={() => handleDeleteEvaluation(evalItem.eid)}
-                    >
-                      <i className="fa fa-trash"></i>
-                    </button>
-                    <button
-                      className="text-blue-500 hover:text-blue-700"
-                      onClick={() => {
-                        setShowModal(true);
-                        setNewEvaluation(evalItem);
-                        storeEncryptedId("eid", evalItem.eid);
-                      }}
-                    >
-                      <i className="fa fa-edit"></i>
-                    </button>
-                    {evalItem.evaluationType !== "STUDENT_TO_ADVISER" && (
-                      <button
-                        className="text-green-500 hover:text-green-700"
-                        onClick={() => handleDownload(evalItem.eid)}
-                      >
-                        <i className="fa fa-download"></i>
-                      </button>
-                    )}
+                  )}
+                </td>
+              </tr>
+
+              {/* Dropdown row */}
+              {expandedIndex === index && (
+                <tr className="bg-gray-50">
+                  <td colSpan="7" className="p-4 text-sm text-gray-700">
+                    <div>
+                      <p><strong>Evaluation ID:</strong> {evalItem.eid}</p>
+                      <p><strong>Description:</strong> Add more detail here...</p>
+                      <div className="mt-2 flex gap-4">
+                        <button className="text-blue-500 hover:underline">Edit</button>
+                        <button className="text-green-500 hover:underline">Download</button>
+                      </div>
+                    </div>
                   </td>
                 </tr>
-              ))}
+              )}
+            </React.Fragment>
+          ))}
             </tbody>
           </table>
         </div>

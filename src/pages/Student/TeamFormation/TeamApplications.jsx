@@ -17,6 +17,7 @@ const TeamApplications = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState(null);
   const [activeTab, setActiveTab] = useState("team");
+  const [teamInvites, setTeamInvites] = useState([]);
 
 
   const address = getIpAddress();
@@ -33,36 +34,56 @@ const TeamApplications = () => {
 
   const fetchApplications = async () => {
     setLoading(true);
-
+  
     try {
-        const leaderTeamsResponse = await axios.get(`http://${address}:8080/user/${authState.uid}/leader-teams`);
-        
-        if (leaderTeamsResponse.status === 200 && leaderTeamsResponse.data.length > 0) {
-            const teamIds = leaderTeamsResponse.data.map(team => team.tid);
-
-            storeEncryptedId("tid", JSON.stringify(teamIds)); 
-            const decryptedTeamIds = JSON.parse(getDecryptedId("tid"));
-
-            const pendingApplicationsData = await Promise.all(
-                decryptedTeamIds.map(async (tid) => {
-                    const response = await axios.get(`http://${address}:8080/team/${tid}/pending-applications`);
-                    return response.data;
-                })
-            );
-
-            setPendingApplications(pendingApplicationsData.flat());
-        }
-
-        const myApplicationsResponse = await axios.get(`http://${address}:8080/student/${authState.uid}/my-applications`);
-        if (myApplicationsResponse.status === 200) {
-            setMyApplications(myApplicationsResponse.data);
-        }
-
+      const leaderTeamsResponse = await axios.get(`http://${address}:8080/user/${authState.uid}/leader-teams`);
+  
+      if (leaderTeamsResponse.status === 200 && leaderTeamsResponse.data.length > 0) {
+        const teamIds = leaderTeamsResponse.data.map(team => team.tid);
+  
+        storeEncryptedId("tid", JSON.stringify(teamIds)); 
+        const decryptedTeamIds = JSON.parse(getDecryptedId("tid"));
+  
+        const pendingApplicationsData = await Promise.all(
+          decryptedTeamIds.map(async (tid) => {
+            const response = await axios.get(`http://${address}:8080/team/${tid}/pending-applications`);
+            return response.data;
+          })
+        );
+  
+        setPendingApplications(pendingApplicationsData.flat());
+      }
+  
+      const myApplicationsResponse = await axios.get(`http://${address}:8080/student/${authState.uid}/my-applications`);
+      if (myApplicationsResponse.status === 200) {
+        setMyApplications(myApplicationsResponse.data);
+      }
+  
+      const invitesResponse = await axios.get(`http://${address}:8080/invitations/student/${authState.uid}`);
+      if (invitesResponse.status === 200) {
+        setTeamInvites(invitesResponse.data);
+      }
+  
     } catch (error) {
-        console.error("Error fetching applications:", error);
+      console.error("Error fetching applications:", error);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
+  };
+
+const handleInviteResponse = async (invitationId, isAccepted) => {
+  try {
+        const endpoint = isAccepted
+      ? `http://${address}:8080/invitations/accept/${invitationId}`
+      : `http://${address}:8080/invitations/reject/${invitationId}`;
+
+    await axios.put(endpoint);
+    toast.success(isAccepted ? "Invitation accepted!" : "Invitation rejected.");
+    fetchApplications();
+  } catch (error) {
+    toast.error("Error processing invitation.");
+    console.error(error);
+  }
 };
 
 const handleAccept = async (recruitmentId) => {
@@ -267,6 +288,76 @@ const handleReject = async () => {
             </tbody>
           </table>
         </div>
+
+        {/* Team Invitations Table */}
+        <h2 className="text-xl font-semibold text-gray-600 mb-2 mt-10">Team Invitations</h2>
+<div className="overflow-x-auto">
+  <table className="w-full border shadow-md rounded-lg overflow-hidden table-fixed border-collapse">
+    <thead className="bg-gray-700 text-center">
+      <tr className="bg-indigo-600 text-white">
+        <th className="border border-gray-300 px-6 py-3">Team Name</th>
+        <th className="border border-gray-300 px-6 py-3">Class</th>
+        <th className="border border-gray-300 px-6 py-3">Leader</th>
+        <th className="border border-gray-300 px-6 py-3">Members</th> {/* New */}
+        <th className="border border-gray-300 px-6 py-3">Status</th>
+        <th className="border border-gray-300 px-6 py-3">Actions</th>
+      </tr>
+    </thead>
+    <tbody className="text-center">
+      {teamInvites.length > 0 ? (
+        teamInvites.map(invite => (
+          <tr key={invite.invitationId} className="hover:bg-gray-100 transition-colors">
+            <td className="border border-gray-300 px-6 py-3 text-gray-900">{invite.groupName}</td>
+            <td className="border border-gray-300 px-6 py-3 text-gray-900">{invite.classDescription}</td>
+            <td className="border border-gray-300 px-6 py-3 text-gray-900">{invite.leaderName}</td>
+            <td className="border border-gray-300 px-6 py-3 text-gray-900">
+              {invite.members && invite.members.length > 0 ? (
+                <ul className="list-disc list-inside text-left">
+                  {invite.members.map((name, idx) => (
+                    <li key={idx}>{name}</li>
+                  ))}
+                </ul>
+              ) : (
+                <span className="text-gray-500 italic">No members yet</span>
+              )}
+            </td>
+            <td className="border border-gray-300 px-6 py-3 text-gray-900">{getStatusBadge(invite.status)}</td>
+            <td className="border border-gray-300 px-6 py-3 text-gray-900">
+              {invite.status === "PENDING" ? (
+                <div className="flex justify-center gap-2">
+                  <button
+                    className="border border-green-600 text-green-600 px-4 py-2 rounded hover:bg-green-100 transition"
+                    onClick={() => handleInviteResponse(invite.invitationId, true)}
+                  >
+                    Accept
+                  </button>
+                  <button
+                    className="border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-100 transition"
+                    onClick={() => handleInviteResponse(invite.invitationId, false)}
+                  >
+                    Reject
+                  </button>
+                </div>
+              ) : (
+                <span className="text-gray-500 italic">No actions</span>
+              )}
+            </td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan="6" className="text-center px-6 py-3 text-gray-900">
+            No team invitations.
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
+
+
+
+
         </div>
 
       {isModalOpen && (
