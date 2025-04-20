@@ -18,6 +18,7 @@ const TeacherSchedules = () => {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [scheduleToDelete, setScheduleToDelete] = useState(null);
+  const [advisoryTeams, setAdvisoryTeams] = useState([]);
 
   const address = getIpAddress();
 
@@ -61,6 +62,37 @@ const TeacherSchedules = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchAdvisoryTeams = async () => {
+      if (!authState.uid) {
+        console.error("Adviser ID is missing. Ensure you are logged in.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `http://${address}:8080/teacher/teams/adviser/${authState.uid}`,
+          {
+            headers: { Authorization: `Bearer ${authState.token}` },
+          }
+        );
+
+        if (response.status === 200) {
+          setAdvisoryTeams(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching advisory teams:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdvisoryTeams();
+  }, [authState]);
+
+
 
   const fetchQualifiedClasses = async () => {
     try {
@@ -194,11 +226,12 @@ const TeacherSchedules = () => {
           <p className="text-center text-red-500">{error}</p>
         ) : (
           <ScheduleTable
-            schedules={schedules}
-            onEdit={handleEdit}
-            onDelete={requestDelete}
-            formatTime={formatTime}
-          />
+          schedules={schedules}
+          onEdit={handleEdit}
+          onDelete={requestDelete}
+          formatTime={formatTime}
+          advisoryTeams={advisoryTeams}
+        />
         )}
 
         {/* Add Schedule Modal */}
@@ -249,13 +282,16 @@ const TeacherSchedules = () => {
   );
 };
 
-const ScheduleTable = ({ schedules, onEdit, onDelete, formatTime }) => (
+const ScheduleTable = ({ schedules, onEdit, onDelete, formatTime, advisoryTeams }) => (
   <div className="overflow-x-auto border border-gray-300 rounded-lg">
     <table className="min-w-full divide-y divide-gray-200">
       <thead className="bg-teal font-medium text-white">
         <tr>
           <th className="px-6 py-2 text-start text-md font-medium">Day</th>
           <th className="px-6 py-2 text-start text-md font-medium">Time</th>
+          <th className="px-6 py-3 text-left text-sm font-bold">
+                      Course Occupied
+                    </th>
           <th className="px-6 py-2 text-start text-md font-medium">Actions</th>
         </tr>
       </thead>
@@ -270,6 +306,21 @@ const ScheduleTable = ({ schedules, onEdit, onDelete, formatTime }) => (
                   )}`
                 : "No Time Set"}
             </td>
+            <td className="px-6 py-4 text-sm text-gray-900">
+            {(() => {
+                const schedDay = schedule.day?.toUpperCase();
+                const schedStart = formatTime(schedule.startTime);
+                const schedEnd = formatTime(schedule.endTime);
+                const schedTime = `${schedStart} - ${schedEnd}`;
+
+                const matchedTeam = advisoryTeams.find(team =>
+                  team.scheduleDay?.toUpperCase() === schedDay &&
+                  team.scheduleTime === schedTime
+                );
+
+                return matchedTeam?.courseDescription || "Open";
+              })()}
+          </td>
             <td className="px-6 py-2 flex space-x-2">
               {/* Purple Edit Button */}
               <button
