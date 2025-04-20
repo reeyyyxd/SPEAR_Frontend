@@ -65,7 +65,7 @@ const ClassSettings = () => {
     }
 
     try {
-      await axios.put(
+      const response = await axios.put(
         `http://${address}:8080/teacher/updateClass/${classId}`,
         classData,
         {
@@ -75,11 +75,22 @@ const ClassSettings = () => {
           },
         }
       );
-      alert("Class updated successfully!");
-      navigate(`/class-settings`);
+    
+      if (response.data.statusCode === 200) {
+        alert("Class updated successfully!");
+        navigate(`/class-settings`);
+      } else {
+        alert(response.data.message || "Failed to update class.");
+      }
     } catch (error) {
-      console.error("Error updating class:", error);
-      alert("Failed to update class. Please try again.");
+      const res = error.response;
+    
+      if (res?.status === 409) {
+        alert(res.data.message); // Backend sends a list of team names that violate maxTeamSize
+      } else {
+        console.error("Error updating class:", error);
+        alert("Failed to update class. Please try again.");
+      }
     }
   };
 

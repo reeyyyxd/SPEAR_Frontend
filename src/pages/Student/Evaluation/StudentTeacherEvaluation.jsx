@@ -48,64 +48,58 @@ const StudentTeacherEvaluation = () => {
     setResponses({ ...responses, [`${adviser?.adviserId}-${questionId}`]: value });
   };
 
+  const handleTextChange = (questionId, value) => {
+    setResponses({ ...responses, [`text-${questionId}`]: value });
+  };
+
   const handleSubmit = async () => {
-    if (!adviser) {
-      alert("Adviser not loaded. Please wait.");
-      return;
-    }
+    if (!adviser) return alert("Adviser not loaded. Please wait.");
 
     for (const question of questions) {
-      if (question.questionType === "INPUT" && !responses[`${adviser.adviserId}-${question.qid}`]) {
-        alert("Please answer all questions.");
-        return;
-      }
-      if (question.questionType === "TEXT" && !responses[`text-${question.qid}`]) {
-        alert("Please answer all text questions.");
-        return;
-      }
-    }
-
-    const radioAnswers = questions.filter(q => q.questionType === "INPUT").map(q => responses[`${adviser.adviserId}-${q.qid}`]);
-    const allSame = radioAnswers.every(val => val === radioAnswers[0]);
-
-    if (allSame) {
-      alert("You cannot give the same rating for all questions.");
-      return;
-    }
-
-    const responseList = [];
-    questions.forEach((question) => {
       if (question.questionType === "INPUT") {
-        const key = `${adviser.adviserId}-${question.qid}`;
-        const value = responses[key];
-        if (value) {
-          responseList.push({
-            evaluator: { uid: studentId },
-            evaluatee: { uid: adviser.adviserId },
-            question: { qid: question.qid },
-            evaluation: { eid: evaluationId },
-            score: value,
-            textResponse: null
-          });
+        const value = responses[`${adviser.adviserId}-${question.qid}`];
+        if (value === undefined || isNaN(value) || value < 0 || value > 10) {
+          return alert(`Please enter a valid score for: ${question.questionTitle}`);
         }
       }
       if (question.questionType === "TEXT") {
-        const value = responses[`text-${question.qid}`];
-        if (value) {
-          responseList.push({
-            evaluator: { uid: studentId },
-            evaluatee: { uid: adviser.adviserId },
-            question: { qid: question.qid },
-            evaluation: { eid: evaluationId },
-            score: 0,
-            textResponse: value
-          });
+        const text = responses[`text-${question.qid}`];
+        if (!text || text.trim() === "") {
+          return alert(`Please answer the text question: ${question.questionTitle}`);
         }
+      }
+    }
+
+    const scores = questions.filter(q => q.questionType === "INPUT").map(q => responses[`${adviser.adviserId}-${q.qid}`]);
+    if (scores.length > 0 && scores.every(val => val === scores[0])) {
+      return alert("You cannot give the same rating for all questions.");
+    }
+
+    const responseList = [];
+    questions.forEach((q) => {
+      if (q.questionType === "INPUT") {
+        responseList.push({
+          evaluator: { uid: studentId },
+          evaluatee: { uid: adviser.adviserId },
+          question: { qid: q.qid },
+          evaluation: { eid: evaluationId },
+          score: responses[`${adviser.adviserId}-${q.qid}`],
+          textResponse: null
+        });
+      } else if (q.questionType === "TEXT") {
+        responseList.push({
+          evaluator: { uid: studentId },
+          evaluatee: { uid: adviser.adviserId },
+          question: { qid: q.qid },
+          evaluation: { eid: evaluationId },
+          score: 0,
+          textResponse: responses[`text-${q.qid}`]
+        });
       }
     });
 
     try {
-      await axios.post(`http://${address}:8080/submissions/submit-adviser?evaluationId=${evaluationId}&evaluatorId=${studentId}`);
+      await axios.post(`http://${address}:8080/submissions/submit-adviser?evaluationId=${evaluationId}&evaluatorId=${studentId}`, responseList);
       alert("Evaluation successfully submitted!");
       navigate(-1);
     } catch (error) {
@@ -115,7 +109,7 @@ const StudentTeacherEvaluation = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-8">
       <div className="w-full max-w-4xl mb-6">
         <button onClick={() => navigate(-1)} className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
           ← Back
@@ -125,7 +119,7 @@ const StudentTeacherEvaluation = () => {
       <h1 className="text-3xl font-bold text-gray-800 mb-2">Adviser Evaluation</h1>
       <p className="text-md text-gray-500 mb-6">Evaluate your adviser below.</p>
 
-      <form onSubmit={(e) => { e.preventDefault(); setShowConfirmModal(true); }} className="w-full max-w-4xl bg-white p-6 md:p-8 rounded-lg shadow space-y-8">
+      <form onSubmit={(e) => { e.preventDefault(); setShowConfirmModal(true); }} className="w-full max-w-4xl bg-white p-8 rounded-lg shadow space-y-8">
         {questions.map((question) => (
           <div key={question.qid} className="space-y-3">
             <div>
@@ -133,7 +127,7 @@ const StudentTeacherEvaluation = () => {
               <div className="text-xs text-gray-500">{question.questionDetails}</div>
             </div>
 
-            {question.questionType === "INPUT" && adviser && (
+            {question.questionType === "INPUT" && (
               <input
                 type="number"
                 min="0"
@@ -141,7 +135,7 @@ const StudentTeacherEvaluation = () => {
                 step="0.1"
                 placeholder="0.0"
                 className="w-20 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                value={responses[`${adviser.adviserId}-${question.qid}`] || ""}
+                value={responses[`${adviser?.adviserId}-${question.qid}`] || ""}
                 onChange={(e) => handleResponseChange(question.qid, parseFloat(e.target.value))}
               />
             )}
@@ -152,7 +146,7 @@ const StudentTeacherEvaluation = () => {
                 rows="4"
                 placeholder="Write your response here..."
                 value={responses[`text-${question.qid}`] || ""}
-                onChange={(e) => setResponses({ ...responses, [`text-${question.qid}`]: e.target.value })}
+                onChange={(e) => handleTextChange(question.qid, e.target.value)}
               />
             )}
           </div>

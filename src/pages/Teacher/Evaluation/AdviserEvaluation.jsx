@@ -11,7 +11,6 @@ const TeacherAdviserEvaluation = () => {
   const [teamDetails, setTeamDetails] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [responses, setResponses] = useState({});
-  const [feedback, setFeedback] = useState("");
 
   const teamName = getDecryptedId("teamName");
   const evaluationId = getDecryptedId("eid");
@@ -53,54 +52,49 @@ const TeacherAdviserEvaluation = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check unanswered INPUT
-    const unansweredRadio = questions.some(
-      (question) =>
-        question.questionType === "INPUT" &&
-        teamDetails.memberIds.some(
-          (memberId) => !responses[`${memberId}-${question.qid}`]
-        )
-    );
-
-    // Check unanswered TEXT
-    const unansweredText = questions.some(
-      (question) =>
-        question.questionType === "TEXT" && !responses[`text-${question.qid}`]
-    );
-
-    if (unansweredRadio || unansweredText) {
-      alert("Please answer all questions before submitting.");
-      return;
+    for (const question of questions) {
+      if (question.questionType === "INPUT") {
+        const missing = teamDetails.memberIds.find(
+          (id) => !responses[`${id}-${question.qid}`]
+        );
+        if (missing) {
+          alert(`Please answer all ratings for "${question.questionTitle}"`);
+          return;
+        }
+        for (const id of teamDetails.memberIds) {
+          const val = responses[`${id}-${question.qid}`];
+          if (val === "" || val === undefined || isNaN(val) || val < 0 || val > 10) {
+            alert(`Please enter a valid score between 0.0 and 10.0 for "${question.questionTitle}"`);
+            return;
+          }
+        }
+      }
+      if (question.questionType === "TEXT") {
+        if (!responses[`text-${question.qid}`] || responses[`text-${question.qid}`].trim() === "") {
+          alert(`Please answer the text question: "${question.questionTitle}"`);
+          return;
+        }
+      }
     }
 
-    // Check duplicate scores
-    const hasDuplicateScores = questions.some((question) => {
-      if (question.questionType !== "INPUT") return false;
-      const scores = teamDetails.memberIds.map(
-        (memberId) => responses[`${memberId}-${question.qid}`]
-      );
-      return new Set(scores).size === 1;
-    });
-
-    if (hasDuplicateScores) {
-      alert(
-        "Please avoid giving the same score to all members on any question."
-      );
-      return;
+    for (const question of questions.filter(q => q.questionType === "INPUT")) {
+      const scores = teamDetails.memberIds.map(id => responses[`${id}-${question.qid}`]).filter(Boolean);
+      if (scores.length && new Set(scores).size === 1) {
+        alert(`You cannot assign the same score to all members for "${question.questionTitle}"`);
+        return;
+      }
     }
 
     const responseList = [];
-
-    // INPUT responses
     teamDetails.memberIds.forEach((memberId) => {
-      questions.forEach((question) => {
-        const key = `${memberId}-${question.qid}`;
+      questions.forEach((q) => {
+        const key = `${memberId}-${q.qid}`;
         const value = responses[key];
-        if (question.questionType === "INPUT" && value) {
+        if (q.questionType === "INPUT" && value) {
           responseList.push({
-            evaluator: { uid: -1 }, // Replace with teacher ID if available
+            evaluator: { uid: -1 },
             evaluatee: { uid: memberId },
-            question: { qid: question.qid },
+            question: { qid: q.qid },
             evaluation: { eid: evaluationId },
             score: value,
             textResponse: null,
@@ -109,164 +103,125 @@ const TeacherAdviserEvaluation = () => {
       });
     });
 
-    // TEXT responses
-    questions.forEach((question) => {
-      if (question.questionType === "TEXT") {
-        const value = responses[`text-${question.qid}`];
-        if (value) {
-          responseList.push({
-            evaluator: { uid: -1 },
-            evaluatee: { uid: 0 },
-            question: { qid: question.qid },
-            evaluation: { eid: evaluationId },
-            score: 0,
-            textResponse: value,
-          });
-        }
+    questions.forEach((q) => {
+      const value = responses[`text-${q.qid}`];
+      if (q.questionType === "TEXT" && value) {
+        responseList.push({
+          evaluator: { uid: -1 },
+          evaluatee: { uid: 0 },
+          question: { qid: q.qid },
+          evaluation: { eid: evaluationId },
+          score: 0,
+          textResponse: value,
+        });
       }
     });
 
     try {
-      await axios.post(
-        `http://${address}:8080/responses/submit?teamId=${teamDetails.teamId}`,
-        responseList
-      );
-      alert("Evaluation submitted successfully!");
+      await axios.post(`http://${address}:8080/responses/submit?teamId=${teamDetails.teamId}`, responseList);
+      alert("Evaluation successfully submitted!");
       navigate(-1);
-    } catch (error) {
-      console.error("Error submitting evaluation:", error);
+    } catch (err) {
+      console.error("Error submitting evaluation:", err);
       alert("Failed to submit evaluation.");
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4 sm:p-6">
-      {/* Back Button */}
-      <div className="w-full max-w-4xl mb-6 px-4 sm:px-0">
-        <button
-          onClick={() => navigate(-1)}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition w-full sm:w-auto"
-        >
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-8">
+      <div className="w-full max-w-4xl mb-6">
+        <button onClick={() => navigate(-1)} className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
           ← Back
         </button>
       </div>
 
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 text-center">
-        Team Evaluation
-      </h1>
-      <p className="text-sm sm:text-md text-gray-500 mb-6 text-center">
-        Evaluate the team's performance below.
-      </p>
+      <h1 className="text-3xl font-bold text-gray-800 mb-2">Team Evaluation</h1>
+      <p className="text-md text-gray-500 mb-6">Evaluate the team members below.</p>
 
-      {teamDetails && questions.length > 0 ? (
-        <form
-          onSubmit={handleSubmit}
-          className="w-full max-w-4xl bg-white p-4 sm:p-8 rounded-lg shadow space-y-8"
-        >
-          {/* Project Info */}
+      {teamDetails && (
+        <form onSubmit={handleSubmit} className="w-full max-w-4xl bg-white p-8 rounded-lg shadow space-y-8">
           <div className="space-y-2">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-gray-800">
               Project Name: {teamDetails.projectName}
             </h2>
-            <p className="text-gray-600 text-sm sm:text-base">
+            <p className="text-sm text-gray-600">
               Project Description: {teamDetails.projectDescription}
             </p>
           </div>
 
-          {/* Questions */}
-          {questions.map((question) => (
-            <div key={question.qid} className="space-y-3">
-              <h3 className="font-semibold text-md sm:text-lg text-gray-700">
-                {question.questionText}
-              </h3>
-
-              {/* INPUT Type (Scoring Table) */}
-              {question.questionType === "INPUT" && (
-                <div className="overflow-x-auto rounded border">
-                  <table className="w-full text-center table-auto border-collapse min-w-[500px]">
-                    <thead>
-                      <tr className="bg-gray-100 text-gray-600">
-                        <th className="p-2 text-left">Team Member</th>
-                        {[1, 2, 3, 4, 5].map((score) => (
-                          <th key={score} className="p-2">
-                            {score}
-                          </th>
+          {questions.some(q => q.questionType === "INPUT") && (
+            <div className="overflow-x-auto space-y-4">
+              <p className="text-sm text-gray-500 mb-4">Rate each team member on a scale of 0.0 - 10.0 for each question.</p>
+              <table className="w-full table-fixed">
+                <thead>
+                  <tr className="bg-gray-100 text-gray-600">
+                    <th className="w-1/3 text-left p-3">Criteria</th>
+                    {teamDetails.memberNames.map((name, i) => (
+                      <th key={i} className="text-center p-3">{name}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {questions
+                    .filter(q => q.questionType === "INPUT")
+                    .map((q) => (
+                      <tr key={q.qid}>
+                        <td className="p-3 text-left align-top whitespace-normal text-sm text-gray-700">
+                          <div>
+                            <div className="font-semibold">{q.questionTitle}</div>
+                            <div className="text-xs text-gray-500">{q.questionDetails}</div>
+                          </div>
+                        </td>
+                        {teamDetails.memberIds.map((id, i) => (
+                          <td key={id} className="p-3 text-center">
+                            <input
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.1"
+                              placeholder="0.0"
+                              className="w-20 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                              value={responses[`${id}-${q.qid}`] || ""}
+                              onChange={(e) =>
+                                handleResponseChange(id, q.qid, parseFloat(e.target.value))
+                              }
+                            />
+                          </td>
                         ))}
                       </tr>
-                    </thead>
-                    <tbody>
-                      {teamDetails.memberNames.map((member, index) => (
-                        <tr key={index} className="border-t hover:bg-gray-50">
-                          <td className="p-2 text-left font-medium">
-                            {member}
-                          </td>
-                          {[1, 2, 3, 4, 5].map((score) => (
-                            <td key={score} className="p-2">
-                              <input
-                                type="radio"
-                                name={`rating-${teamDetails.memberIds[index]}-${question.qid}`}
-                                value={score}
-                                checked={
-                                  responses[
-                                    `${teamDetails.memberIds[index]}-${question.qid}`
-                                  ] === score
-                                }
-                                onChange={() =>
-                                  handleResponseChange(
-                                    teamDetails.memberIds[index],
-                                    question.qid,
-                                    score
-                                  )
-                                }
-                              />
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-              {/* TEXT Type */}
-              {question.questionType === "TEXT" && (
+          {questions
+            .filter(q => q.questionType === "TEXT")
+            .map((q) => (
+              <div key={q.qid} className="space-y-3">
+                <div>
+                  <div className="font-semibold">{q.questionTitle}</div>
+                  <div className="text-xs text-gray-500">{q.questionDetails}</div>
+                </div>
                 <textarea
-                  className="w-full p-3 border rounded focus:ring-2 focus:ring-gray-400 text-sm"
+                  className="w-full p-3 border rounded focus:ring-2 focus:ring-gray-400"
                   rows="4"
                   placeholder="Write your response here..."
-                  value={responses[`text-${question.qid}`] || ""}
-                  onChange={(e) =>
-                    handleResponseChange("text", question.qid, e.target.value)
-                  }
+                  value={responses[`text-${q.qid}`] || ""}
+                  onChange={(e) => handleResponseChange("text", q.qid, e.target.value)}
                 />
-              )}
-            </div>
+              </div>
           ))}
 
-          {/* Additional Feedback */}
-          <div>
-            <h3 className="font-semibold text-md sm:text-lg text-gray-700 mb-2">
-              Additional Feedback
-            </h3>
-            <textarea
-              className="w-full p-3 border rounded focus:ring-2 focus:ring-gray-400 text-sm"
-              rows="4"
-              placeholder="Write your feedback here..."
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-            />
+          <div className="flex justify-end mt-8">
+            <button
+              type="submit"
+              className="px-6 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 transition"
+            >
+              Submit
+            </button>
           </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 transition text-base sm:text-lg"
-          >
-            Submit Evaluation
-          </button>
         </form>
-      ) : (
-        <p className="text-gray-500">Loading team details...</p>
       )}
     </div>
   );

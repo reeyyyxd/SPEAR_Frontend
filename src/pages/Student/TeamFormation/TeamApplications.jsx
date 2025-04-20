@@ -3,6 +3,8 @@ import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import RejectModal from "../../../components/Modals/RejectModal";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 import { Check, X } from "lucide-react"
 
 const TeamApplications = () => {
@@ -68,11 +70,14 @@ const handleAccept = async (recruitmentId) => {
     await axios.post(`http://${address}:8080/student/review/${recruitmentId}`, {
       isAccepted: true,
     });
+    toast.success("Application accepted!");
     fetchApplications();  
   } catch (error) {
+    toast.error(error?.response?.data?.error || "Failed to accept application.");
     console.error("Error accepting application:", error);
   }
 };
+
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
   if (!isOpen) return null;
@@ -109,19 +114,21 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
   );
 };
 
-  const handleReject = async () => {
-    try {
-      await axios.post(`http://${address}:8080/student/review/${rejectModal.recruitmentId}`, {
-        isAccepted: false,
-        leaderReason: rejectReason,
-      });
-      setRejectModal({ isOpen: false, recruitmentId: null });
-      setRejectReason("");
-      fetchApplications();
-    } catch (error) {
-      console.error("Error rejecting application:", error);
-    }
-  };
+const handleReject = async () => {
+  try {
+    await axios.post(`http://${address}:8080/student/review/${rejectModal.recruitmentId}`, {
+      isAccepted: false,
+      leaderReason: rejectReason,
+    });
+    toast.success("Application rejected.");
+    setRejectModal({ isOpen: false, recruitmentId: null });
+    setRejectReason("");
+    fetchApplications();
+  } catch (error) {
+    toast.error(error?.response?.data?.error || "Failed to reject application.");
+    console.error("Error rejecting application:", error);
+  }
+};
 
   if (loading) {
     return (
@@ -284,6 +291,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
       )}
       </div>
       </div>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
       </div>
   );
 };

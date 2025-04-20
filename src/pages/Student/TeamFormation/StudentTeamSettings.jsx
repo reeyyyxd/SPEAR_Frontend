@@ -45,6 +45,7 @@ const StudentTeamSettings = () => {
   const [modalMessage, setModalMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState(null);
   const [userData, setUserData] = useState({ firstname: "", lastname: "" });
+  const [classDetails, setClassDetails] = useState(null);
 
   const address = getIpAddress();
 
@@ -330,6 +331,20 @@ const StudentTeamSettings = () => {
   };
 
   useEffect(() => {
+    if (!classId) return;
+    const fetchClassDetails = async () => {
+      try {
+        const res = await axios.get(`http://${address}:8080/class/${classId}`);
+        setClassDetails(res.data);
+      } catch (error) {
+        console.error("Failed to fetch class info", error);
+      }
+    };
+    fetchClassDetails();
+  }, [classId]);
+  
+
+  useEffect(() => {
     if (authState?.uid) {
       fetchStudentData();
     }
@@ -521,12 +536,14 @@ const StudentTeamSettings = () => {
             </button>
           </div>
         ) : (
-          <button
-            onClick={() => setShowRequestModal(true)}
-            className="px-4 py-2 w-full bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
-          >
-            Request Adviser & Schedule
-          </button>
+          classDetails?.needsAdvisory ? (
+            <button
+              onClick={() => setShowRequestModal(true)}
+              className="px-4 py-2 w-full bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+            >
+              Request Adviser & Schedule
+            </button>
+          ) : null
         )}
 
         {/* Recruitment Status */}
