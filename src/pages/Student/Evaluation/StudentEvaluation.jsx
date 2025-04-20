@@ -62,13 +62,13 @@ const StudentEvaluation = () => {
         if (question.questionType === "INPUT") {
             const missingMember = teamMembers.find(member => !responses[`${member.memberId}-${question.qid}`]);
             if (missingMember) {
-                alert(`Please answer all ratings for "${question.questionText}"`);
+                alert(`Please answer all ratings for "${question.questionTitle}"`);
                 return;
             }
         }
         if (question.questionType === "TEXT") {
             if (!responses[`text-${question.qid}`] || responses[`text-${question.qid}`].trim() === "") {
-                alert(`Please answer the text question: "${question.questionText}"`);
+                alert(`Please answer the text question: "${question.questionTitle}"`);
                 return;
             }
         }
@@ -82,7 +82,7 @@ const StudentEvaluation = () => {
               value < 0 ||
               value > 10
             ) {
-              alert(`Please enter a valid score between 0.0 and 10.0 for "${question.questionText}"`);
+              alert(`Please enter a valid score between 0.0 and 10.0 for "${question.questionTitle}"`);
               return;
             }
           }
@@ -96,7 +96,7 @@ const StudentEvaluation = () => {
             const scores = teamMembers.map(member => responses[`${member.memberId}-${question.qid}`]).filter(Boolean);
             const uniqueScores = [...new Set(scores)];
             if (scores.length > 0 && uniqueScores.length === 1) {
-                alert(`You cannot assign the same score to all members for "${question.questionText}"`);
+                alert(`You cannot assign the same score to all members for "${question.questionTitle}"`);
                 return;
             }
         }
@@ -184,7 +184,10 @@ const StudentEvaluation = () => {
                   .map((question) => (
                     <tr key={question.qid}>
                       <td className="p-3 text-left align-top whitespace-normal text-sm text-gray-700">
-                        {question.questionText}
+                      <div>
+                        <div className="font-semibold">{question.questionTitle}</div>
+                        <div className="text-xs text-gray-500">{question.questionDetails}</div>
+                      </div>
                       </td>
                       {teamMembers.map((member) => (
                         <td key={member.memberId} className="p-3 text-center">
@@ -217,7 +220,10 @@ const StudentEvaluation = () => {
           .filter(q => q.questionType === "TEXT")
           .map((question) => (
             <div key={question.qid} className="space-y-3">
-              <h2 className="font-semibold text-gray-700">{question.questionText}</h2>
+              <div>
+                <div className="font-semibold">{question.questionTitle}</div>
+                <div className="text-xs text-gray-500">{question.questionDetails}</div>
+              </div>
               <textarea
                 className="w-full p-3 border rounded focus:ring-2 focus:ring-gray-400"
                 rows="4"

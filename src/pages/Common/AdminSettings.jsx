@@ -247,7 +247,7 @@ const AdminSettings = () => {
             handleSaveChanges();
           }}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="email" className="block mb-2 font-medium">
                 Email
@@ -259,6 +259,7 @@ const AdminSettings = () => {
                 value={userData.email}
                 onChange={handleInputChange}
                 className="w-full border rounded-md p-3"
+                disabled
               />
             </div>
             <div>

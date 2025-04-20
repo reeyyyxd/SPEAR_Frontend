@@ -11,6 +11,7 @@ const StudentTeacherEvaluation = () => {
   const [questions, setQuestions] = useState([]);
   const [adviser, setAdviser] = useState(null);
   const [responses, setResponses] = useState({});
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const studentId = getDecryptedId("uid");
   const evaluationId = getDecryptedId("eid");
@@ -34,10 +35,7 @@ const StudentTeacherEvaluation = () => {
     try {
       const response = await axios.get(`http://${address}:8080/evaluation/${studentId}/class/${classId}/adviser`);
       if (response.data && response.data.adviserName && response.data.adviserId) {
-        setAdviser({
-          adviserId: response.data.adviserId,
-          adviserName: response.data.adviserName
-        });
+        setAdviser({ adviserId: response.data.adviserId, adviserName: response.data.adviserName });
       } else {
         console.error("Invalid adviser data:", response.data);
       }
@@ -47,20 +45,15 @@ const StudentTeacherEvaluation = () => {
   };
 
   const handleResponseChange = (questionId, value) => {
-    setResponses({
-      ...responses,
-      [`${adviser?.adviserId}-${questionId}`]: value,
-    });
+    setResponses({ ...responses, [`${adviser?.adviserId}-${questionId}`]: value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!adviser) {
       alert("Adviser not loaded. Please wait.");
       return;
     }
 
-    // Check if all questions are answered
     for (const question of questions) {
       if (question.questionType === "INPUT" && !responses[`${adviser.adviserId}-${question.qid}`]) {
         alert("Please answer all questions.");
@@ -72,7 +65,6 @@ const StudentTeacherEvaluation = () => {
       }
     }
 
-    // Check for same score restriction
     const radioAnswers = questions.filter(q => q.questionType === "INPUT").map(q => responses[`${adviser.adviserId}-${q.qid}`]);
     const allSame = radioAnswers.every(val => val === radioAnswers[0]);
 
@@ -123,14 +115,9 @@ const StudentTeacherEvaluation = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-8">
-
-      {/* Back Button */}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="w-full max-w-4xl mb-6">
-        <button 
-          onClick={() => navigate(-1)}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
-        >
+        <button onClick={() => navigate(-1)} className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
           ← Back
         </button>
       </div>
@@ -138,67 +125,58 @@ const StudentTeacherEvaluation = () => {
       <h1 className="text-3xl font-bold text-gray-800 mb-2">Adviser Evaluation</h1>
       <p className="text-md text-gray-500 mb-6">Evaluate your adviser below.</p>
 
-      {/* Evaluation Form */}
-      <form onSubmit={handleSubmit} className="w-full max-w-4xl bg-white p-8 rounded-lg shadow space-y-8">
-
+      <form onSubmit={(e) => { e.preventDefault(); setShowConfirmModal(true); }} className="w-full max-w-4xl bg-white p-6 md:p-8 rounded-lg shadow space-y-8">
         {questions.map((question) => (
           <div key={question.qid} className="space-y-3">
-            <h2 className="font-semibold text-gray-700">{question.questionText}</h2>
+            <div>
+              <div className="font-semibold text-gray-700">{question.questionTitle}</div>
+              <div className="text-xs text-gray-500">{question.questionDetails}</div>
+            </div>
 
-            {/* Input */}
             {question.questionType === "INPUT" && adviser && (
-              <div className="overflow-x-auto rounded border">
-                <table className="w-full text-center table-auto border-collapse">
-                  <thead>
-                    <tr className="bg-gray-100 text-gray-600">
-                      <th className="p-2 text-left">Adviser</th>
-                      {[1, 2, 3, 4, 5].map((score) => (
-                        <th key={score} className="p-2">{score}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-t hover:bg-gray-50">
-                      <td className="p-2 text-left font-medium">{adviser?.adviserName || "Adviser"}</td>
-                      {[1, 2, 3, 4, 5].map((score) => (
-                        <td key={score} className="p-2">
-                          <input
-                            type="radio"
-                            name={`rating-${question.qid}`}
-                            value={score}
-                            checked={responses[`${adviser?.adviserId}-${question.qid}`] === score}
-                            onChange={() => handleResponseChange(question.qid, score)}
-                          />
-                        </td>
-                      ))}
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <input
+                type="number"
+                min="0"
+                max="10"
+                step="0.1"
+                placeholder="0.0"
+                className="w-20 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                value={responses[`${adviser.adviserId}-${question.qid}`] || ""}
+                onChange={(e) => handleResponseChange(question.qid, parseFloat(e.target.value))}
+              />
             )}
 
-            {/* Text */}
             {question.questionType === "TEXT" && (
-              <div>
-                <textarea
-                  className="w-full p-3 border rounded focus:ring-2 focus:ring-gray-400"
-                  rows="4"
-                  placeholder="Write your response here..."
-                  value={responses[`text-${question.qid}`] || ""}
-                  onChange={(e) => handleResponseChange(question.qid, e.target.value)}
-                />
-              </div>
+              <textarea
+                className="w-full p-3 border rounded focus:ring-2 focus:ring-gray-400"
+                rows="4"
+                placeholder="Write your response here..."
+                value={responses[`text-${question.qid}`] || ""}
+                onChange={(e) => setResponses({ ...responses, [`text-${question.qid}`]: e.target.value })}
+              />
             )}
           </div>
         ))}
 
-        <button
-          type="submit"
-          className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 transition text-lg"
-        >
-          Submit Evaluation
-        </button>
+        <div className="flex justify-end mt-8">
+          <button type="submit" className="px-6 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 transition">
+            Submit
+          </button>
+        </div>
       </form>
+
+      {showConfirmModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full">
+            <h2 className="text-lg font-semibold mb-4">Confirm Submission</h2>
+            <p className="text-sm text-gray-600 mb-6">Are you sure you want to submit your evaluation?</p>
+            <div className="flex justify-end space-x-4">
+              <button onClick={() => setShowConfirmModal(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+              <button onClick={handleSubmit} className="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700">Yes, Submit</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

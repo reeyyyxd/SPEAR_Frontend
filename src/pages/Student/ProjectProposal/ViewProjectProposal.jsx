@@ -16,7 +16,7 @@ const ViewProjectProposal = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProposalId, setSelectedProposalId] = useState(null);
   const [officialProjectId, setOfficialProjectId] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);ƒ
   const [modalMessage, setModalMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState(null);
   const [activeTab, setActiveTab] = useState("team");

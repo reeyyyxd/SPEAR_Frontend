@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import AuthContext from "../../services/AuthContext";
 import axios from "axios";
-import { PlusCircle, FileQuestion, Trash2 } from "lucide-react"
+import { PlusCircle, FileQuestion, Trash2 } from "lucide-react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AdminQuestionTemplates = () => {
   const { authState } = useContext(AuthContext);
@@ -16,7 +18,7 @@ const AdminQuestionTemplates = () => {
   const [confirmationModal, setConfirmationModal] = useState(false);
   const [isEditingQuestion, setIsEditingQuestion] = useState(false);
   const [editingQuestionId, setEditingQuestionId] = useState(null);
-  const [newQuestion, setNewQuestion] = useState({ questionText: "", questionType: "INPUT" });
+  const [newQuestion, setNewQuestion] = useState({ questionTitle: "", questionDetails: "", questionType: "INPUT" });
   const [newSetName, setNewSetName] = useState("");
   const [error, setError] = useState("");
 
@@ -25,6 +27,13 @@ const AdminQuestionTemplates = () => {
   useEffect(() => {
     fetchSets();
   }, []);
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   const fetchSets = async () => {
     try {
@@ -44,24 +53,28 @@ const AdminQuestionTemplates = () => {
     }
     try {
       await axios.post(`http://${address}:8080/templates/admin/create-set?name=${newSetName}`);
-      alert("Set created successfully");
+      toast.success("Set created successfully");
       setNewSetName("");
       setShowSetModal(false);
+      setError("");
       fetchSets();
     } catch (error) {
       console.error("Error creating set:", error);
+      toast.error("Failed to create set");
     }
   };
 
   const handleDeleteSet = async () => {
-    if (!selectedSet || !window.confirm("Are you sure you want to delete this set?")) return;
+    if (!selectedSet) return;
+    if (!window.confirm("Are you sure you want to delete this set?")) return;
     try {
       await axios.delete(`http://${address}:8080/templates/admin/delete-set/${selectedSet}`);
-      alert("Set deleted successfully");
+      toast.success("Set deleted successfully");
       setSelectedSet("");
       fetchSets();
     } catch (error) {
       console.error("Error deleting set:", error);
+      toast.error("Failed to delete set");
     }
   };
 
@@ -70,16 +83,16 @@ const AdminQuestionTemplates = () => {
       setError("Please select a set first.");
       return;
     }
-    if (!newQuestion.questionText.trim()) {
+    if (!newQuestion.questionTitle.trim()) {
       setError("Question text is required.");
       return;
     }
-  
+
     const payload = {
       ...newQuestion,
       createdByUserId: authState.uid,
     };
-  
+
     try {
       if (isEditingQuestion) {
         await axios.put(
@@ -91,7 +104,7 @@ const AdminQuestionTemplates = () => {
             },
           }
         );
-        alert("Question updated successfully!");
+        toast.success("Question updated successfully!");
       } else {
         await axios.post(
           `http://${address}:8080/templates/admin/add-question/${selectedSet}`,
@@ -102,21 +115,27 @@ const AdminQuestionTemplates = () => {
             },
           }
         );
-        alert("Question created successfully!");
+        toast.success("Question created successfully!");
       }
-  
+
       fetchSets();
       setShowQuestionModal(false);
-      setNewQuestion({ questionText: "", questionType: "INPUT" });
+      setNewQuestion({ questionTitle: "", questionDetails: "", questionType: "INPUT" });
       setIsEditingQuestion(false);
+      setError("");
     } catch (error) {
       console.error("Error saving question:", error);
       setError(error.response?.data?.message || "Failed to save question.");
+      toast.error("Failed to save question");
     }
   };
 
   const handleEditQuestion = (question) => {
-    setNewQuestion({ questionText: question.questionText, questionType: question.questionType });
+    setNewQuestion({
+      questionTitle: question.questionTitle,
+      questionDetails: question.questionDetails,
+      questionType: question.questionType,
+    });
     setEditingQuestionId(question.id);
     setIsEditingQuestion(true);
     setShowQuestionModal(true);
@@ -126,10 +145,11 @@ const AdminQuestionTemplates = () => {
     if (!window.confirm("Are you sure you want to delete this question?")) return;
     try {
       await axios.delete(`http://${address}:8080/templates/admin/delete-question/${id}`);
-      alert("Question deleted successfully");
+      toast.success("Question deleted successfully");
       fetchSets();
     } catch (error) {
       console.error("Error deleting question:", error);
+      toast.error("Failed to delete question");
     }
   };
 
@@ -192,6 +212,7 @@ const AdminQuestionTemplates = () => {
               <thead className="sticky top-0 bg-[#323c47] text-white shadow-md">
                 <tr>
                   <th className="px-4 py-2 text-left text-sm font-semibold">Question</th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold">Details</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold">Type</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold">Actions</th>
                 </tr>
@@ -199,7 +220,8 @@ const AdminQuestionTemplates = () => {
               <tbody>
                 {sets.find((s) => s.id === parseInt(selectedSet))?.questions.map((question, index) => (
                   <tr key={index} className="border-b">
-                    <td className="px-4 py-2">{question.questionText}</td>
+                    <td className="px-4 py-2">{question.questionTitle}</td>
+                    <td className="px-4 py-2">{question.questionDetails}</td>
                     <td className="px-4 py-2 capitalize">{question.questionType}</td>
                     <td className="px-4 py-2 space-x-2">
                       <button className="text-blue-500 hover:text-blue-700" onClick={() => handleEditQuestion(question)}>Edit</button>
@@ -230,8 +252,30 @@ const AdminQuestionTemplates = () => {
             {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Question</label>
-              <input type="text" value={newQuestion.questionText} onChange={(e) => setNewQuestion({ ...newQuestion, questionText: e.target.value })} className="w-full border border-gray-300 px-3 py-2 rounded-lg" placeholder="Type your question here..." />
+              <input
+                type="text"
+                value={newQuestion.questionTitle}
+                onChange={(e) =>
+                  setNewQuestion({ ...newQuestion, questionTitle: e.target.value })
+                }
+                className="w-full border border-gray-300 px-3 py-2 rounded-lg"
+                placeholder="Enter question here..."
+              />
             </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Question Details</label>
+              <textarea
+                value={newQuestion.questionDetails}
+                onChange={(e) =>
+                  setNewQuestion({ ...newQuestion, questionDetails: e.target.value })
+                }
+                className="w-full border border-gray-300 px-3 py-2 rounded-lg"
+                placeholder="Enter question details here..."
+              />
+            </div>
+
+
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Question Type</label>
               <select
