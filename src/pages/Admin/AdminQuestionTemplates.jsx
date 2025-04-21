@@ -37,10 +37,15 @@ const AdminQuestionTemplates = () => {
 
   const fetchSets = async () => {
     try {
-      const { data } = await axios.get(`http://${address}:8080/templates/teacher/get-template-sets`);
+      const { data } = await axios.get(`http://${address}:8080/templates/admin/my-template-sets`, {
+        headers: {
+          Authorization: `Bearer ${authState.token}`,
+        },
+      });
       setSets(data);
     } catch (error) {
       console.error("Error fetching sets:", error);
+      toast.error("Failed to load templates");
     } finally {
       setLoading(false);
     }
@@ -51,16 +56,34 @@ const AdminQuestionTemplates = () => {
       setError("Set name is required.");
       return;
     }
+  
+    if (!authState.uid || !authState.token) {
+      console.error("User ID or token is missing");
+      setError("User not authenticated");
+      return;
+    }
+  
     try {
-      await axios.post(`http://${address}:8080/templates/admin/create-set?name=${newSetName}`);
+      const response = await axios.post(
+        `http://${address}:8080/templates/admin/create-set?name=${newSetName}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${authState.token}`,
+          },
+        }
+      );
+  
+      const newSet = response.data;
+      setSets([...sets, newSet]);
       toast.success("Set created successfully");
       setNewSetName("");
       setShowSetModal(false);
       setError("");
-      fetchSets();
     } catch (error) {
-      console.error("Error creating set:", error);
-      toast.error("Failed to create set");
+      const msg = error?.response?.data?.message || "Failed to create set";
+      toast.error(msg);
+      setError(msg);
     }
   };
 

@@ -195,11 +195,20 @@ const TeacherQuestions = () => {
       setShowTemplateModal(false);
       setTemplateSetName("");
     } catch (error) {
-      console.error("Error saving template:", error.response?.data || error);
-      alert("Failed to save template.");
+      const msg =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        "An error occurred while saving the template.";
+  
+      console.error("Save error:", msg);
+  
+      if (msg.toLowerCase().includes("already exists")) {
+        alert("A template with that name already exists. Try a different one.");
+      } else {
+        alert(msg);
+      }
     }
   };
-
 
 
 
