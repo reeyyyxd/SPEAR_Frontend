@@ -70,14 +70,22 @@ const EvaluationTeacher = () => {
     fetchTeamDetailsByAdviser();
   }, [teacherId]);
 
-  const handleViewStatus = (evaluationId, classId, teamName) => {
-    storeEncryptedId("cid", classId); // Store classId securely in local storage
-    storeEncryptedId("eid", evaluationId); // Store evaluationId securely in local storage
-    storeEncryptedId("teamName", teamName); // Store teamName securely
-    navigate(`/teacher/teacher-evaluation-status`);
-  };
+  // const handleViewStatus = (evaluationId, classId, teamName) => {
+  //   storeEncryptedId("cid", classId); // Store classId securely in local storage
+  //   storeEncryptedId("eid", evaluationId); // Store evaluationId securely in local storage
+  //   storeEncryptedId("teamName", teamName); // Store teamName securely
+  //   navigate(`/teacher/teacher-evaluation-status`);
+  // };
 
-  const handleEvaluateTeam = () => {
+  const handleEvaluateTeam = (teamId, classId, eid) => {
+    if (!eid) {
+      alert("Evaluation ID is missing.");
+      return;
+    }
+  
+    storeEncryptedId("tid", teamId);
+    storeEncryptedId("cid", classId);
+    storeEncryptedId("eid", eid);
     navigate("/teacher/adviser-evaluation");
   };
 
@@ -169,10 +177,17 @@ const EvaluationTeacher = () => {
             {evalItem.evaluated ? "Submitted" : "Not Submitted"}
           </span>
         </td>
-       <td className="px-4 py-3 border">
-                    <button
+                   <td className="px-4 py-3 border">
+                     <button
                       className="bg-[#323c47] text-white px-4 py-2 rounded-md hover:bg-gray-900 transition w-full"
-                      onClick={handleEvaluateTeam}
+                      onClick={() =>
+                        handleEvaluateTeam(
+                          teamDetailsMap[evalItem.teamName]?.tid,
+                          evalItem.classId,                      
+                          evalItem.eid,                 
+                          evalItem.teamName                      
+                        )
+                      }
                     >
                       Evaluate Team
                     </button>

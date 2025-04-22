@@ -42,7 +42,6 @@ import ViewProjectProposal from "./pages/Student/ProjectProposal/ViewProjectProp
 import ApplyTeam from "./pages/Student/TeamFormation/ApplyTeam";
 import TeamApplications from "./pages/Student/TeamFormation/TeamApplications";
 import EvaluationTeacher from "./pages/Teacher/Evaluation/EvaluationTeacher";
-import TeacherEvaluationStatus from "./pages/Teacher/Evaluation/TeacherEvaluationStatus";
 import AdviserEvaluation from "./pages/Teacher/Evaluation/AdviserEvaluation";
 import AdminEvaluations from "./pages/Admin/AdminEvaluations";
 import AdminQuestionTemplates from "./pages/Admin/AdminQuestionTemplates";
@@ -266,14 +265,6 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute requiredRoles={["TEACHER"]}>
         <EvaluationTeacher />
-      </PrivateRoute>
-    ),
-  },
-  {
-    path:"/teacher/teacher-evaluation-status",
-    element: (
-      <PrivateRoute requiredRoles={["TEACHER"]}>
-        <TeacherEvaluationStatus />
       </PrivateRoute>
     ),
   },
