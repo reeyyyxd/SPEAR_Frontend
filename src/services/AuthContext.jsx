@@ -146,6 +146,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("pid");
     localStorage.removeItem("eid");
     localStorage.removeItem("qid");
+    localStorage.removeItem("adviserId");
+    localStorage.removeItem("adviserName");
 
     
     // Reset authState

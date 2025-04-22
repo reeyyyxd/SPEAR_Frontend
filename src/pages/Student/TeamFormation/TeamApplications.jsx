@@ -211,30 +211,25 @@ const handleReject = async () => {
                   </td>
 
                   {/* Action Buttons - Ensuring proper spacing */}
-                  <td className="border border-gray-300 px-6 py-3 text-center">
-                  <div className="flex flex-col sm:flex-row justify-center gap-2">
-                    {/* Accept Button */}
-                    <button
-                      className="bg-white border border-green-500 px-4 py-2 rounded-lg hover:bg-green-100 transition-all flex items-center space-x-2 group"
-                      onClick={() => {
-                        setSelectedAppId(app.trid);
-                        setIsModalOpen(true);
-                      }}
-                    >
-                      <Check className="h-4 w-4 text-green-500 group-hover:text-gray-800 transition-colors" />
-                     <span className="text-green-500 group-hover:text-gray-800 transition-colors">Accept</span>
-                    </button>
-
-                    {/* Reject Button */}
-                    <button
-                      className="bg-white border border-red-500 px-4 py-2 rounded-lg hover:bg-red-100 transition-all flex items-center space-x-2 group"
-                      onClick={() => setRejectModal({ isOpen: true, recruitmentId: app.trid })}
-                    >
-                      <X className="h-4 w-4 text-red-500 group-hover:text-gray-800 transition-colors" />
-                      <span className="text-red-500 group-hover:text-gray-800 transition-colors">Reject</span>
-                    </button>
-                  </div>
-                </td>
+                  <td className="border border-gray-300 px-6 py-3 text-center min-w-[160px] sm:min-w-[200px]">
+                    <div className="flex flex-col sm:flex-row justify-center sm:justify-between gap-2 w-full">
+                      <button
+                        className="w-full sm:w-auto whitespace-nowrap bg-white border border-green-500 px-3 py-2 rounded-lg hover:bg-green-100 transition-all"
+                        onClick={() => {
+                          setSelectedAppId(app.trid);
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        <Check className="h-4 w-4 inline-block text-green-500 mr-1" /> Accept
+                      </button>
+                      <button
+                        className="w-full sm:w-auto whitespace-nowrap bg-white border border-red-500 px-3 py-2 rounded-lg hover:bg-red-100 transition-all"
+                        onClick={() => setRejectModal({ isOpen: true, recruitmentId: app.trid })}
+                      >
+                        <X className="h-4 w-4 inline-block text-red-500 mr-1" /> Reject
+                      </button>
+                    </div>
+                  </td>
 
                 </tr>
               ))
@@ -322,17 +317,17 @@ const handleReject = async () => {
               )}
             </td>
             <td className="border border-gray-300 px-6 py-3 text-gray-900">{getStatusBadge(invite.status)}</td>
-            <td className="border border-gray-300 px-6 py-3 text-gray-900">
+            <td className="border border-gray-300 px-6 py-3 text-center min-w-[160px] sm:min-w-[200px]">
               {invite.status === "PENDING" ? (
-                <div className="flex justify-center gap-2">
+                <div className="flex flex-col sm:flex-row justify-center sm:justify-between gap-2 w-full">
                   <button
-                    className="border border-green-600 text-green-600 px-4 py-2 rounded hover:bg-green-100 transition"
+                    className="w-full sm:w-auto whitespace-nowrap border border-green-600 text-green-600 px-4 py-2 rounded hover:bg-green-100 transition"
                     onClick={() => handleInviteResponse(invite.invitationId, true)}
                   >
                     Accept
                   </button>
                   <button
-                    className="border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-100 transition"
+                    className="w-full sm:w-auto whitespace-nowrap border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-100 transition"
                     onClick={() => handleInviteResponse(invite.invitationId, false)}
                   >
                     Reject
