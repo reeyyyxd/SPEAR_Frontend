@@ -65,11 +65,9 @@ const Register = () => {
       });
   
       if (response.status === 200) {
-        toast.success("User created successfully");
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);
-      } else {
+
+         navigate("/login");}
+        else {
         const errorMessage = response.data?.message || "Registration failed.";
         setError(errorMessage);
         alert(errorMessage);
