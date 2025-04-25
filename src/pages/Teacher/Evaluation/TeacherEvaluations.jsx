@@ -21,6 +21,16 @@ const TeacherEvaluations = () => {
   });
   const [customPeriodInput, setCustomPeriodInput] = useState("");
   const [expandedIndex, setExpandedIndex] = useState(null);
+  const [teamsByEval, setTeamsByEval] = useState({});       
+  const [selectedTeam, setSelectedTeam] = useState(null);   
+  const [submitted, setSubmitted] = useState([]);           
+  const [pending,   setPending]   = useState([]);
+  const role = localStorage.getItem("role"); 
+
+  const [advisersByEval, setAdvisersByEval]     = useState({});
+  const [selectedAdviser, setSelectedAdviser]   = useState(null);
+  const classId = getDecryptedId("cid"); 
+
 
   useEffect(() => {
     if (showModal) {
@@ -73,6 +83,67 @@ const TeacherEvaluations = () => {
       console.error("Error fetching evaluations:", error);
     }
   };
+
+ 
+
+  const fetchAdvisers = async (evaluationId) => {
+    try {
+      const classId = getDecryptedId("cid");                             
+      const res = await axios.get(
+        `http://${address}:8080/class/${classId}/qualified-teachers`
+      );
+      setAdvisersByEval(prev => ({
+        ...prev,
+        [evaluationId]: res.data
+      }));
+    } catch (err) {
+      console.error("Error loading advisers", err);
+    }
+  };
+
+
+  const fetchTeams = async (evaluationId) => {
+    try {
+      const res = await axios.get(
+        `http://${address}:8080/teacher/evaluation/${evaluationId}/teams`
+      );
+      setTeamsByEval(prev => ({ ...prev, [evaluationId]: res.data }));
+    } catch (err) {
+      console.error("Error loading teams", err);
+    }
+  };
+  
+    const toggleRow = (rowIndex, evaluationId, type) => {
+    const next = expandedIndex === rowIndex ? null : rowIndex;
+    setExpandedIndex(next);
+
+    if (next === rowIndex) {
+      if (type === "ADVISER_TO_STUDENT") {
+        fetchAdvisers(evaluationId);
+      } else {
+        fetchTeams(evaluationId);
+      }
+      setSelectedTeam(null);
+      setSelectedAdviser(null);
+      setSubmitted([]);
+      setPending([]);
+    }
+  };
+
+  const fetchSubmissionStatus = async (evaluationId, teamId) => {
+    try {
+      const [subRes, penRes] = await Promise.all([
+        axios.get(`http://${address}:8080/teacher/evaluation/${evaluationId}/team/${teamId}/submitted-members`),
+        axios.get(`http://${address}:8080/teacher/evaluation/${evaluationId}/team/${teamId}/pending-members`)
+      ]);
+      setSubmitted(subRes.data.submitted);
+      setPending(penRes.data.pending);
+      setSelectedTeam({ evaluationId, teamId });
+    } catch(e) {
+      console.error("Error loading submission status", e);
+    }
+  };
+
 
   //create dont affect the fetch please :(
 
@@ -319,14 +390,12 @@ const TeacherEvaluations = () => {
               </tr>
             </thead>
             <tbody>
-            {evaluations.map((evalItem, index) => (
-            <React.Fragment key={index}>
+            {evaluations.map((evalItem, idx) => (
+          <React.Fragment key={evalItem.eid}>
               <tr
-                className="border-b cursor-pointer hover:bg-gray-50"
-                onClick={() =>
-                  setExpandedIndex(expandedIndex === index ? null : index)
-                }
-              >
+                  className="border-b cursor-pointer hover:bg-gray-50"
+                  onClick={() => toggleRow(idx, evalItem.eid, evalItem.evaluationType)}
+                >
                 <td className="px-4 py-2">
                   {evalItem.evaluationType === "STUDENT_TO_STUDENT"
                     ? "Student to Student"
@@ -384,37 +453,154 @@ const TeacherEvaluations = () => {
                   >
                     <i className="fa fa-edit"></i>
                   </button>
-                  {evalItem.evaluationType !== "STUDENT_TO_ADVISER" && (
-                    <button
-                      className="text-green-500 hover:text-green-700"
-                      onClick={(e) => {
-                        e.stopPropagation(); // prevent row toggle
-                        handleDownload(evalItem.eid);
-                      }}
-                    >
-                      <i className="fa fa-download"></i>
-                    </button>
-                  )}
                 </td>
               </tr>
 
               {/* Dropdown row */}
-              {expandedIndex === index && (
-                <tr className="bg-gray-50">
-                  <td colSpan="7" className="p-4 text-sm text-gray-700">
-                    <div>
-                      <p><strong>Evaluation ID:</strong> {evalItem.eid}</p>
-                      <p><strong>Description:</strong> Add more detail here...</p>
-                      <div className="mt-2 flex gap-4">
-                        <button className="text-blue-500 hover:underline">Edit</button>
-                        <button className="text-green-500 hover:underline">Download</button>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </React.Fragment>
-          ))}
+                {expandedIndex === idx && (
+                  <tr className="bg-gray-50">
+                    <td colSpan={7} className="p-4 text-sm text-gray-700">
+                      {evalItem.availability === "Open" ? (
+                        <div className="text-center text-red-500 py-8">
+                          🔒 You can view submission details after this evaluation closes.
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+
+                          {/* 1) Either Team selector or Adviser selector */}
+                          <div className="flex items-center justify-between">
+                            {evalItem.evaluationType === "ADVISER_TO_STUDENT" ? (
+                              <>
+                                <h4 className="text-lg font-semibold">Select an Adviser</h4>
+                                <select
+                                  className="border border-gray-300 rounded px-3 py-1"
+                                  value={selectedAdviser?.adviserId ?? ""}
+                                  onChange={e => {
+                                    const adviserId = Number(e.target.value);
+                                    if (adviserId) {
+                                      setSelectedAdviser({ evaluationId: evalItem.eid, adviserId });
+                                      fetchAdviserSubmissionStatus(evalItem.eid, adviserId);
+                                    }
+                                  }}
+                                >
+                                  <option value="">— Choose Adviser —</option>
+                                  {(advisersByEval[evalItem.eid] || []).map(a => (
+                                    <option key={a.uid} value={a.uid}>
+                                      {a.firstname} {a.lastname}
+                                    </option>
+                                  ))}
+                                </select>
+                              </>
+                            ) : (
+                              <>
+                                <h4 className="text-lg font-semibold">Select a Team</h4>
+                                <select
+                                  className="border border-gray-300 rounded px-3 py-1"
+                                  value={selectedTeam?.teamId ?? ""}
+                                  onChange={e => {
+                                    const teamId = Number(e.target.value);
+                                    if (teamId) fetchSubmissionStatus(evalItem.eid, teamId);
+                                  }}
+                                >
+                                  <option value="">— Choose Team —</option>
+                                  {(teamsByEval[evalItem.eid] || []).map(t => (
+                                    <option key={t.teamId} value={t.teamId}>
+                                      {t.teamName}
+                                    </option>
+                                  ))}
+                                </select>
+                              </>
+                            )}
+                          </div>
+
+                          {/* 2) Submission Cards */}
+                          {evalItem.evaluationType === "ADVISER_TO_STUDENT" ? (
+                            selectedAdviser?.evaluationId === evalItem.eid && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-white border rounded shadow p-4">
+                                  <h5 className="font-medium mb-2">
+                                    Submitted ({submitted.length})
+                                  </h5>
+                                  <ul className="list-disc list-inside max-h-40 overflow-y-auto text-gray-800">
+                                    {submitted.map(m => (
+                                      <li key={m.memberId}>
+                                        {m.memberName}
+                                        <span className="text-xs text-gray-500">
+                                          {" "}
+                                          (uid: {m.evaluatorId})
+                                        </span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div className="bg-white border rounded shadow p-4">
+                                  <h5 className="font-medium mb-2">
+                                    Incomplete ({pending.length})
+                                  </h5>
+                                  <ul className="list-disc list-inside max-h-40 overflow-y-auto text-gray-800">
+                                    {pending.map(m => (
+                                      <li key={m.memberId}>{m.memberName}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            )
+                          ) : (
+                            selectedTeam?.evaluationId === evalItem.eid && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-white border rounded shadow p-4">
+                                  <h5 className="font-medium mb-2">
+                                    Submitted ({submitted.length})
+                                  </h5>
+                                  <ul className="list-disc list-inside max-h-40 overflow-y-auto text-gray-800">
+                                    {submitted.map(m => (
+                                      <li key={m.memberId}>
+                                        {m.memberName}
+                                        <span className="text-xs text-gray-500">
+                                          {" "}
+                                          (uid: {m.evaluatorId})
+                                        </span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div className="bg-white border rounded shadow p-4">
+                                  <h5 className="font-medium mb-2">
+                                    Incomplete ({pending.length})
+                                  </h5>
+                                  <ul className="list-disc list-inside max-h-40 overflow-y-auto text-gray-800">
+                                    {pending.map(m => (
+                                      <li key={m.memberId}>{m.memberName}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            )
+                          )}
+
+                          {/* 3) Download button */}
+                          {(
+                            evalItem.evaluationType === "STUDENT_TO_STUDENT"
+                            || (evalItem.evaluationType === "STUDENT_TO_ADVISER" && role === "ADMIN")
+                            || (evalItem.evaluationType === "ADVISER_TO_STUDENT")
+                          ) && (
+                            <div className="mt-4 text-right">
+                              <button
+                                className="bg-teal text-white px-4 py-2 rounded hover:bg-teal-dark"
+                                onClick={() => handleDownload(evalItem.eid)}
+                              >
+                                Download All Data
+                              </button>
+                            </div>
+                          )}
+
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                )}
+          </React.Fragment>
+        ))}
             </tbody>
           </table>
         </div>
