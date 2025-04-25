@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start": "serve -s dist",
     "build": "vite build",
     "host": "vite --host --port 9999",
     "lint": "eslint .",
@@ -27,6 +28,7 @@
     "react-router-dom": "^6.17.0",
     "react-select": "^5.8.1",
     "react-toastify": "^10.0.6",
+    "serve": "^14.2.4",
     "swr": "^2.2.5",
     "xlsx": "^0.18.5"
   },
