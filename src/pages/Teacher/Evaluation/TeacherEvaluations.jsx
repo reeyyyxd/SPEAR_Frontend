@@ -527,7 +527,6 @@ const TeacherEvaluations = () => {
                                         {m.memberName}
                                         <span className="text-xs text-gray-500">
                                           {" "}
-                                          (uid: {m.evaluatorId})
                                         </span>
                                       </li>
                                     ))}
@@ -558,7 +557,6 @@ const TeacherEvaluations = () => {
                                         {m.memberName}
                                         <span className="text-xs text-gray-500">
                                           {" "}
-                                          (uid: {m.evaluatorId})
                                         </span>
                                       </li>
                                     ))}

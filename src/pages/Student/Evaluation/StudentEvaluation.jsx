@@ -16,6 +16,25 @@ const StudentEvaluation = () => {
   const evaluationId = getDecryptedId("eid");
   const classId = getDecryptedId("cid");
 
+  const STORAGE_KEY = `eval-${evaluationId}-class-${classId}`;
+
+    useEffect(() => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          setResponses(JSON.parse(saved));
+        } catch (err) {
+          console.warn("Failed to parse saved responses", err);
+        }
+      }
+    }, []); 
+
+    useEffect(() => {
+      if (Object.keys(responses).length > 0) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(responses));
+      }
+    }, [responses]);
+
   useEffect(() => {
     fetchQuestions();
     fetchTeamMembers();
@@ -47,96 +66,121 @@ const StudentEvaluation = () => {
     }
   };
 
-  const handleResponseChange = (memberId, questionId, value) => {
+  const handleResponseChange = (memberId, questionId, rawValue) => {
+    // Text questions come through with memberId === "text"
+    if (memberId === "text") {
+      setResponses({
+        ...responses,
+        [`text-${questionId}`]: rawValue,
+      });
+      return;
+    }
+  
+    // Otherwise it’s a numeric response
+    let value = rawValue === "" ? "" : parseFloat(rawValue);
+    if (!isNaN(value)) {
+      value = Math.min(Math.max(value, 0), 10);
+    }
     setResponses({
       ...responses,
       [`${memberId}-${questionId}`]: value,
     });
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    const confirmed = window.confirm("Are you sure you want to submit your evaluation? You won't be able to make changes after this.");
+    // 1) Confirm
+    const confirmed = window.confirm(
+      "Are you sure you want to submit your evaluation? You won't be able to make changes after this."
+    );
     if (!confirmed) return;
   
-    // Validation: Check all required questions are answered
+    // 2) Validate every question is answered & in-range
     for (const question of questions) {
       if (question.questionType === "INPUT") {
-        const missingMember = teamMembers.find(member => !responses[`${member.memberId}-${question.qid}`]);
-        if (missingMember) {
-          alert(`Please answer all ratings for "${question.questionTitle}"`);
-          return;
+        for (const member of teamMembers) {
+          const key = `${member.memberId}-${question.qid}`;
+          const value = responses[key];
+          if (
+            value === "" ||
+            value === undefined ||
+            isNaN(value) ||
+            value < 0 ||
+            value > 10
+          ) {
+            alert(
+              `Please enter a valid score between 0 and 10 for "${question.questionTitle}"`
+            );
+            return;
+          }
         }
-      }
-      if (question.questionType === "TEXT") {
-        if (!responses[`text-${question.qid}`] || responses[`text-${question.qid}`].trim() === "") {
+      } else if (question.questionType === "TEXT") {
+        const textValue = responses[`text-${question.qid}`];
+        if (!textValue || textValue.trim() === "") {
           alert(`Please answer the text question: "${question.questionTitle}"`);
           return;
         }
       }
-      if (question.questionType === "INPUT") {
-        for (const member of teamMembers) {
-          const value = responses[`${member.memberId}-${question.qid}`];
-          if (value === "" || value === undefined || isNaN(value) || value < 0 || value > 10) {
-            alert(`Please enter a valid score between 0.0 and 10.0 for "${question.questionTitle}"`);
-            return;
-          }
-        }
-      }
     }
   
-    // Prevent same score for all
+    // 3) Prevent same score for all members, except for "Attendance"
     for (const question of questions) {
-      if (question.questionType === "INPUT") {
-        const scores = teamMembers.map(member => responses[`${member.memberId}-${question.qid}`]).filter(Boolean);
-        const uniqueScores = [...new Set(scores)];
-        if (scores.length > 0 && uniqueScores.length === 1) {
-          alert(`You cannot assign the same score to all members for "${question.questionTitle}"`);
+      if (
+        question.questionType === "INPUT" &&
+        question.questionTitle.trim().toLowerCase() !== "attendance"
+      ) {
+        const scores = teamMembers.map((m) =>
+          responses[`${m.memberId}-${question.qid}`]
+        );
+        const uniqueCount = new Set(scores).size;
+        if (uniqueCount === 1) {
+          alert(
+            `You cannot assign the same score to all members for "${question.questionTitle}"`
+          );
           return;
         }
       }
     }
   
-    // Prepare payload
+    // 4) Build payload and submit
     const responseList = [];
-  
     teamMembers.forEach((member) => {
       questions.forEach((question) => {
-        const key = `${member.memberId}-${question.qid}`;
-        const value = responses[key];
-        if (question.questionType === "INPUT" && value) {
+        if (question.questionType === "INPUT") {
           responseList.push({
             evaluator: { uid: studentId },
             evaluatee: { uid: member.memberId },
             question: { qid: question.qid },
             evaluation: { eid: evaluationId },
-            score: value,
+            score: responses[`${member.memberId}-${question.qid}`],
             textResponse: null,
           });
         }
       });
     });
-  
-    questions.forEach((question) => {
-      if (question.questionType === "TEXT") {
-        const value = responses[`text-${question.qid}`];
-        if (value) {
-          responseList.push({
-            evaluator: { uid: studentId },
-            evaluatee: { uid: studentId },
-            question: { qid: question.qid },
-            evaluation: { eid: evaluationId },
-            score: 0,
-            textResponse: value,
-          });
-        }
-      }
-    });
+    questions
+      .filter((q) => q.questionType === "TEXT")
+      .forEach((question) => {
+        const textValue = responses[`text-${question.qid}`];
+        responseList.push({
+          evaluator: { uid: studentId },
+          evaluatee: { uid: studentId },
+          question: { qid: question.qid },
+          evaluation: { eid: evaluationId },
+          score: 0,
+          textResponse: textValue,
+        });
+      });
   
     try {
-      await axios.post(`http://${address}:8080/responses/submit?teamId=${classId}`, responseList);
+      await axios.post(
+        `http://${address}:8080/responses/submit?teamId=${classId}`,
+        responseList
+      );
       alert("Evaluation successfully submitted!");
+      localStorage.removeItem(STORAGE_KEY); // if you’re using draft autosave
       navigate(-1);
     } catch (error) {
       console.error("Error submitting evaluation:", error);
@@ -162,9 +206,23 @@ return (
 
       {teamMembers.length > 0 && (
             <>
-            <p className="text-sm text-gray-500 mb-4">
-              Rate each team member on a scale of 0.0 - 10.0 for each question.
+            <div className="mb-4 text-sm text-gray-500">
+            <p className="mb-2">
+              Rate each team member on a scale of <code>0.0</code> – <code>10</code> for each question.{' '}
+              <span className="italic text-gray-500">(Except for Attendance, if available)</span>
             </p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>
+                No member can have exactly the same score for every item as any other member.
+              </li>
+              <li>
+                Every inputs and text must be filled out.
+              </li>
+              <li>
+                All team members should be able to complete the evaluation table.
+              </li>
+            </ul>
+          </div>
 
             <div className="overflow-x-auto space-y-4">
           <table className="min-w-full border-collapse">
@@ -182,8 +240,18 @@ return (
                         index > 3 ? "hidden lg:table-cell" : ""
                       }`}
                     >
-                      <div className="font-semibold text-xs">{question.questionTitle}</div>
-                      <div className="text-[10px] text-gray-500">{question.questionDetails}</div>
+                      <div className="font-bold text-xs">
+                          {question.questionTitle}
+                        </div>
+
+                        {question.questionDetails && question.questionDetails !== question.questionTitle && (
+                          <div
+                            className="mt-1 text-[10px] text-gray-500 line-clamp-2"
+                            title={question.questionDetails}
+                          >
+                            {question.questionDetails}
+                          </div>
+                        )}
                     </th>
                   ))}
                 <th className="sticky right-0 bg-gray-100 p-3 text-center z-10 min-w-[100px] border-l border-gray-300">
@@ -221,13 +289,19 @@ return (
                           placeholder="0.0"
                           className="w-20 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400"
                           value={responses[`${member.memberId}-${question.qid}`] || ""}
-                          onChange={(e) =>
-                            handleResponseChange(
-                              member.memberId,
-                              question.qid,
-                              parseFloat(e.target.value)
-                            )
-                          }
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            // allow blank
+                            if (raw === "") {
+                              handleResponseChange(member.memberId, question.qid, "");
+                              return;
+                            }
+                            let num = parseFloat(raw);
+                            if (isNaN(num)) return;
+                            // clamp between 0 and 10
+                            num = Math.min(Math.max(num, 0), 10);
+                            handleResponseChange(member.memberId, question.qid, num);
+                          }}
                         />
                       </td>
                     ))}
@@ -246,7 +320,7 @@ return (
       )}
       {questions.filter(q => q.questionType === "TEXT").length > 0 && (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-gray-700 mt-10">Written Responses</h2>
+    
 
       {questions.filter(q => q.questionType === "TEXT").map((question) => (
         <div key={question.qid} className="space-y-2">

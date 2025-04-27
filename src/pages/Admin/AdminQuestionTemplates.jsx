@@ -21,6 +21,10 @@ const AdminQuestionTemplates = () => {
   const [newQuestion, setNewQuestion] = useState({ questionTitle: "", questionDetails: "", questionType: "INPUT" });
   const [newSetName, setNewSetName] = useState("");
   const [error, setError] = useState("");
+  const [showRenameModal, setShowRenameModal]   = useState(false);
+  const [renameSetId,    setRenameSetId]        = useState(null);
+  const [renameSetName,  setRenameSetName]      = useState("");
+    
 
   const address = window.location.hostname;
 
@@ -89,7 +93,11 @@ const AdminQuestionTemplates = () => {
 
   const handleDeleteSet = async () => {
     if (!selectedSet) return;
-    if (!window.confirm("Are you sure you want to delete this set?")) return;
+    if (!window.confirm(
+      "Are you sure you want to delete this template set?\n\n"
+    + "• This will permanently remove the set and all its associated templates.\n"
+    + "• This action cannot be undone."
+    )) return;
     try {
       await axios.delete(`http://${address}:8080/templates/admin/delete-set/${selectedSet}`);
       toast.success("Set deleted successfully");
@@ -175,6 +183,7 @@ const AdminQuestionTemplates = () => {
       toast.error("Failed to delete question");
     }
   };
+  
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
@@ -223,6 +232,19 @@ const AdminQuestionTemplates = () => {
       <Trash2 className="h-4 w-4 mr-2" />
       Delete Template
     </button>
+    <button
+      className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 flex items-center space-x-2"
+      disabled={!selectedSet}
+      onClick={() => {
+        setRenameSetId(selectedSet);
+        // preload the current name:
+        const current = sets.find(s => s.id === +selectedSet);
+        setRenameSetName(current?.name || "");
+        setShowRenameModal(true);
+      }}
+    >
+      Rename Template
+  </button>
   </div>
 </div>
 
@@ -322,11 +344,54 @@ const AdminQuestionTemplates = () => {
         </div>
       )}
 
+{showRenameModal && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-[360px]">
+      <h2 className="text-lg font-bold mb-4">Rename Template</h2>
+      <input
+        type="text"
+        value={renameSetName}
+        onChange={e => setRenameSetName(e.target.value)}
+        className="w-full border border-gray-300 px-3 py-2 rounded mb-4"
+      />
+      <div className="flex justify-end space-x-2">
+        <button
+          className="px-4 py-2 border rounded hover:bg-gray-100"
+          onClick={() => setShowRenameModal(false)}
+        >
+          Cancel
+        </button>
+        <button
+          className="px-4 py-2 bg-teal text-white rounded hover:bg-teal-dark"
+          onClick={async () => {
+            try {
+              await axios.put(
+                `http://${address}:8080/templates/rename-template-set/${renameSetId}`,
+                { name: renameSetName },
+                { headers: { Authorization: `Bearer ${authState.token}` } }
+              );
+              toast.success("Renamed successfully");
+              setShowRenameModal(false);
+              fetchSets();
+            } catch (err) {
+              console.error("Rename failed:", err);
+              toast.error(err.response?.data?.error || "Rename failed");
+            }
+          }}
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+  )}
+
+
       {showSetModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold mb-4 text-gray-700">Create Set</h2>
+            <h2 className="text-lg font-bold mb-4 text-gray-700">Create Template</h2>
             <button
               className="text-gray-500 hover:text-gray-700 mb-4"
               onClick={() => setShowSetModal(false)}
@@ -336,8 +401,8 @@ const AdminQuestionTemplates = () => {
             </div>
             {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Set Name</label>
-              <input type="text" value={newSetName} onChange={(e) => setNewSetName(e.target.value)} className="w-full border border-gray-300 px-3 py-2 rounded-lg" placeholder="Enter set name..." />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Template Name</label>
+              <input type="text" value={newSetName} onChange={(e) => setNewSetName(e.target.value)} className="w-full border border-gray-300 px-3 py-2 rounded-lg" placeholder="Enter template name..." />
             </div>
             <div className="flex justify-end space-x-4">
               <button className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200 transition" onClick={() => setShowSetModal(false)}>Cancel</button>
@@ -347,6 +412,9 @@ const AdminQuestionTemplates = () => {
         </div>
       )}
     </div>
+
+
+      
   );
 };
 
