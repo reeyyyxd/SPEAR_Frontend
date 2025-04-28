@@ -111,13 +111,13 @@ const handleEditQuestionModal = (q) => {
         {},
         { headers: { Authorization: `Bearer ${authState.token}` } }
       );
-      alert("Set imported successfully!");
+      toast.success("Set imported successfully!");
       fetchQuestions();
       onClose();
       window.location.reload();
     } catch (error) {
       console.error("Error importing set:", error);
-      alert("Failed to import set.");
+      toast.error("Failed to import set.");
     }
   };
 
@@ -128,12 +128,12 @@ const handleEditQuestionModal = (q) => {
       await axios.delete(`http://${address}:8080/templates/teacher/delete-set/${setId}`, {
         headers: { Authorization: `Bearer ${authState.token}` },
       });
-      alert("Your template set has been deleted.");
+      toast.success("Your template set has been deleted.");
       fetchMyTemplateSets();
     } catch (error) {
       const msg = error?.response?.data?.error || "Failed to delete set.";
       if (msg.includes("currently in use")) {
-        alert("This set cannot be deleted because it is currently in use.");
+        toast.error("This set cannot be deleted because it is currently in use.");
       } else {
         alert(msg);
       }
@@ -431,7 +431,7 @@ const handleEditQuestionModal = (q) => {
   </div>
 )}
 
-<ToastContainer />
+<ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

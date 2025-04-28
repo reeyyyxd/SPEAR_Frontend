@@ -4,6 +4,8 @@ import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import ViewProposalAdviserModal from "../../../components/Modals/ViewProposalsAdviserModal";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const TeacherAdvisories = () => {
   const { authState, storeEncryptedId } = useContext(AuthContext);
@@ -74,7 +76,7 @@ const TeacherAdvisories = () => {
 
   const submitDropTeam = async () => {
     if (!dropTeamId || !dropReason.trim()) {
-      return alert("Please provide a reason.");
+      return toast.error("Please provide a reason.");
     }
 
     try {
@@ -88,13 +90,13 @@ const TeacherAdvisories = () => {
         }
       );
 
-      alert(res.data.message);
+      toast.success(res.data.message || "Team adviser and schedule dropped successfully.");
       setAdvisoryTeams((prev) =>
         prev.filter((team) => team.tid !== dropTeamId)
       );
     } catch (err) {
       console.error("Error dropping adviser:", err);
-      alert(err.response?.data?.error || "Failed to drop adviser.");
+      toast.error(err.response?.data?.error || "Failed to drop adviser.");
     } finally {
       setShowDropModal(false);
       setDropReason("");
@@ -103,6 +105,8 @@ const TeacherAdvisories = () => {
   };
 
   return (
+   <>
+   <ToastContainer position="top-right" autoClose={3000} />
     <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState?.role} />
 
@@ -261,6 +265,7 @@ const TeacherAdvisories = () => {
         </div>
       )}
     </div>
+    </>
   );
 };
 

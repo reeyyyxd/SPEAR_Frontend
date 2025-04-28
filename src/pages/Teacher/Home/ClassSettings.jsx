@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ClassSettings = () => {
   const navigate = useNavigate();
@@ -17,6 +19,9 @@ const ClassSettings = () => {
     needsAdvisory: true,
   });
   const [error, setError] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); 
+
 
   const address = getIpAddress();
 
@@ -48,9 +53,7 @@ const ClassSettings = () => {
   }, [authState.token, getDecryptedId]);
 
   const handleUpdateClass = async (event) => {
-    event.preventDefault();
-    if (!window.confirm("Are you sure you want to update the class details?"))
-      return;
+    if (event) event.preventDefault();
 
     const classId = getDecryptedId("cid");
     if (!classId) return console.error("Class ID is missing.");
@@ -77,10 +80,10 @@ const ClassSettings = () => {
       );
     
       if (response.data.statusCode === 200) {
-        alert("Class updated successfully!");
+        toast.success("Class updated successfully!");
         navigate(`/class-settings`);
       } else {
-        alert(response.data.message || "Failed to update class.");
+        toast.error(response.data.message || "Failed to update class.");
       }
     } catch (error) {
       const res = error.response;
@@ -89,7 +92,7 @@ const ClassSettings = () => {
         alert(res.data.message); // Backend sends a list of team names that violate maxTeamSize
       } else {
         console.error("Error updating class:", error);
-        alert("Failed to update class. Please try again.");
+        toast.error("Failed to update class. Please try again.");
       }
     }
   };
@@ -97,11 +100,6 @@ const ClassSettings = () => {
   const handleDeleteClass = async () => {
     const classId = getDecryptedId("cid");
     if (!classId) return console.error("Class ID is missing.");
-
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this class? This action cannot be undone."
-    );
-    if (!confirmDelete) return;
 
     try {
       const { data } = await axios.delete(
@@ -112,14 +110,14 @@ const ClassSettings = () => {
       );
 
       if (data.statusCode === 200) {
-        alert("Class deleted successfully!");
+        toast.success("Class deleted successfully!");
         navigate("/teacher-dashboard");
       } else {
-        alert(data.message || "Failed to delete class.");
+        toast.error(data.message || "Failed to delete class.");
       }
     } catch (error) {
       console.error("Error deleting class:", error);
-      alert("Failed to delete class. Please try again.");
+      toast.error("Failed to delete class. Please try again.");
     }
   };
 
@@ -141,7 +139,18 @@ const ClassSettings = () => {
     setClassData({ ...classData, [id]: value });
   };
 
+  const handleConfirm = async () => {
+    if (confirmAction === "update") {
+      await handleUpdateClass();
+    } else if (confirmAction === "delete") {
+      await handleDeleteClass();
+    }
+    setShowConfirmModal(false); 
+  };
+  
   return (
+<>
+<ToastContainer position="top-right" autoClose={3000} />
     <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar />
 
@@ -150,7 +159,7 @@ const ClassSettings = () => {
         <div className="header flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <h1 className="text-lg font-semibold">Class Settings</h1>
           <button
-            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300 w-full sm:w-auto"
+            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach transition-all duration-300 w-full sm:w-auto"
             onClick={() => navigate(-1)}
           >
             Back
@@ -300,14 +309,21 @@ const ClassSettings = () => {
             {/* Action Buttons */}
             <div className="md:col-span-2 flex flex-col sm:flex-row justify-between gap-4 mt-4">
               <button
-                type="submit"
-                className="bg-teal text-white px-6 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300 w-full sm:w-auto"
+              type="button"
+              onClick={() => {
+              setConfirmAction("update");
+              setShowConfirmModal(true);
+             }}
+                className="bg-teal text-white px-6 py-2 rounded-lg hover:bg-peach transition-all duration-300 w-full sm:w-auto"
               >
                 Update Class
               </button>
               <button
                 type="button"
-                onClick={handleDeleteClass}
+                onClick={() => {
+                  setConfirmAction("delete");
+                  setShowConfirmModal(true);
+                }}
                 className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-all duration-300 w-full sm:w-auto"
               >
                 Delete Class
@@ -315,8 +331,47 @@ const ClassSettings = () => {
             </div>
           </form>
         </div>
+        {showConfirmModal && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-white p-6 rounded-lg w-11/12 sm:w-auto max-w-md">
+    <div className="flex items-center justify-between">
+      <h2 className="text-xl text-teal font-semibold mb-2">
+        {confirmAction === "update"
+          ? "Save Changes"
+          : "You're about to delete this class!"}
+      </h2>
+      <button
+              className="text-gray-500 hover:text-gray-700 mb-4"
+              onClick={() => setShowConfirmModal(false)}
+            >
+              ✖
+            </button>
+      </div>
+      <p>
+      {confirmAction === "update"
+          ? "Are you sure you want to update the class details?"
+          : "Are you sure you want to delete this class? This action cannot be undone."}
+      </p>
+      <div className="flex justify-end space-x-2 mt-4">
+      <button
+          onClick={() => setShowConfirmModal(false)}
+          className="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 transition"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleConfirm}
+          className="bg-teal text-white px-4 py-2 rounded hover:bg-peach transition-all"
+        >
+          Confirm
+        </button>
       </div>
     </div>
+  </div>
+)}
+      </div>
+    </div>
+    </>
   );
 };
 

@@ -5,6 +5,8 @@ import Navbar from "../../../components/Navbar/Navbar";
 import Header from "../../../components/Header/Header";
 import AuthContext from "../../../services/AuthContext";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const semesterOptions = [
   { value: "1st Semester", label: "1st Semester" },
@@ -55,6 +57,9 @@ const CreateClass = () => {
   const [courseDescription, setCourseDescription] = useState("");
   const [needsAdvisory, setNeedsAdvisory] = useState(true);
   const [invalidSection, setInvalidSection] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [classKey, setClassKey] = useState("");
+
 
   const handleSectionChange = (e) => {
     const value = e.target.value;
@@ -74,14 +79,14 @@ const CreateClass = () => {
       !semester ||
       !courseDescription
     ) {
-      alert("Please fill in all fields.");
+      toast.error("Please fill in all fields.");
       return;
     }
 
     // Validate section format
     const sectionPattern = /^[a-zA-Z0-9-_]+$/;
     if (!sectionPattern.test(section)) {
-      alert("Invalid section format. Use only letters, numbers, '-' or '_'.");
+      toast.error("Invalid section format. Use only letters, numbers, '-' or '_'.");
       return;
     }
 
@@ -93,7 +98,7 @@ const CreateClass = () => {
       );
 
       if (checkResponse.data.exists) {
-        alert("The class you entered already exists.");
+        toast.error("The class you entered already exists.");
         return;
       }
 
@@ -113,16 +118,16 @@ const CreateClass = () => {
         { headers: { Authorization: `Bearer ${authState.token}` } }
       );
 
-      alert(
-        `Class created successfully!\nClass Key: ${response.data.classKey}`
-      );
-      navigate("/teacher-dashboard");
+      setClassKey(response.data.classKey);
+      setShowModal(true);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to create class.");
+      toast.error(err.response?.data?.message || "Failed to create class.");
     }
   };
 
   return (
+   <>
+  <ToastContainer position="top-right" autoClose={3000} />
     <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState.role} />
 
@@ -269,7 +274,22 @@ const CreateClass = () => {
           </div>
         </form>
       </div>
+      {showModal && (
+     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+    <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+      <h2 className="text-xl font-semibold mb-4">Class Created Successfully!</h2>
+      <p className="mb-6">Class Key: <strong>{classKey}</strong></p>
+      <button
+        onClick={() => navigate("/teacher-dashboard")}
+        className="bg-teal text-white px-4 py-2 rounded hover:bg-peach transition w-full"
+      >
+        OK
+      </button>
     </div>
+  </div>
+)}
+    </div>
+    </>
   );
 };
 

@@ -1,6 +1,8 @@
 import React, { useState, useContext } from "react";
 import axios from "axios";
 import AuthContext from "../../services/AuthContext";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ApplyToTeamModal = ({ teamId, onClose }) => {
   const { authState } = useContext(AuthContext);
@@ -39,7 +41,7 @@ const ApplyToTeamModal = ({ teamId, onClose }) => {
         }
       );
 
-      alert("Application submitted successfully!");
+      toast.success("Application submitted successfully!");
       onClose();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to apply. Please try again.");
@@ -50,6 +52,8 @@ const ApplyToTeamModal = ({ teamId, onClose }) => {
   };
 
   return (
+   <>
+    <ToastContainer position="top-right" autoClose={3000} />
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-lg font-bold mb-4">Apply to Team</h2>
@@ -94,6 +98,7 @@ const ApplyToTeamModal = ({ teamId, onClose }) => {
         </form>
       </div>
     </div>
+    </>
   );
 };
 

@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ClassPage = () => {
   const { authState, storeEncryptedId } = useContext(AuthContext);
@@ -83,7 +85,7 @@ const ClassPage = () => {
       setTotalUsers((prev) => prev - 1);
     } catch (error) {
       console.error("Error kicking student:", error);
-      alert("Error removing student. Try again.");
+      toast.error("Error removing student. Try again.");
     }
   };
 
@@ -106,6 +108,8 @@ const ClassPage = () => {
   }
 
   return (
+  <>
+   <ToastContainer position="top-right" autoClose={3000} />
     <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState?.role} />
 
@@ -278,6 +282,7 @@ const ClassPage = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

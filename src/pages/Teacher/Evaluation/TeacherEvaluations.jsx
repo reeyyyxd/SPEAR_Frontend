@@ -5,6 +5,8 @@ import AuthContext from "../../../services/AuthContext";
 import * as XLSX from "xlsx";
 import axios from "axios";
 import { Eye } from "lucide-react"
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const TeacherEvaluations = () => {
   const { getDecryptedId, storeEncryptedId } = useContext(AuthContext);
@@ -174,7 +176,7 @@ const TeacherEvaluations = () => {
         );
       }
 
-      alert(response.data.message || "Evaluation created successfully!");
+      toast.success(response.data.message || "Evaluation created successfully!");
 
       // Ensure response data is correctly structured
       const newEval = {
@@ -229,7 +231,7 @@ const TeacherEvaluations = () => {
 
   const handleDeleteEvaluation = async (eid) => {
     if (!eid) {
-      alert("Invalid evaluation ID");
+      toast.error("Invalid evaluation ID");
       return;
     }
 
@@ -238,7 +240,7 @@ const TeacherEvaluations = () => {
         await axios.delete(
           `http://${address}:8080/teacher/delete-evaluation/${eid}`
         );
-        alert("Evaluation deleted successfully!");
+        toast.success("Evaluation deleted successfully!");
         fetchEvaluations();
       } catch (error) {
         console.error("Error deleting evaluation:", error);
@@ -251,7 +253,7 @@ const TeacherEvaluations = () => {
 
     const eid = getDecryptedId("eid");
     if (!eid) {
-      alert("Invalid evaluation ID");
+      toast.error("Invalid evaluation ID");
       return;
     }
 
@@ -265,7 +267,7 @@ const TeacherEvaluations = () => {
         `http://${address}:8080/teacher/update-evaluation/${eid}`,
         { ...newEvaluation, period }
       );
-      alert("Evaluation updated successfully!");
+      toast.success("Evaluation updated successfully!");
       window.location.reload();
     } catch (error) {
       setError(error.response?.data?.message || "Error updating evaluation.");
@@ -305,7 +307,7 @@ const TeacherEvaluations = () => {
 
   const handleDownload = async (eid) => {
     if (!eid) {
-      alert("Invalid evaluation ID");
+      toast.error("Invalid evaluation ID");
       return;
     }
     try {
@@ -326,14 +328,16 @@ const TeacherEvaluations = () => {
         workbook,
         `Evaluation_${eid}_Submissions_and_Responses.xlsx`
       );
-      alert("Excel file downloaded successfully!");
+      toast.success("Excel file downloaded successfully!");
     } catch (error) {
       console.error("Error downloading Excel:", error);
-      alert("An error occurred while exporting data to Excel.");
+      toast.error("An error occurred while exporting data to Excel.");
     }
   };
 
   return (
+        <>
+          <ToastContainer position="top-right" autoClose={3000} />
     <div className="flex flex-col lg:grid lg:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole="TEACHER" />
 
@@ -730,6 +734,7 @@ const TeacherEvaluations = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

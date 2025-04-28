@@ -4,6 +4,8 @@ import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import { FiX } from "react-icons/fi";
 import { FiArrowLeft } from "react-icons/fi";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const TeacherAdvisoryRequest = () => {
   const { authState } = useContext(AuthContext);
@@ -43,11 +45,11 @@ const TeacherAdvisoryRequest = () => {
       await axios.post(
         `http://${address}:8080/advisory-requests/${requestId}/accept`
       );
-      alert("Request accepted");
+      toast.success("Request accepted");
       fetchRequests();
     } catch (err) {
       console.error("Accept error:", err);
-      alert("Failed to accept request.");
+      toast.error("Failed to accept request.");
     }
   };
 
@@ -57,13 +59,13 @@ const TeacherAdvisoryRequest = () => {
         `http://${address}:8080/advisory-requests/${declineModal}/decline`,
         { reason: declineReason }
       );
-      alert("Request declined.");
+      toast.success("Request declined.");
       setDeclineModal(null);
       setDeclineReason("");
       fetchRequests();
     } catch (err) {
       console.error("Decline error:", err);
-      alert("Failed to decline request.");
+      toast.error("Failed to decline request.");
     }
   };
 
@@ -90,11 +92,11 @@ const TeacherAdvisoryRequest = () => {
           approve: true,
         }
       );
-      alert("Adviser dropped. Team is now unassigned.");
+      toast.success("Adviser dropped. Team is now unassigned.");
       fetchRequests();
     } catch (err) {
       console.error("Error dropping team:", err);
-      alert("Failed to drop adviser and schedule.");
+      toast.error("Failed to drop adviser and schedule.");
     }
   };
 
@@ -107,11 +109,11 @@ const TeacherAdvisoryRequest = () => {
           reason: "Leave request denied. Adviser remains assigned.",
         }
       );
-      alert("Leave request rejected. Adviser remains.");
+      toast.success("Leave request rejected. Adviser remains.");
       fetchRequests();
     } catch (err) {
       console.error("Error declining leave:", err);
-      alert("Failed to decline leave request.");
+      toast.error("Failed to decline leave request.");
     }
   };
 
@@ -123,15 +125,17 @@ const TeacherAdvisoryRequest = () => {
       await axios.delete(
         `http://${address}:8080/advisory-requests/${requestId}`
       );
-      alert("Request deleted successfully.");
+      toast.success("Request deleted successfully.");
       fetchRequests();
     } catch (err) {
       console.error("Delete error:", err);
-      alert("Failed to delete request.");
+      toast.error("Failed to delete request.");
     }
   };
 
   return (
+ <>
+    <ToastContainer position="top-right" autoClose={3000} />
     <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole={authState?.role} />
 
@@ -306,6 +310,7 @@ const TeacherAdvisoryRequest = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

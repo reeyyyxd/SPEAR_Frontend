@@ -4,6 +4,8 @@ import Navbar from "../../../components/Navbar/Navbar";
 import AuthContext from "../../../services/AuthContext";
 import axios from "axios";
 import TeacherImportSetModal from "../../../components/Modals/TeacherImportSetModal";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const TeacherQuestions = () => {
   const { getDecryptedId, storeEncryptedId } = useContext(AuthContext);
@@ -59,7 +61,7 @@ const TeacherQuestions = () => {
       const token = localStorage.getItem("token");
   
       if (!token || !uid) {
-        alert("Authentication failed. Please log in again.");
+        toast.error("Authentication failed. Please log in again.");
         return;
       }
   
@@ -73,7 +75,7 @@ const TeacherQuestions = () => {
         !questionPayload.questionDetails?.trim() ||
         !questionPayload.questionType?.trim()
       ) {
-        alert("Please fill in title, details, and type.");
+        toast.error("Please fill in title, details, and type.");
         return;
       }
   
@@ -83,7 +85,7 @@ const TeacherQuestions = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
   
-      alert("Question created successfully!");
+      toast.success("Question created successfully!");
       setQuestions([...questions, response.data]);
   
       // Reset state
@@ -92,14 +94,14 @@ const TeacherQuestions = () => {
       setShowCreateModal(false);
     } catch (error) {
       console.error("Error creating question:", error.response?.data || error);
-      alert("Failed to create question. Please check console for details.");
+      toast.error("Failed to create question. ");
     }
   };
 
   const handleEditQuestion = async () => {
     const qid = getDecryptedId("qid");
     if (!qid || !editQuestion?.questionTitle || !editQuestion?.questionDetails) {
-      alert("Invalid question data");
+      toast.error("Invalid question data");
       return;
     }
 
@@ -123,7 +125,7 @@ const TeacherQuestions = () => {
         )
       );
       setShowEditModal(false);
-      alert("Edit success!");
+      toast.success("Edit success!");
       window.location.reload();
     } catch (error) {
       console.error("Error updating question:", error);
@@ -140,7 +142,7 @@ const TeacherQuestions = () => {
         `http://${address}:8080/teacher/delete-question/${questionId}`
       );
       setQuestions((prev) => prev.filter((q) => q.questionId !== questionId));
-      alert("Delete success!");
+      toast.success('Delete success!');
       window.location.reload();
     } catch (error) {
       console.error("Error deleting question:", error);
@@ -175,7 +177,7 @@ const TeacherQuestions = () => {
       fetchQuestions();
     } catch (error) {
       console.error("Error deleting set:", error);
-      alert("Failed to delete questions for this evaluation.");
+      toast.error("Failed to delete questions for this evaluation.");
     }
   };
   
@@ -231,7 +233,7 @@ const TeacherQuestions = () => {
     const token = localStorage.getItem("token");
   
     if (!templateSetName.trim()) {
-      alert("Please enter a template set name.");
+      toast.error("Please enter a template set name.");
       return;
     }
   
@@ -241,7 +243,7 @@ const TeacherQuestions = () => {
         { name: templateSetName },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert("Template saved successfully!");
+      toast.success("Template saved successfully!");
       setShowTemplateModal(false);
       setTemplateSetName("");
     } catch (error) {
@@ -253,7 +255,7 @@ const TeacherQuestions = () => {
       console.error("Save error:", msg);
   
       if (msg.toLowerCase().includes("already exists")) {
-        alert("A template with that name already exists. Try a different one.");
+        toast.error("A template with that name already exists. Try a different one.");
       } else {
         alert(msg);
       }
@@ -263,6 +265,8 @@ const TeacherQuestions = () => {
 
 
   return (
+  <>
+   <ToastContainer position="top-right" autoClose={3000} />
     <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
       <Navbar userRole="TEACHER" />
 
@@ -343,7 +347,7 @@ const TeacherQuestions = () => {
           )}
 
             {editableQuestions.length > 0 ? (
-              <div className="overflow-x-auto rounded-lg shadow-md">
+              <div className="overflow-x-auto rounded-lg">
                 <table className="min-w-full border border-gray-300">
                   <thead className="bg-gray-200">
                     <tr>
@@ -588,6 +592,7 @@ const TeacherQuestions = () => {
           )}
                 </div>
               </div>
+              </>
             );
           };
 
