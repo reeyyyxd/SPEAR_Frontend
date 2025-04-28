@@ -345,14 +345,14 @@ const TeacherEvaluations = () => {
         {/* Header with Back and Create Evaluation buttons */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <button
-            className="bg-[#323c47] text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-all w-full sm:w-auto"
+            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white mb-4 w-full sm:w-auto"
             onClick={() => navigate(-1)}
           >
             Back
           </button>
 
           <button
-            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300 w-full sm:w-auto"
+            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach transition-all duration-300 w-full sm:w-auto"
             onClick={() => {
               setShowModal(true);
               setNewEvaluation({

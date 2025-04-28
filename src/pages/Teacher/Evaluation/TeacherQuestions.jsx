@@ -277,7 +277,7 @@ const TeacherQuestions = () => {
 
         <div className="flex flex-col sm:flex-row justify-start sm:justify-between mb-4 space-y-4 sm:space-y-0">
           <button
-            className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-all duration-300"
+            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach transition-all w-full sm:w-auto"
             onClick={() => navigate(-1)}
           >
             Back
@@ -286,14 +286,14 @@ const TeacherQuestions = () => {
 
         <div className="flex justify-between sm:justify-end mb-4 space-x-2">
           <button
-            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300"
+            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach transition-all duration-300"
             onClick={() => setShowImportModal(true)}
           >
             Import Questions
           </button>
 
           <button
-            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-teal-dark transition-all duration-300"
+            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach transition-all duration-300"
             onClick={() => setShowCreateModal(true)}
           >
             Create Question
@@ -349,7 +349,7 @@ const TeacherQuestions = () => {
             {editableQuestions.length > 0 ? (
               <div className="overflow-x-auto rounded-lg">
                 <table className="min-w-full border border-gray-300">
-                  <thead className="bg-gray-200">
+                  <thead className="bg-teal text-white">
                     <tr>
                       <th className="px-4 py-2 text-left text-sm sm:text-base font-semibold">
                         Questions

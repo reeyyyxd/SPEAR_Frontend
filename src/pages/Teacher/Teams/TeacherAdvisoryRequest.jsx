@@ -234,13 +234,13 @@ const TeacherAdvisoryRequest = () => {
                       {req.status === "PENDING" && (
                         <>
                           <button
-                            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-800"
+                            className="text-emerald-700 border border-emerald-700 px-3 py-1 rounded-lg transition hover:bg-emerald-50"
                             onClick={() => handleAccept(req.requestId)}
                           >
                             Accept
                           </button>
                           <button
-                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-800"
+                            className="text-red-700 border border-red-700 px-3 py-1 rounded-lg transition hover:bg-red-50"
                             onClick={() => setDeclineModal(req.requestId)}
                           >
                             Decline

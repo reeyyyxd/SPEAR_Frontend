@@ -91,7 +91,7 @@ const TeacherTeams = () => {
         {/* Back Button */}
         <div className="flex justify-start mb-4">
           <button
-            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+            className="bg-teal text-white px-4 py-2 rounded-lg hover:bg-peach hover:text-white mb-4 w-full sm:w-auto"
             onClick={() => navigate(-1)}
           >
             Back
