@@ -167,7 +167,7 @@ export const AuthProvider = ({ children }) => {
   // Store and encrypt additional IDs (cid, pid, fid, tid, etc.)
 const storeEncryptedId = (key, id) => {
   if (!id) {
-    console.error(`Invalid ID provided for key "${key}". ID:`, id);
+    // console.error(`Invalid ID provided for key "${key}". ID:`, id);
     return; // Exit the function if the ID is invalid
   }
   const encryptedId = encrypt(id.toString());

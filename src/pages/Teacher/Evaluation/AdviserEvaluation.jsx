@@ -8,30 +8,51 @@ const TeacherAdviserEvaluation = () => {
   const navigate = useNavigate();
   const address = window.location.hostname;
 
-  const [teamDetails, setTeamDetails] = useState(null);
+  // State for teams and pagination
+  const [teams, setTeams] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // State for questions and responses
   const [questions, setQuestions] = useState([]);
   const [responses, setResponses] = useState({});
-  const [feedback, setFeedback] = useState("");
+  const [validationErrors, setValidationErrors] = useState(null);
 
-  const teamName = getDecryptedId("teamName");
   const evaluationId = getDecryptedId("eid");
+  const teacherId = getDecryptedId("uid");
+  const classId = getDecryptedId("cid") || "default"; // Add classId for storage key
+  
+  // Define storage key for local storage
+  const STORAGE_KEY = `eval-${evaluationId}-class-${classId}`;
 
   useEffect(() => {
-    fetchTeamDetails();
+    fetchTeamDetailsByAdviser();
     fetchQuestions();
+    
+    // Load responses from localStorage if available
+    const savedResponses = localStorage.getItem(STORAGE_KEY);
+    if (savedResponses) {
+      setResponses(JSON.parse(savedResponses));
+    }
   }, []);
+  
+  // Save responses to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(responses));
+  }, [responses]);
 
-  const fetchTeamDetails = async () => {
+  // Fetch all teams for this adviser
+  const fetchTeamDetailsByAdviser = async () => {
     try {
-      const teamId = getDecryptedId("tid");
-      const response = await axios.get(`http://${address}:8080/team/${teamId}/members-and-adviser`);
-      setTeamDetails(response.data);
-    } catch (error) {
-      console.error("Error fetching team details:", error);
+      const response = await axios.get(
+        `http://${address}:8080/teacher/teams/adviser/${teacherId}`
+      );
+      setTeams(response.data);
+    } catch (err) {
+      console.error("Failed to fetch team details:", err);
     }
   };
-  
 
+  // Fetch evaluation questions
   const fetchQuestions = async () => {
     try {
       const response = await axios.get(
@@ -43,94 +64,212 @@ const TeacherAdviserEvaluation = () => {
     }
   };
 
+  // Helper function to get team info by index
+  const getTeamInfo = (index) => {
+    const team = teams[index] || {};
+    const memberNames = team.leaderName
+      ? [team.leaderName, ...(team.memberNames || [])]
+      : team.memberNames || [];
+    const memberIds = team.memberIds || [];
+    
+    return {
+      team,
+      memberNames,
+      memberIds
+    };
+  };
+
+  // Current team being evaluated
+  const currentTeam = teams[currentIndex] || {};
+  // Combine leader and members
+  const combinedMemberNames = currentTeam.leaderName
+    ? [currentTeam.leaderName, ...(currentTeam.memberNames || [])]
+    : currentTeam.memberNames || [];
+  const combinedMemberIds = currentTeam.memberIds || [];
+
+  // Handle input changes
   const handleResponseChange = (memberId, questionId, value) => {
+    // Cap numerical values at 10
+    if (typeof value === 'number' && !isNaN(value)) {
+      value = Math.min(value, 10);
+    }
+    
     setResponses({
       ...responses,
       [`${memberId}-${questionId}`]: value,
     });
+    
+    // Clear any validation errors
+    setValidationErrors(null);
+  };
+
+  // Validation function for a single team
+  const validateTeam = (teamIndex) => {
+    const { team, memberIds } = getTeamInfo(teamIndex);
+    const errors = [];
+    
+    if (!team || !team.tid) {
+      return [`Invalid team at index ${teamIndex}`];
+    }
+    
+    const inputQuestions = questions.filter(q => q.questionType === "INPUT");
+    
+    // Check if all input questions are answered
+    for (const memberId of memberIds) {
+      for (const question of inputQuestions) {
+        const key = `${memberId}-${question.qid}`;
+        const value = responses[key];
+        
+        // Check if value is undefined, empty, not a number, or outside range (0-10]
+        if (value === undefined || value === "" || isNaN(value) || value <= 0 || value > 10) {
+          errors.push(`Team ${teamIndex + 1} (${team.groupName}): Missing or invalid score for question "${question.questionTitle}"`);
+        }
+      }
+    }
+    
+    // Check for unique scores (except Attendance)
+    for (const question of inputQuestions) {
+      // Skip the uniqueness check for attendance questions
+      if (question.questionTitle.toLowerCase().includes("attendance")) {
+        continue;
+      }
+      
+      const scoresForQuestion = [];
+      for (const memberId of memberIds) {
+        const key = `${memberId}-${question.qid}`;
+        const value = responses[key];
+        
+        if (value !== undefined && value !== "" && !isNaN(value)) {
+          // Check if this score already exists
+          if (scoresForQuestion.includes(parseFloat(value))) {
+            errors.push(`Team ${teamIndex + 1} (${team.groupName}): For "${question.questionTitle}", each student must have a unique score.`);
+            break;
+          }
+          
+          scoresForQuestion.push(parseFloat(value));
+        }
+      }
+    }
+    
+    // Check text questions
+    const textQuestions = questions.filter(q => q.questionType === "TEXT");
+    for (const question of textQuestions) {
+      const key = `text-${question.qid}-team-${team.tid}`;
+      const value = responses[key];
+      if (!value || !value.trim()) {
+        errors.push(`Team ${teamIndex + 1} (${team.groupName}): Missing answer for text question "${question.questionTitle}"`);
+      }
+    }
+    
+    return errors;
+  };
+  
+  // Validate all teams
+  const validateAllTeams = () => {
+    if (!teams || teams.length === 0) {
+      return ["No teams available to evaluate"];
+    }
+    
+    let allErrors = [];
+    
+    for (let i = 0; i < teams.length; i++) {
+      const teamErrors = validateTeam(i);
+      allErrors = [...allErrors, ...teamErrors];
+    }
+    
+    return allErrors;
+  };
+
+  // Pagination controls with validation
+  const nextTeam = () => {
+    // Validate current team before proceeding
+    const errors = validateTeam(currentIndex);
+    
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    
+    setValidationErrors(null);
+    setCurrentIndex((i) => Math.min(i + 1, teams.length - 1));
+  };
+  
+  const prevTeam = () => {
+    setValidationErrors(null);
+    setCurrentIndex((i) => Math.max(i - 1, 0));
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    const confirmed = window.confirm("Are you sure you want to submit your evaluation? You won't be able to make changes after this.");
-    if (!confirmed) return;
-  
-    const teacherId = getDecryptedId("uid");
-    const classId = getDecryptedId("cid");
-  
-    // Validation: Check all required questions are answered
-    for (const question of questions) {
-      if (question.questionType === "INPUT") {
-        for (const memberId of teamDetails.memberIds) {
-          const value = responses[`${memberId}-${question.qid}`];
-          if (value === "" || value === undefined || isNaN(value) || value < 0 || value > 10) {
-            alert(`Please enter a valid score between 0.0 and 10.0 for "${question.questionTitle}"`);
-            return;
-          }
-        }
-      }
-  
-      if (question.questionType === "TEXT") {
-        const value = responses[`text-${question.qid}`];
-        if (!value || value.trim() === "") {
-          alert(`Please answer the text question: "${question.questionTitle}"`);
-          return;
-        }
-      }
+    if (e && e.preventDefault) {
+      e.preventDefault();
     }
   
-    // Prevent same score for all students per question
-    for (const question of questions.filter(q => q.questionType === "INPUT")) {
-      const scores = teamDetails.memberIds.map(memberId => responses[`${memberId}-${question.qid}`]);
-      const uniqueScores = [...new Set(scores)];
-      if (uniqueScores.length === 1) {
-        alert(`You cannot give the same score to all members for "${question.questionTitle}"`);
-        return;
-      }
+    const allErrors = validateAllTeams();
+  
+    if (allErrors.length > 0) {
+      setValidationErrors(allErrors);
+      return;
     }
   
+    if (!window.confirm(
+      "Are you sure you want to submit your evaluation? You won't be able to make changes after this."
+    )) return;
+  
+    // Prepare adviser-to-student responseList
     const responseList = [];
   
-    // INPUT responses
-    questions.filter(q => q.questionType === "INPUT").forEach((question) => {
-      teamDetails.memberIds.forEach((memberId) => {
-        const value = responses[`${memberId}-${question.qid}`];
-        responseList.push({
-          evaluator: { uid: teacherId },
-          evaluatee: { uid: memberId },
-          question: { qid: question.qid },
-          evaluation: { eid: evaluationId },
-          score: value,
-          textResponse: null,
-        });
-      });
-    });
+    for (let teamIndex = 0; teamIndex < teams.length; teamIndex++) {
+      const { team, memberIds } = getTeamInfo(teamIndex);
+      const teamId = team.tid;  // Safe now because of your API
   
-    // TEXT responses
-    questions.filter(q => q.questionType === "TEXT").forEach((question) => {
-      const value = responses[`text-${question.qid}`];
-      if (value && value.trim() !== "") {
+      // For all INPUT Questions (scoring)
+      const inputQuestions = questions.filter(q => q.questionType === "INPUT");
+      for (const memberId of memberIds) {
+        for (const question of inputQuestions) {
+          const key = `${memberId}-${question.qid}`;
+          const value = responses[key];
+  
+          responseList.push({
+            evaluator: { uid: teacherId },   // Teacher (Adviser)
+            evaluatee: { uid: memberId },     // Student being evaluated
+            question: { qid: question.qid },
+            evaluation: { eid: evaluationId },
+            team: { teamId },
+            score: value,
+            textResponse: null,
+          });
+        }
+      }
+  
+      // For all TEXT Questions (feedback per TEAM)
+      const textQuestions = questions.filter(q => q.questionType === "TEXT");
+      for (const question of textQuestions) {
+        const key = `text-${question.qid}-team-${teamId}`;
+        const value = responses[key];
+  
         responseList.push({
           evaluator: { uid: teacherId },
-          evaluatee: { uid: teacherId },
+          evaluatee: { uid: teacherId },  // Adviser evaluating the team as a whole (self-text)
           question: { qid: question.qid },
           evaluation: { eid: evaluationId },
+          team: { teamId },
           score: 0,
           textResponse: value,
         });
       }
-    });
+    }
   
     try {
       await axios.post(
-        `http://${address}:8080/responses/submit?teamId=${classId}`,
+        `http://${address}:8080/responses/submit-adviser?evaluationId=${evaluationId}&evaluatorId=${teacherId}&classId=${classId}`,
         responseList
       );
       alert("Evaluation successfully submitted!");
+  
+      localStorage.removeItem(STORAGE_KEY);
       navigate(-1);
     } catch (error) {
-      console.error("Error submitting evaluation:", error);
+      console.error("Error submitting adviser evaluation:", error);
       alert("Failed to submit evaluation.");
     }
   };
@@ -145,18 +284,75 @@ const TeacherAdviserEvaluation = () => {
           ← Back
         </button>
       </div>
-  
+
       <h1 className="text-3xl font-bold text-gray-800 mb-2">Adviser to Student Evaluation</h1>
       <p className="text-md text-gray-500 mb-6">Evaluate your students based on the criteria below.</p>
-  
-      <form onSubmit={handleSubmit} className="w-full max-w-6xl bg-white p-6 md:p-8 rounded-lg shadow space-y-8">
-  
-        {teamDetails?.memberNames?.length > 0 && (
+
+      {/* Team Project Details */}
+      {currentTeam && (
+        <div className="w-full max-w-6xl bg-white p-6 md:p-8 rounded-lg shadow mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-gray-800">
+              {currentTeam.groupName} - {currentTeam.projectName}
+            </h2>
+            <div className="text-sm text-gray-500">
+              Advised Team {currentIndex + 1} of {teams.length}
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <h3 className="font-semibold text-gray-700">Project Description</h3>
+              <p className="text-gray-600">{currentTeam.projectDescription}</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-700">Schedule</h3>
+              <p className="text-gray-600">{currentTeam.scheduleDay}, {currentTeam.scheduleTime}</p>
+            </div>
+          </div>
+
+          {currentTeam.features && currentTeam.features.length > 0 && (
+            <div className="mt-4">
+              <h3 className="font-semibold text-gray-700 mb-2">Features</h3>
+              <div className="space-y-2">
+                {currentTeam.features.map((feature, idx) => (
+                  <div key={idx} className="border border-gray-200 p-3 rounded">
+                    <p className="font-medium text-gray-700">{feature.featureTitle}</p>
+                    <p className="text-sm text-gray-600">{feature.featureDescription}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Validation Errors */}
+      {validationErrors && validationErrors.length > 0 && (
+        <div className="w-full max-w-6xl bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+          <h3 className="text-red-700 font-medium mb-2">Encounters:</h3>
+          <ul className="list-disc ml-5 text-sm text-red-600">
+            {validationErrors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <form onSubmit={(e) => e.preventDefault()} className="w-full max-w-6xl bg-white p-6 md:p-8 rounded-lg shadow space-y-8">
+        {combinedMemberNames.length > 0 && (
           <>
-            <p className="text-sm text-gray-500 mb-4">
-              Rate each student on a scale of 0.0 - 10.0 for each question.
-            </p>
-  
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+              <p className="text-sm text-blue-700 font-medium">Requirements:</p>
+              <ul className="list-disc ml-5 text-sm text-blue-600">
+                <li>Rate each student on a scale of 0.1 - 10.0 for each question (scores of 0 are not allowed).</li>
+                <li>All fields must be filled with valid scores between 0.1 and 10.0.</li>
+                <li>Each student must have a unique score for each question (except for Attendance).</li>
+                <li>Written feedback must be provided for all text questions.</li>
+                <li>All teams must be fully evaluated before submission.</li>
+              </ul>
+            </div>
+
             <div className="overflow-x-auto space-y-4">
               <table className="min-w-full border-collapse">
                 <thead>
@@ -178,32 +374,40 @@ const TeacherAdviserEvaluation = () => {
                     </th>
                   </tr>
                 </thead>
-  
+
                 <tbody>
-                  {teamDetails.memberNames.map((member, index) => {
-                    const memberId = teamDetails.memberIds[index];
+                  {combinedMemberNames.map((member, idx) => {
+                    const memberId = combinedMemberIds[idx];
                     const inputQs = questions.filter(q => q.questionType === "INPUT");
-                    const total = inputQs.reduce((acc, q) => acc + (parseFloat(responses[`${memberId}-${q.qid}`]) || 0), 0);
-  
+                    const total = inputQs.reduce(
+                      (sum, q) => sum + (parseFloat(responses[`${memberId}-${q.qid}`]) || 0),
+                      0
+                    );
+
                     return (
-                      <tr key={memberId} className="border-b border-gray-200 hover:bg-gray-50">
+                      <tr key={member + idx} className="border-b border-gray-200 hover:bg-gray-50">
                         <td className="sticky left-0 bg-white z-0 p-3 font-medium text-gray-700 w-52 border-r border-gray-200">
                           {member}
                         </td>
-                        {inputQs.map((q, idx) => (
+                        {inputQs.map((q, i) => (
                           <td
                             key={q.qid}
-                            className={`p-3 text-center border-r border-gray-100 ${idx > 3 ? "hidden lg:table-cell" : ""}`}
+                            className={`p-3 text-center border-r border-gray-100 ${i > 3 ? "hidden lg:table-cell" : ""}`}
                           >
                             <input
                               type="number"
-                              min="0"
+                              min="0.1"
                               max="10"
                               step="0.1"
                               placeholder="0.0"
                               className="w-20 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400"
                               value={responses[`${memberId}-${q.qid}`] || ""}
-                              onChange={(e) => handleResponseChange(memberId, q.qid, parseFloat(e.target.value))}
+                              onChange={e => {
+                                const value = parseFloat(e.target.value);
+                                // If value is greater than 10, cap it at 10
+                                const cappedValue = !isNaN(value) ? Math.min(value, 10) : value;
+                                handleResponseChange(memberId, q.qid, cappedValue);
+                              }}
                             />
                           </td>
                         ))}
@@ -218,11 +422,11 @@ const TeacherAdviserEvaluation = () => {
             </div>
           </>
         )}
-  
+
         {questions.filter(q => q.questionType === "TEXT").length > 0 && (
           <div className="space-y-6">
             <h2 className="text-lg font-semibold text-gray-700 mt-10">Written Feedback</h2>
-            {questions.filter(q => q.questionType === "TEXT").map((q) => (
+            {questions.filter(q => q.questionType === "TEXT").map(q => (
               <div key={q.qid} className="space-y-2">
                 <div className="font-semibold text-gray-800">{q.questionTitle}</div>
                 <div className="text-sm text-gray-500">{q.questionDetails}</div>
@@ -230,26 +434,54 @@ const TeacherAdviserEvaluation = () => {
                   rows="4"
                   className="w-full border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-gray-400"
                   placeholder="Write your response here..."
-                  value={responses[`text-${q.qid}`] || ""}
-                  onChange={(e) => handleResponseChange("text", q.qid, e.target.value)}
+                  value={responses[`text-${q.qid}-team-${currentTeam.tid}`] || ""}
+                  onChange={e => handleResponseChange(`text-${q.qid}-team`, currentTeam.tid, e.target.value)}
                 />
               </div>
             ))}
           </div>
         )}
-  
-        <div className="flex justify-end mt-10">
+
+        {/* Progress indicator */}
+        <div className="w-full bg-gray-200 h-2 rounded-full mt-6">
+          <div 
+            className="bg-blue-500 h-2 rounded-full" 
+            style={{ width: `${((currentIndex + 1) / teams.length) * 100}%` }}
+          ></div>
+        </div>
+
+        {/* Pagination and Submit Controls - with consistent button styling */}
+        <div className="flex justify-between mt-10">
           <button
-            type="submit"
-            className="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-900 transition"
+            type="button"
+            onClick={prevTeam}
+            disabled={currentIndex === 0}
+            className="px-4 py-2 bg-[#323c47] text-white rounded hover:bg-[#323c47] transition disabled:opacity-50"
           >
-            Submit Evaluation
+            Previous
           </button>
+
+          {currentIndex < teams.length - 1 ? (
+            <button
+              type="button" 
+              onClick={nextTeam}
+              className="px-4 py-2 bg-[#323c47] text-white rounded hover:bg-[#323c47] transition disabled:opacity-50"
+            >
+              Next
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+            >
+              Submit Evaluation
+            </button>
+          )}
         </div>
       </form>
     </div>
   );
-  
 };
 
 export default TeacherAdviserEvaluation;

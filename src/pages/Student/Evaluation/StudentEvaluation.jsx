@@ -30,10 +30,11 @@ const StudentEvaluation = () => {
     }, []); 
 
     useEffect(() => {
+
       if (Object.keys(responses).length > 0) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(responses));
       }
-    }, [responses]);
+    }, [responses]); // <-- only runs when responses changes
 
   useEffect(() => {
     fetchQuestions();
@@ -75,118 +76,114 @@ const StudentEvaluation = () => {
       });
       return;
     }
-  
-    // Otherwise it’s a numeric response
-    let value = rawValue === "" ? "" : parseFloat(rawValue);
+
+    // Otherwise, it’s a numeric response
+    let value = rawValue === "" ? "" : parseFloat(rawValue); // Empty is allowed
     if (!isNaN(value)) {
-      value = Math.min(Math.max(value, 0), 10);
+      value = Math.min(Math.max(value, 0), 10); // Ensure it's between 0 and 10
     }
     setResponses({
       ...responses,
       [`${memberId}-${questionId}`]: value,
     });
-  };
+};
 
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    // 1) Confirm
-    const confirmed = window.confirm(
-      "Are you sure you want to submit your evaluation? You won't be able to make changes after this."
-    );
-    if (!confirmed) return;
-  
-    // 2) Validate every question is answered & in-range
-    for (const question of questions) {
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // 1) Confirm submission
+  const confirmed = window.confirm(
+    "Are you sure you want to submit your evaluation? You won't be able to make changes after this."
+  );
+  if (!confirmed) return;
+
+  // 2) Validate every question is answered & in-range
+  for (const question of questions) {
+    if (question.questionType === "INPUT") {
+      for (const member of teamMembers) {
+        const key = `${member.memberId}-${question.qid}`;
+        const value = responses[key];
+
+        // Check for blank values or zero values
+        if (value === "" || value === undefined || isNaN(value) || value <= 0 || value > 10) {
+          alert(`Please enter a valid score greater than 0 and less than or equal to 10 for "${question.questionTitle}"`);
+          return;
+        }
+      }
+    } else if (question.questionType === "TEXT") {
+      const textValue = responses[`text-${question.qid}`];
+      if (!textValue || textValue.trim() === "") {
+        alert(`Please answer the text question: "${question.questionTitle}"`);
+        return;
+      }
+    }
+  }
+
+  // 3) Prevent same score for all members, except for "Attendance"
+  for (const question of questions) {
+    if (question.questionType === "INPUT" && question.questionTitle.trim().toLowerCase() !== "attendance") {
+      // Create an array of scores for the current question across all team members
+      const scores = teamMembers.map((m) => responses[`${m.memberId}-${question.qid}`]);
+
+      // Filter out any undefined (blank) values from the scores
+      const filteredScores = scores.filter((score) => score !== "" && score !== undefined);
+
+      // Check if any score is repeated (no duplicates allowed)
+      const uniqueScores = new Set(filteredScores);
+      if (uniqueScores.size < filteredScores.length) {
+        alert(`You cannot assign the same score to more than one member for "${question.questionTitle}"`);
+        return;
+      }
+    }
+  }
+
+  // 4) Build payload and submit
+  const responseList = [];
+  teamMembers.forEach((member) => {
+    questions.forEach((question) => {
       if (question.questionType === "INPUT") {
-        for (const member of teamMembers) {
-          const key = `${member.memberId}-${question.qid}`;
-          const value = responses[key];
-          if (
-            value === "" ||
-            value === undefined ||
-            isNaN(value) ||
-            value < 0 ||
-            value > 10
-          ) {
-            alert(
-              `Please enter a valid score between 0 and 10 for "${question.questionTitle}"`
-            );
-            return;
-          }
-        }
-      } else if (question.questionType === "TEXT") {
-        const textValue = responses[`text-${question.qid}`];
-        if (!textValue || textValue.trim() === "") {
-          alert(`Please answer the text question: "${question.questionTitle}"`);
-          return;
-        }
-      }
-    }
-  
-    // 3) Prevent same score for all members, except for "Attendance"
-    for (const question of questions) {
-      if (
-        question.questionType === "INPUT" &&
-        question.questionTitle.trim().toLowerCase() !== "attendance"
-      ) {
-        const scores = teamMembers.map((m) =>
-          responses[`${m.memberId}-${question.qid}`]
-        );
-        const uniqueCount = new Set(scores).size;
-        if (uniqueCount === 1) {
-          alert(
-            `You cannot assign the same score to all members for "${question.questionTitle}"`
-          );
-          return;
-        }
-      }
-    }
-  
-    // 4) Build payload and submit
-    const responseList = [];
-    teamMembers.forEach((member) => {
-      questions.forEach((question) => {
-        if (question.questionType === "INPUT") {
-          responseList.push({
-            evaluator: { uid: studentId },
-            evaluatee: { uid: member.memberId },
-            question: { qid: question.qid },
-            evaluation: { eid: evaluationId },
-            score: responses[`${member.memberId}-${question.qid}`],
-            textResponse: null,
-          });
-        }
-      });
-    });
-    questions
-      .filter((q) => q.questionType === "TEXT")
-      .forEach((question) => {
-        const textValue = responses[`text-${question.qid}`];
         responseList.push({
           evaluator: { uid: studentId },
-          evaluatee: { uid: studentId },
+          evaluatee: { uid: member.memberId },
           question: { qid: question.qid },
           evaluation: { eid: evaluationId },
-          score: 0,
-          textResponse: textValue,
+          score: responses[`${member.memberId}-${question.qid}`],
+          textResponse: null,
         });
+      }
+    });
+  });
+
+  // Handle text questions
+  questions
+    .filter((q) => q.questionType === "TEXT")
+    .forEach((question) => {
+      const textValue = responses[`text-${question.qid}`];
+      responseList.push({
+        evaluator: { uid: studentId },
+        evaluatee: { uid: studentId },
+        question: { qid: question.qid },
+        evaluation: { eid: evaluationId },
+        score: 0,
+        textResponse: textValue,
       });
-  
+    });
+
     try {
       await axios.post(
-        `http://${address}:8080/responses/submit?teamId=${classId}`,
-        responseList
+        `http://${address}:8080/responses/submit?evaluationId=${evaluationId}&evaluatorId=${studentId}&classId=${classId}`,
+        responseList  
       );
+    
       alert("Evaluation successfully submitted!");
-      localStorage.removeItem(STORAGE_KEY); // if you’re using draft autosave
+      localStorage.removeItem(STORAGE_KEY);
       navigate(-1);
     } catch (error) {
       console.error("Error submitting evaluation:", error);
       alert("Failed to submit evaluation.");
     }
-  };
+};  
 
 return (
   <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-8">
@@ -281,28 +278,28 @@ return (
                           index > 3 ? "hidden lg:table-cell" : ""
                         }`}
                       >
-                        <input
-                          type="number"
-                          min="0"
-                          max="10"
-                          step="0.1"
-                          placeholder="0.0"
-                          className="w-20 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                          value={responses[`${member.memberId}-${question.qid}`] || ""}
-                          onChange={(e) => {
-                            const raw = e.target.value;
-                            // allow blank
-                            if (raw === "") {
-                              handleResponseChange(member.memberId, question.qid, "");
-                              return;
-                            }
-                            let num = parseFloat(raw);
-                            if (isNaN(num)) return;
-                            // clamp between 0 and 10
-                            num = Math.min(Math.max(num, 0), 10);
-                            handleResponseChange(member.memberId, question.qid, num);
-                          }}
-                        />
+                       <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.1"
+                            placeholder="0.0"
+                            className="w-20 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                            value={responses[`${member.memberId}-${question.qid}`] || ""} // controlled input
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              // allow blank
+                              if (raw === "") {
+                                handleResponseChange(member.memberId, question.qid, "");
+                                return;
+                              }
+                              let num = parseFloat(raw);
+                              if (isNaN(num)) return;
+                              // clamp between 0 and 10
+                              num = Math.min(Math.max(num, 0), 10);
+                              handleResponseChange(member.memberId, question.qid, num);
+                            }}
+                          />
                       </td>
                     ))}
 

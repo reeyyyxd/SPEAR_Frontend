@@ -28,19 +28,19 @@ const StudentTeacherStatus = () => {
 
   const fetchTeamData = async () => {
     try {
-      const teamRes = await axios.get(`http://${address}:8080/evaluation/${studentId}/class/${classId}/team`);
-      const teamId = teamRes.data.teamId;
+        const teamRes = await axios.get(`http://${address}:8080/evaluation/${studentId}/class/${classId}/team`);
+        const teamId = teamRes.data.tid;  // Use 'tid' here instead of 'teamId'
 
-      const res = await axios.get(`http://${address}:8080/team/${teamId}/members-and-adviser`);
-      setAdviserName(res.data.adviserName || "Unknown Adviser");
-      setMemberNames(res.data.memberNames || []);
+        const res = await axios.get(`http://${address}:8080/team/${teamId}/members-and-adviser`);
+        setAdviserName(res.data.adviserName || "Unknown Adviser");
+        setMemberNames(res.data.memberNames || []);
     } catch (err) {
-      console.error("Error fetching data:", err);
-      setError("Failed to fetch team or adviser details.");
+        console.error("Error fetching data:", err);
+        setError("Failed to fetch team or adviser details.");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   const fetchSubmissions = async () => {
     try {

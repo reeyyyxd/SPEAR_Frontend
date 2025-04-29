@@ -33,6 +33,11 @@ const TeacherEvaluations = () => {
   const [selectedAdviser, setSelectedAdviser]   = useState(null);
   const classId = getDecryptedId("cid"); 
 
+  const [adviserSubmissionStatus, setAdviserSubmissionStatus] = useState({
+    submitted: [],
+    notSubmitted: []
+  });
+
 
   useEffect(() => {
     if (showModal) {
@@ -86,6 +91,20 @@ const TeacherEvaluations = () => {
     }
   };
 
+  const fetchAdviserSubmissionStatus = async (evaluationId) => {
+    try {
+      const response = await axios.get(
+        `http://${address}:8080/teacher/evaluation/${evaluationId}/advisers/submission-status`
+      );
+      
+      setAdviserSubmissionStatus(response.data);
+    } catch (error) {
+      console.error("Error fetching adviser submission status:", error);
+      toast.error("Failed to load adviser submission status");
+    }
+  };
+  
+
  
 
   const fetchAdvisers = async (evaluationId) => {
@@ -115,13 +134,14 @@ const TeacherEvaluations = () => {
     }
   };
   
-    const toggleRow = (rowIndex, evaluationId, type) => {
+  const toggleRow = (rowIndex, evaluationId, type) => {
     const next = expandedIndex === rowIndex ? null : rowIndex;
     setExpandedIndex(next);
-
+  
     if (next === rowIndex) {
       if (type === "ADVISER_TO_STUDENT") {
         fetchAdvisers(evaluationId);
+        fetchAdviserSubmissionStatus(evaluationId);
       } else {
         fetchTeams(evaluationId);
       }
@@ -335,6 +355,8 @@ const TeacherEvaluations = () => {
     }
   };
 
+
+  
   return (
         <>
           <ToastContainer position="top-right" autoClose={3000} />
@@ -461,146 +483,129 @@ const TeacherEvaluations = () => {
               </tr>
 
               {/* Dropdown row */}
-                {expandedIndex === idx && (
-                  <tr className="bg-gray-50">
-                    <td colSpan={7} className="p-4 text-sm text-gray-700">
-                      {evalItem.availability === "Open" ? (
-                        <div className="text-center text-red-500 py-8">
-                          🔒 You can view submission details after this evaluation closes.
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
+              {expandedIndex === idx && (
+                <tr className="bg-gray-50">
+                  <td colSpan={7} className="p-4 text-sm text-gray-700">
+                    {evalItem.availability === "Open" ? (
+                      <div className="text-center text-red-500 py-8">
+                        🔒 You can view submission details after this evaluation closes.
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
 
-                          {/* 1) Either Team selector or Adviser selector */}
-                          <div className="flex items-center justify-between">
-                            {evalItem.evaluationType === "ADVISER_TO_STUDENT" ? (
-                              <>
-                                <h4 className="text-lg font-semibold">Select an Adviser</h4>
-                                <select
-                                  className="border border-gray-300 rounded px-3 py-1"
-                                  value={selectedAdviser?.adviserId ?? ""}
-                                  onChange={e => {
-                                    const adviserId = Number(e.target.value);
-                                    if (adviserId) {
-                                      setSelectedAdviser({ evaluationId: evalItem.eid, adviserId });
-                                      fetchAdviserSubmissionStatus(evalItem.eid, adviserId);
-                                    }
-                                  }}
-                                >
-                                  <option value="">— Choose Adviser —</option>
-                                  {(advisersByEval[evalItem.eid] || []).map(a => (
-                                    <option key={a.uid} value={a.uid}>
-                                      {a.firstname} {a.lastname}
-                                    </option>
-                                  ))}
-                                </select>
-                              </>
-                            ) : (
-                              <>
-                                <h4 className="text-lg font-semibold">Select a Team</h4>
-                                <select
-                                  className="border border-gray-300 rounded px-3 py-1"
-                                  value={selectedTeam?.teamId ?? ""}
-                                  onChange={e => {
-                                    const teamId = Number(e.target.value);
-                                    if (teamId) fetchSubmissionStatus(evalItem.eid, teamId);
-                                  }}
-                                >
-                                  <option value="">— Choose Team —</option>
-                                  {(teamsByEval[evalItem.eid] || []).map(t => (
-                                    <option key={t.teamId} value={t.teamId}>
-                                      {t.teamName}
-                                    </option>
-                                  ))}
-                                </select>
-                              </>
-                            )}
-                          </div>
-
-                          {/* 2) Submission Cards */}
-                          {evalItem.evaluationType === "ADVISER_TO_STUDENT" ? (
-                            selectedAdviser?.evaluationId === evalItem.eid && (
+                        {/* 1) Content based on evaluation type */}
+                        {evalItem.evaluationType === "ADVISER_TO_STUDENT" ? (
+                          <>
+                            {/* Adviser Submission Status Section */}
+                            <div className="space-y-4">
+                              <h4 className="text-lg font-semibold">Adviser Submission Status</h4>
+                              
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="bg-white border rounded shadow p-4">
                                   <h5 className="font-medium mb-2">
-                                    Submitted ({submitted.length})
+                                    Submitted ({adviserSubmissionStatus.submitted?.length || 0})
                                   </h5>
                                   <ul className="list-disc list-inside max-h-40 overflow-y-auto text-gray-800">
-                                    {submitted.map(m => (
-                                      <li key={m.memberId}>
-                                        {m.memberName}
-                                        <span className="text-xs text-gray-500">
-                                          {" "}
-                                        </span>
+                                    {adviserSubmissionStatus.submitted?.map(adviser => (
+                                      <li key={adviser.adviserId}>
+                                        {adviser.adviserName}
                                       </li>
                                     ))}
                                   </ul>
                                 </div>
+                                
                                 <div className="bg-white border rounded shadow p-4">
                                   <h5 className="font-medium mb-2">
-                                    Incomplete ({pending.length})
+                                    Not Submitted ({adviserSubmissionStatus.notSubmitted?.length || 0})
                                   </h5>
                                   <ul className="list-disc list-inside max-h-40 overflow-y-auto text-gray-800">
-                                    {pending.map(m => (
-                                      <li key={m.memberId}>{m.memberName}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              </div>
-                            )
-                          ) : (
-                            selectedTeam?.evaluationId === evalItem.eid && (
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-white border rounded shadow p-4">
-                                  <h5 className="font-medium mb-2">
-                                    Submitted ({submitted.length})
-                                  </h5>
-                                  <ul className="list-disc list-inside max-h-40 overflow-y-auto text-gray-800">
-                                    {submitted.map(m => (
-                                      <li key={m.memberId}>
-                                        {m.memberName}
-                                        <span className="text-xs text-gray-500">
-                                          {" "}
-                                        </span>
+                                    {adviserSubmissionStatus.notSubmitted?.map(adviser => (
+                                      <li key={adviser.adviserId}>
+                                        {adviser.adviserName}
                                       </li>
                                     ))}
                                   </ul>
                                 </div>
-                                <div className="bg-white border rounded shadow p-4">
-                                  <h5 className="font-medium mb-2">
-                                    Incomplete ({pending.length})
-                                  </h5>
-                                  <ul className="list-disc list-inside max-h-40 overflow-y-auto text-gray-800">
-                                    {pending.map(m => (
-                                      <li key={m.memberId}>{m.memberName}</li>
-                                    ))}
-                                  </ul>
-                                </div>
                               </div>
-                            )
-                          )}
-
-                          {/* 3) Download button */}
-                          {(
-                            evalItem.evaluationType === "STUDENT_TO_STUDENT"
-                            || (evalItem.evaluationType === "STUDENT_TO_ADVISER" && role === "ADMIN")
-                            || (evalItem.evaluationType === "ADVISER_TO_STUDENT")
-                          ) && (
-                            <div className="mt-4 text-right">
-                              <button
-                                className="bg-teal text-white px-4 py-2 rounded hover:bg-teal-dark"
-                                onClick={() => handleDownload(evalItem.eid)}
-                              >
-                                Download All Data
-                              </button>
                             </div>
-                          )}
+                          </>
+                        ) : (
+                          <>
+                            {/* Team Selector (Keep this unchanged) */}
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-lg font-semibold">Select a Team</h4>
+                              <select
+                                className="border border-gray-300 rounded px-3 py-1"
+                                value={selectedTeam?.teamId ?? ""}
+                                onChange={e => {
+                                  const teamId = Number(e.target.value);
+                                  if (teamId) fetchSubmissionStatus(evalItem.eid, teamId);
+                                }}
+                              >
+                                <option value="">— Choose Team —</option>
+                                {(teamsByEval[evalItem.eid] || []).map(t => (
+                                  <option key={t.teamId} value={t.teamId}>
+                                    {t.teamName}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
 
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                )}
+                            {/* Team Submission Status Cards (Keep this unchanged) */}
+                            {selectedTeam?.evaluationId === evalItem.eid && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-white border rounded shadow p-4">
+                                  <h5 className="font-medium mb-2">
+                                    Submitted ({submitted.length})
+                                  </h5>
+                                  <ul className="list-disc list-inside max-h-40 overflow-y-auto text-gray-800">
+                                    {submitted.map(m => (
+                                      <li key={m.memberId}>
+                                        {m.memberName}
+                                        <span className="text-xs text-gray-500">
+                                          {" "}
+                                        </span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div className="bg-white border rounded shadow p-4">
+                                  <h5 className="font-medium mb-2">
+                                    Incomplete ({pending.length})
+                                  </h5>
+                                  <ul className="list-disc list-inside max-h-40 overflow-y-auto text-gray-800">
+                                    {pending.map(m => (
+                                      <li key={m.memberId}>{m.memberName}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {/* 3) Download button (make sure to include this part) */}
+                        {(
+                          evalItem.evaluationType === "STUDENT_TO_STUDENT"
+                          || (evalItem.evaluationType === "STUDENT_TO_ADVISER" && role === "ADMIN")
+                          || (evalItem.evaluationType === "ADVISER_TO_STUDENT")
+                        ) && (
+                          <div className="mt-4 text-right">
+                            <button
+                              className="bg-teal text-white px-4 py-2 rounded hover:bg-teal-dark"
+                              onClick={() => handleDownload(evalItem.eid)}
+                            >
+                              Download All Data
+                            </button>
+                          </div>
+                        )}
+                        
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              )}
+
           </React.Fragment>
         ))}
             </tbody>
