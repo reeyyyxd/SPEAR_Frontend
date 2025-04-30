@@ -246,7 +246,7 @@ const TeacherEvaluations = () => {
         cleaned[key] = evaluation[key];
       }
     });
-    return cleaned;
+    return cleaned;ç
   };
 
   const handleDeleteEvaluation = async (eid) => {

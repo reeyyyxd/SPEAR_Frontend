@@ -67,7 +67,7 @@ const TeacherSchedules = () => {
     const fetchAdvisoryTeams = async () => {
       if (!authState.uid) {
         console.error("Adviser ID is missing. Ensure you are logged in.");
-        setLoading(false);
+        setIsLoading(false);
         return;
       }
 
@@ -85,7 +85,7 @@ const TeacherSchedules = () => {
       } catch (error) {
         console.error("Error fetching advisory teams:", error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 

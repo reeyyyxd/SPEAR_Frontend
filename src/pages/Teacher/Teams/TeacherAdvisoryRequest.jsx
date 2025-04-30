@@ -134,182 +134,179 @@ const TeacherAdvisoryRequest = () => {
   };
 
   return (
- <>
-    <ToastContainer position="top-right" autoClose={3000} />
-    <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
-      <Navbar userRole={authState?.role} />
+    <>
+      <ToastContainer position="top-right" autoClose={3000} />
+      <div className="flex bg-white min-h-screen">
+        {/* Sidebar Navigation */}
+        <Navbar userRole={authState?.role} />
 
-      <div className="main-content bg-white p-4 sm:p-6 md:p-8 w-full">
-        <button
-          onClick={() => window.history.back()}
-          className="mb-4 bg-[#323c47] text-white px-4 py-2 rounded hover:opacity-90"
-        >
-          Back
-        </button>
+        {/* Main Content - adjusted with margin to avoid sidebar overlap */}
+        <div className="flex-1 ml-[250px] p-6">
+          <button
+            onClick={() => window.history.back()}
+            className="mb-6 bg-[#323c47] text-white px-4 py-2 rounded hover:opacity-90"
+          >
+            Back
+          </button>
 
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
-          Team Advisory Requests
-        </h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
+            Team Advisory Requests
+          </h1>
 
-        <div className="flex justify-center gap-4 mb-4">
-          {["ALL", "PENDING", "ACCEPTED", "REJECTED"].map((status) => (
-            <button
-              key={status}
-              className={`px-4 py-2 rounded border ${
-                statusFilter === status
-                  ? "bg-[#323c47] text-white"
-                  : "bg-white text-gray-700"
-              }`}
-              onClick={() => setStatusFilter(status)}
-            >
-              {status}
-            </button>
-          ))}
-        </div>
+          {/* Filter Buttons */}
+          <div className="flex justify-center gap-4 mb-6">
+            {["ALL", "PENDING", "ACCEPTED", "REJECTED"].map((status) => (
+              <button
+                key={status}
+                className={`px-6 py-2 rounded-md ${
+                  statusFilter === status
+                    ? "bg-[#323c47] text-white"
+                    : "bg-white text-gray-700 border border-gray-300"
+                }`}
+                onClick={() => setStatusFilter(status)}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
 
-        {loading ? (
-          <p className="text-center text-gray-500">Loading requests...</p>
-        ) : requests.length === 0 ? (
-          <p className="text-center text-gray-400">No requests found.</p>
-        ) : (
-          <div className="overflow-x-auto shadow-md rounded-lg">
-            <table className="min-w-full border border-gray-300">
-              <thead className="bg-[#323c47] text-white">
-                <tr>
-                  <th className="px-4 py-2 text-left text-sm">
-                    Class Description
-                  </th>
-                  <th className="px-4 py-2 text-left text-sm">Group Name</th>
-                  <th className="px-4 py-2 text-left text-sm">Leader</th>
-                  <th className="px-4 py-2 text-left text-sm">Members</th>
-                  <th className="px-4 py-2 text-left text-sm">Schedule</th>
-                  <th className="px-4 py-2 text-left text-sm">Status</th>
-                  <th className="px-4 py-2 text-left text-sm">Reason</th>
-                  <th className="px-4 py-2 text-left text-sm"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRequests.map((req) => (
-                  <tr key={req.requestId} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-2 text-sm">
-                      {req.classDescription}
-                    </td>
-                    <td className="px-4 py-2 text-sm">{req.groupName}</td>
-                    <td className="px-4 py-2 text-sm">{req.leaderName}</td>
-                    <td className="px-4 py-2 text-sm">
-                      <ul className="list-disc ml-4">
-                        {req.memberNames.map((name, i) => (
-                          <li key={i} className="text-sm">
-                            {name}
-                          </li>
-                        ))}
-                      </ul>
-                    </td>
-                    <td className="px-4 py-2 text-sm">
-                      {req.scheduleDay} -{" "}
-                      {formatTime(req.scheduleTime?.split(" - ")[0])} -{" "}
-                      {formatTime(req.scheduleTime?.split(" - ")[1])}
-                    </td>
-                    <td className="px-4 py-2">
-                      <span
-                        className={`px-2 py-1 rounded-full text-sm font-semibold inline-block ${
-                          req.status === "PENDING"
-                            ? "bg-yellow-500 text-white"
-                            : req.status === "ACCEPTED"
-                            ? "bg-green-600 text-white"
-                            : req.status === "REJECTED"
-                            ? "bg-red-500 text-white"
-                            : req.status === "REQUEST_TO_LEAVE"
-                            ? "bg-orange-500 text-white"
-                            : "bg-gray-400 text-white"
-                        }`}
-                      >
-                        {req.status === "REQUEST_TO_LEAVE"
-                          ? "Request to Leave"
-                          : req.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 text-sm">{req.reason || "—"}</td>
-                    <td className="px-4 py-2 space-x-2">
-                      {req.status === "PENDING" && (
-                        <>
-                          <button
-                            className="text-emerald-700 border border-emerald-700 px-3 py-1 rounded-lg transition hover:bg-emerald-50"
-                            onClick={() => handleAccept(req.requestId)}
-                          >
-                            Accept
-                          </button>
-                          <button
-                            className="text-red-700 border border-red-700 px-3 py-1 rounded-lg transition hover:bg-red-50"
-                            onClick={() => setDeclineModal(req.requestId)}
-                          >
-                            Decline
-                          </button>
-                        </>
-                      )}
-
-                      {req.status === "REQUEST_TO_LEAVE" && (
-                        <>
-                          <button
-                            className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-800"
-                            onClick={() => handleApproveLeave(req.requestId)}
-                          >
-                            Drop Team
-                          </button>
-                          <button
-                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-blue-800"
-                            onClick={() => handleDeclineLeave(req.requestId)}
-                          >
-                            Decline Leave
-                          </button>
-                        </>
-                      )}
-
-                      {["REJECTED", "DROP"].includes(req.status) && (
-                        <button
-                          className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-700"
-                          onClick={() => handleDelete(req.requestId)}
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </td>
+          {loading ? (
+            <p className="text-center text-gray-500">Loading requests...</p>
+          ) : requests.length === 0 ? (
+            <p className="text-center text-gray-400">No requests found.</p>
+          ) : (
+            <div className="overflow-x-auto shadow-md rounded-lg">
+              <table className="min-w-full border border-gray-300">
+                <thead className="bg-[#323c47] text-white">
+                  <tr>
+                    <th className="px-4 py-3 text-left">Class Description</th>
+                    <th className="px-4 py-3 text-left">Group Name</th>
+                    <th className="px-4 py-3 text-left">Leader</th>
+                    <th className="px-4 py-3 text-left">Members</th>
+                    <th className="px-4 py-3 text-left">Schedule</th>
+                    <th className="px-4 py-3 text-left">Status</th>
+                    <th className="px-4 py-3 text-left">Reason</th>
+                    <th className="px-4 py-3 text-center">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {filteredRequests.map((req) => (
+                    <tr key={req.requestId} className="border-b hover:bg-gray-50">
+                      <td className="px-4 py-3">{req.classDescription}</td>
+                      <td className="px-4 py-3">{req.groupName}</td>
+                      <td className="px-4 py-3">{req.leaderName}</td>
+                      <td className="px-4 py-3">
+                        <ul className="list-disc ml-4">
+                          {req.memberNames.map((name, i) => (
+                            <li key={i}>{name}</li>
+                          ))}
+                        </ul>
+                      </td>
+                      <td className="px-4 py-3">
+                        {req.scheduleDay} -{" "}
+                        {formatTime(req.scheduleTime?.split(" - ")[0])} -{" "}
+                        {formatTime(req.scheduleTime?.split(" - ")[1])}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                            req.status === "PENDING"
+                              ? "bg-yellow-500 text-white"
+                              : req.status === "ACCEPTED"
+                              ? "bg-green-600 text-white"
+                              : req.status === "REJECTED"
+                              ? "bg-red-500 text-white"
+                              : req.status === "REQUEST_TO_LEAVE"
+                              ? "bg-orange-500 text-white"
+                              : "bg-gray-400 text-white"
+                          }`}
+                        >
+                          {req.status === "REQUEST_TO_LEAVE"
+                            ? "Request to Leave"
+                            : req.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">{req.reason || "—"}</td>
+                      <td className="px-4 py-3 text-center">
+                        {req.status === "PENDING" && (
+                          <div className="flex justify-center gap-2">
+                            <button
+                              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition"
+                              onClick={() => handleAccept(req.requestId)}
+                            >
+                              Accept
+                            </button>
+                            <button
+                              className="border border-red-600 text-red-600 px-4 py-2 rounded-md hover:bg-red-50 transition"
+                              onClick={() => setDeclineModal(req.requestId)}
+                            >
+                              Decline
+                            </button>
+                          </div>
+                        )}
 
-        {/* Decline Reason Modal */}
-        {declineModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-md shadow-lg w-full max-w-md relative">
-              <button
-                onClick={() => setDeclineModal(null)}
-                className="absolute top-2 right-2 text-gray-500 hover:text-black"
-              >
-                <FiX size={20} />
-              </button>
-              <h2 className="text-lg font-semibold mb-4">Reason for Decline</h2>
-              <textarea
-                rows="4"
-                className="w-full border border-gray-300 rounded-md p-2 mb-4"
-                placeholder="Enter your reason here..."
-                value={declineReason}
-                onChange={(e) => setDeclineReason(e.target.value)}
-              />
-              <button
-                onClick={handleDecline}
-                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800"
-              >
-                Submit Decline
-              </button>
+                        {req.status === "REQUEST_TO_LEAVE" && (
+                          <div className="flex justify-center gap-2">
+                            <button
+                              className="bg-orange-600 text-white px-3 py-2 rounded-md hover:bg-orange-700"
+                              onClick={() => handleApproveLeave(req.requestId)}
+                            >
+                              Drop Team
+                            </button>
+                            <button
+                              className="bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700"
+                              onClick={() => handleDeclineLeave(req.requestId)}
+                            >
+                              Decline Leave
+                            </button>
+                          </div>
+                        )}
+
+                        {["REJECTED", "DROP"].includes(req.status) && (
+                          <button
+                            className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
+                            onClick={() => handleDelete(req.requestId)}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Decline Reason Modal */}
+          {declineModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-md shadow-lg w-full max-w-md relative">
+                <button
+                  onClick={() => setDeclineModal(null)}
+                  className="absolute top-2 right-2 text-gray-500 hover:text-black"
+                >
+                  <FiX size={20} />
+                </button>
+                <h2 className="text-lg font-semibold mb-4">Reason for Decline</h2>
+                <textarea
+                  rows="4"
+                  className="w-full border border-gray-300 rounded-md p-2 mb-4"
+                  placeholder="Enter your reason here..."
+                  value={declineReason}
+                  onChange={(e) => setDeclineReason(e.target.value)}
+                />
+                <button
+                  onClick={handleDecline}
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                  Submit Decline
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 };
