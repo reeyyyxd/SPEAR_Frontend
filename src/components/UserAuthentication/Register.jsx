@@ -27,6 +27,8 @@ const Register = () => {
   const [showPasswordValidation, setShowPasswordValidation] = useState(false);
   const [isPasswordMatch, setIsPasswordMatch] = useState(null); // Can be true, false, or null.
   const [isEmailValid, setIsEmailValid] = useState(null); // Can be true, false, or null.
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -139,25 +141,40 @@ const Register = () => {
         }
       );
 
-      if (response.status === 200) {
-        navigate("/login");
+      // Check the status code from the response (might be different than HTTP status)
+      if (response.data && response.data.statusCode === 400) {
+        // This is for already registered email
+        toast.error(response.data.message || "This email is already registered.");
+      } else if (response.data && response.data.statusCode === 200) {
+        // Check if this was an account revival
+        if (response.data.message && response.data.message.includes("restored")) {
+          toast.success("Your account has been restored successfully!");
+        } else {
+          toast.success("Registration successful!");
+        }
+        // Redirect after short delay to allow toast to be seen
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
       } else {
-        const errorMessage = response.data?.message || "Registration failed.";
-        setError(errorMessage);
-        alert(errorMessage);
+        // Generic success case
+        toast.success("Registration successful!");
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
       }
     } catch (err) {
       console.error("Error during registration:", err);
-
-      if (err.response && err.response.status === 400) {
-        const errorMessage =
-          err.response.data.message || "This email is already registered.";
+      
+      // Handle HTTP errors from the server
+      if (err.response) {
+        const errorMessage = err.response.data?.message || "Registration failed.";
         setError(errorMessage);
-        alert(errorMessage);
+        toast.error(errorMessage);
       } else {
-        const errorMessage = "Registration failed. Please try again.";
-        setError(errorMessage);
-        alert(errorMessage);
+        // Network or other errors
+        setError("Registration failed. Please check your connection and try again.");
+        toast.error("Registration failed. Please check your connection and try again.");
       }
     } finally {
       setIsLoading(false);
@@ -182,7 +199,7 @@ const Register = () => {
               Registration
             </h1>
             {error && (
-              <div className="text-red-500 text-sm text-center mb-4">
+              <div className="text-red-500 text-sm text-center mb-4 bg-red-100 p-2 rounded">
                 {error}
               </div>
             )}
@@ -201,6 +218,8 @@ const Register = () => {
                   className={`w-full p-2 rounded-md border ${
                     isEmailValid === false
                       ? "border-red-500"
+                      : isEmailValid === true
+                      ? "border-green-500"
                       : "border-gray-300"
                   }`}
                   value={formData.email}
@@ -258,15 +277,28 @@ const Register = () => {
                 >
                   Password
                 </label>
-                <input
-                  type="password"
-                  id="password"
-                  className="w-full p-2 rounded-md border border-gray-300"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  onFocus={() => setShowPasswordValidation(true)}
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    className="w-full p-2 rounded-md border border-gray-300"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    onFocus={() => setShowPasswordValidation(true)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <span className="text-gray-600">Hide</span>
+                    ) : (
+                      <span className="text-gray-600">Show</span>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -276,24 +308,39 @@ const Register = () => {
                 >
                   Confirm Password
                 </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  className={`w-full p-2 rounded-md border ${
-                    isPasswordMatch === false
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  }`}
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  onFocus={() => setShowPasswordValidation(true)}
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    id="confirmPassword"
+                    className={`w-full p-2 rounded-md border ${
+                      isPasswordMatch === false
+                        ? "border-red-500"
+                        : isPasswordMatch === true
+                        ? "border-green-500"
+                        : "border-gray-300"
+                    }`}
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    onFocus={() => setShowPasswordValidation(true)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <span className="text-gray-600">Hide</span>
+                    ) : (
+                      <span className="text-gray-600">Show</span>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Real-time Password Validation */}
               {showPasswordValidation && (
-                <div className="col-span-2 text-white text-sm">
+                <div className="col-span-2 text-white text-sm bg-gray-800 p-3 rounded">
                   <p>Password Requirements:</p>
                   <ul className="list-disc ml-5">
                     <li
@@ -359,11 +406,11 @@ const Register = () => {
               <div className="col-span-2">
                 <button
                   type="submit"
-                  className={` ${
+                  className={`w-full py-2 rounded-md transition-colors ${
                     isLoading
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-peach text-white font-semibold py-2 rounded-md hover:bg-white hover:text-teal"
-                  } w-full`}
+                      ? "bg-gray-400 cursor-not-allowed text-gray-600"
+                      : "bg-peach text-white font-semibold hover:bg-white hover:text-teal"
+                  }`}
                   disabled={isLoading}
                 >
                   {isLoading ? "Registering..." : "Register"}

@@ -9,6 +9,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const TeacherEvaluations = () => {
+  
   const { getDecryptedId, storeEncryptedId } = useContext(AuthContext);
   const [evaluations, setEvaluations] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -28,15 +29,34 @@ const TeacherEvaluations = () => {
   const [submitted, setSubmitted] = useState([]);           
   const [pending,   setPending]   = useState([]);
   const role = localStorage.getItem("role"); 
+  const [needsAdvisory, setNeedsAdvisory] = useState(false);
 
   const [advisersByEval, setAdvisersByEval]     = useState({});
   const [selectedAdviser, setSelectedAdviser]   = useState(null);
   const classId = getDecryptedId("cid"); 
+  
+
+  const address = getIpAddress();
+  function getIpAddress() {
+    const hostname = window.location.hostname;
+    const indexOfColon = hostname.indexOf(":");
+    return indexOfColon !== -1
+      ? hostname.substring(0, indexOfColon)
+      : hostname;
+  }
 
   const [adviserSubmissionStatus, setAdviserSubmissionStatus] = useState({
     submitted: [],
     notSubmitted: []
   });
+  
+
+  useEffect(() => {
+    axios
+      .get(`http://${address}:8080/class/${classId}`)
+      .then(res => setNeedsAdvisory(res.data.needsAdvisory))
+      .catch(console.error);
+  }, [address, classId]);
 
 
   useEffect(() => {
@@ -47,7 +67,7 @@ const TeacherEvaluations = () => {
     }
   }, [showModal]);
 
-  const address = getIpAddress();
+
 
   function getIpAddress() {
     const hostname = window.location.hostname;
@@ -103,9 +123,7 @@ const TeacherEvaluations = () => {
       toast.error("Failed to load adviser submission status");
     }
   };
-  
 
- 
 
   const fetchAdvisers = async (evaluationId) => {
     try {
@@ -325,37 +343,152 @@ const TeacherEvaluations = () => {
     }));
   };
 
-  const handleDownload = async (eid) => {
-    if (!eid) {
-      toast.error("Invalid evaluation ID");
-      return;
-    }
-    try {
-      const [submissions, responses] = await Promise.all([
-        axios.get(`http://${address}:8080/submissions/by-evaluation/${eid}`),
-        axios.get(`http://${address}:8080/responses/get-evaluation/${eid}`),
-      ]);
+      // inside your component...
 
-      const workbook = XLSX.utils.book_new();
-
-      const submissionsSheet = XLSX.utils.json_to_sheet(submissions.data);
-      XLSX.utils.book_append_sheet(workbook, submissionsSheet, "Submissions");
-
-      const responsesSheet = XLSX.utils.json_to_sheet(responses.data);
-      XLSX.utils.book_append_sheet(workbook, responsesSheet, "Responses");
-
-      XLSX.writeFile(
-        workbook,
-        `Evaluation_${eid}_Submissions_and_Responses.xlsx`
-      );
-      toast.success("Excel file downloaded successfully!");
-    } catch (error) {
-      console.error("Error downloading Excel:", error);
-      toast.error("An error occurred while exporting data to Excel.");
-    }
-  };
-
-
+      const fetchTeamsWithMembers = async () => {
+        try {
+          const classId = getDecryptedId("cid");
+          const res = await axios.get(
+            `http://${address}:8080/class/${classId}/members`
+          );
+          return res.data;
+        } catch (err) {
+          console.error("Error fetching teams & members:", err);
+          toast.error("Failed to load teams & members");
+          return [];
+        }
+      };
+      
+      const fetchAdvisersList = async () => {
+        try {
+          const classId = getDecryptedId("cid");
+          const res = await axios.get(
+            `http://${address}:8080/class/${classId}/qualified-teachers`
+          );
+          return res.data;
+        } catch (err) {
+          console.error("Error fetching advisers:", err);
+          toast.error("Failed to load advisers");
+          return [];
+        }
+      };
+      
+        const handleDownload = async (eid) => {
+        if (!eid) {
+          toast.error("Invalid evaluation ID");
+          return;
+        }
+      
+        const evaluationInfo = evaluations.find(e => e.eid === eid);
+        if (!evaluationInfo) {
+          toast.error("Could not find evaluation details");
+          return;
+        }
+      
+        try {
+          const [subRes, respRes] = await Promise.all([
+            axios.get(`http://${address}:8080/submissions/by-evaluation/${eid}`),
+            axios.get(`http://${address}:8080/responses/get-evaluation/${eid}`)
+          ]);
+          const submissions = subRes.data;
+          const responses   = respRes.data;
+      
+          // Metadata & submission sheet
+          let metadataRows, dataRows, dataSheetName;
+          if (evaluationInfo.evaluationType === "STUDENT_TO_STUDENT") {
+            const teams = await fetchTeamsWithMembers();
+            metadataRows = [
+              ["Team Submissions"],
+              ["Course Code",        evaluationInfo.courseCode       || ""],
+              ["Section",            evaluationInfo.section          || ""],
+              ["Period",             evaluationInfo.period           || ""],
+              ["Evaluation Type",    evaluationInfo.evaluationType   || ""],
+              ["Date Open",          evaluationInfo.dateOpen         || ""],
+              ["Date Close",         evaluationInfo.dateClose        || ""],
+              ["Availability",       evaluationInfo.availability     || ""],
+              ["Course Description", evaluationInfo.courseDescription|| ""],
+              ["Export Date",        new Date().toLocaleString()],
+              [],
+              ["teamName","memberName","submittedAt","status"]
+            ];
+            dataRows = teams.flatMap(team =>
+              (team.members.length ? team.members : [{ memberName: "" }])
+              .map(m => {
+                const sub = submissions.find(s => s.evaluatorId === m.memberId);
+                return [team.teamName, m.memberName, sub?.submittedAt || "", sub?.status || "Not Submitted"];
+              })
+            );
+            dataSheetName = "Team Submissions";
+          } else {
+            const advisers = await fetchAdvisersList();
+            metadataRows = [
+              ["Adviser Submissions"],
+              ["Course Code",        evaluationInfo.courseCode       || ""],
+              ["Section",            evaluationInfo.section          || ""],
+              ["Period",             evaluationInfo.period           || ""],
+              ["Evaluation Type",    evaluationInfo.evaluationType   || ""],
+              ["Date Open",          evaluationInfo.dateOpen         || ""],
+              ["Date Close",         evaluationInfo.dateClose        || ""],
+              ["Availability",       evaluationInfo.availability     || ""],
+              ["Course Description", evaluationInfo.courseDescription|| ""],
+              ["Export Date",        new Date().toLocaleString()],
+              [],
+              ["adviserName","evaluateeName","submittedAt","status"]
+            ];
+            dataRows = advisers.map(a => {
+              const sub = submissions.find(s => s.evaluatorId === a.uid);
+              return [`${a.firstname} ${a.lastname}`, sub?.evaluateeName || "", sub?.submittedAt || "", sub?.status || "Not Submitted"];
+            });
+            dataSheetName = "Adviser Submissions";
+          }
+          const dataSheet = XLSX.utils.aoa_to_sheet([...metadataRows, ...dataRows]);
+      
+          // Responses sheet: separate by questionType
+          const inputResponses = responses.filter(r => r.questionType === 'INPUT');
+          const textResponses  = responses.filter(r => r.questionType === 'TEXT');
+      
+          // INPUT section pivot
+          const questionsIn = Array.from(new Set(inputResponses.map(r => r.questionName)));
+          const evaluateesIn = Array.from(new Set(inputResponses.map(r => r.evaluateeName)));
+          const pivotIn = [["Question","Question Details", ...evaluateesIn, "Evaluator"]];
+          questionsIn.forEach(q => {
+            const details = inputResponses.find(r => r.questionName === q)?.questionDetails || '';
+            const row = [q, details];
+            evaluateesIn.forEach(ev => {
+              const resp = inputResponses.find(r => r.questionName === q && r.evaluateeName === ev);
+              row.push(resp?.score ?? "");
+            });
+            // assuming same evaluator for each set, take first
+            row.push(inputResponses.find(r => r.questionName === q)?.evaluatorName || "");
+            pivotIn.push(row);
+          });
+      
+          // TEXT section
+          const pivotText = [["Question","Question Details","textResponse","Evaluator"]];
+          textResponses.forEach(r => {
+            pivotText.push([r.questionName, r.questionDetails, r.textResponse || '', r.evaluatorName]);
+          });
+      
+          // Combine sections with blank row
+          const respAoA = [["Question Type: INPUT"],[]].concat(pivotIn).concat([[],["Question Type: TEXT"],[]]).concat(pivotText);
+          const respSheet = XLSX.utils.aoa_to_sheet(respAoA);
+      
+          // Assemble and export
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, dataSheet, dataSheetName);
+          XLSX.utils.book_append_sheet(wb, respSheet, "Responses");
+      
+          const dateExport = new Date().toISOString().slice(0,10);
+          const filename = `${evaluationInfo.courseCode}_${evaluationInfo.period}_eval_${evaluationInfo.evaluationType}_${dateExport}.xlsx`;
+          XLSX.writeFile(wb, filename);
+          toast.success(`Excel exported as ${filename}`);
+      
+        } catch (err) {
+          console.error("Error downloading Excel:", err);
+          toast.error("An error occurred while exporting data to Excel.");
+        }
+      };
+      
   
   return (
         <>
@@ -642,16 +775,20 @@ const TeacherEvaluations = () => {
                   onChange={handleInputChange}
                   className="w-full border border-gray-300 px-3 py-2 rounded-lg"
                 >
-                  <option value="">Select Evaluation Type</option>
+                  {/* Always available */}
                   <option value="STUDENT_TO_STUDENT">Student to Student</option>
-                  <option value="STUDENT_TO_ADVISER">
-                    Student to Adviser (Applicable to Teams that have
-                    Advisories)
-                  </option>
-                  <option value="ADVISER_TO_STUDENT">
-                    Adviser to Student (Applicable to Teams that have
-                    Advisories)
-                  </option>
+
+                  {/* Only show if needsAdvisory is true */}
+                  {needsAdvisory && (
+                    <>
+                      <option value="STUDENT_TO_ADVISER">
+                        Student to Adviser (Applicable to Teams that have Advisories)
+                      </option>
+                      <option value="ADVISER_TO_STUDENT">
+                        Adviser to Student (Applicable to Teams that have Advisories)
+                      </option>
+                    </>
+                  )}
                 </select>
               </div>
 

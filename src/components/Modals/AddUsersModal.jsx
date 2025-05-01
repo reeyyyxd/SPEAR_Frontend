@@ -190,7 +190,6 @@ const AddUsersModal = ({ isOpen, onClose }) => {
               >
                 <option value="" disabled>Select Role</option>
                 <option value="TEACHER">TEACHER</option>
-                <option value="ADMIN">ADMIN</option>
               </select>
             </div>
 

@@ -112,7 +112,7 @@ const UsersTable = ({ users, onUserDeleted }) => {
                 ))}
               </tbody>
             </table>
-            {users.length === 0 && <p className="text-center text-gray-500 py-4">No users found.</p>}
+            {users.length === 0 && <p className="text-center text-gray-500 py-4">Nothing here...</p>}
           </div>
         </div>
       </div>
