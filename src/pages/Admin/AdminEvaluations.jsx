@@ -35,253 +35,306 @@ const AdminEvaluations = () => {
   };
 
   const handleDownload = async (eid, evaluationInfo) => {
-    try {
-      setExportInProgress(true);
-      
-      const [submissions, responses] = await Promise.all([
-        axios.get(`http://${address}:8080/submissions/by-evaluation/${eid}`),
-        axios.get(`http://${address}:8080/responses/get-evaluation/${eid}`),
+  try {
+    setExportInProgress(true);
+    // Fetch submissions and responses
+    const [submissionsRes, responsesRes] = await Promise.all([
+      axios.get(`http://${address}:8080/submissions/by-evaluation/${eid}`, { headers: { Authorization: `Bearer ${authState.token}` } }),
+      axios.get(`http://${address}:8080/responses/get-evaluation/${eid}`,  { headers: { Authorization: `Bearer ${authState.token}` } }),
+    ]);
+
+    // Normalize responses
+    const processedResponses = responsesRes.data.map(resp => ({
+      ...resp,
+      score: resp.score || 0,
+      questionName: resp.questionName || "",
+      questionDetails: resp.questionDetails || "", // Include question details
+      questionType: resp.questionType || "INPUT",
+      textResponse: resp.textResponse || resp.text_response || "",
+      adviserName: resp.evaluateeName || "", 
+      studentName: resp.evaluatorName || ""
+    }));
+
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+
+    // Metadata sheet - removed evaluatee information
+    const metaAoA = [
+      ['Evaluation Details'],
+      ['Course Code', evaluationInfo.courseCode || ''],
+      ['Section',     evaluationInfo.section    || ''],
+      ['Period',      evaluationInfo.period     || ''],
+      ['Adviser Name(s)', evaluationInfo.adviserName || ''],
+      ['Date Open',   evaluationInfo.dateOpen   || ''],
+      ['Date Close',  evaluationInfo.dateClose  || ''],
+      ['Availability',evaluationInfo.availability|| ''],
+      ['Course Description', evaluationInfo.courseDescription || ''],
+      ['Export Date', new Date().toLocaleString()],
+      [],
+      ['Submissions Information'],
+      []
+    ];
+    
+    if (submissionsRes.data?.length) {
+      const headers = ['Evaluator (Student)','Status','Submission Date'];
+      const rows = submissionsRes.data.map(s => [
+        s.evaluatorName,
+        s.status,
+        new Date(s.submittedAt).toLocaleString()
       ]);
-      
-      // Process responses to match the database structure we can see
-      // Map properties to ensure all required fields are available
-      const processedResponses = responses.data.map(resp => {
-        return {
-          ...resp,
-          // Make sure we have these fields, based on the database screenshot
-          rid: resp.rid || resp.id || "",
-          score: resp.score || 0,
-          text_response: resp.textResponse || resp.text_response || null,
-          evaluatee_id: resp.evaluateeId || resp.evaluatee_id || 0,
-          evaluation_id: resp.evaluation_id || resp.evaluationId || eid,
-          evaluator_id: resp.evaluatorId || resp.evaluator_id || 0,
-          question_id: resp.questionId || resp.question_id || 0,
-          questionName: resp.questionName || "",
-          questionDetails: resp.questionDetails || "",
-          questionType: resp.questionType || "INPUT",
-          evaluatorName: resp.evaluatorName || "",
-          evaluateeName: resp.evaluateeName || ""
-        };
-      });
-
-      // Create a new workbook
-      const workbook = XLSX.utils.book_new();
-      
-      // Add evaluation metadata to the workbook
-      const metadataSheet = XLSX.utils.aoa_to_sheet([
-        ['Evaluation Details'],
-        ['Course Code', evaluationInfo.courseCode || ''],
-        ['Section', evaluationInfo.section || ''],
-        ['Period', evaluationInfo.period || ''],
-        ['Adviser Name', evaluationInfo.adviserName || ''],
-        ['Date Open', evaluationInfo.dateOpen || ''],
-        ['Date Close', evaluationInfo.dateClose || ''],
-        ['Availability', evaluationInfo.availability || ''],
-        ['Course Description', evaluationInfo.courseDescription || ''],
-        ['Export Date', new Date().toLocaleString()],
-      ]);
-      
-      // Format the submissions data right below the metadata
-      if (submissions.data && submissions.data.length > 0) {
-        // Add a separator row
-        XLSX.utils.sheet_add_aoa(metadataSheet, [
-          [''], // Empty row for spacing
-          ['Submissions Information'], // Title for submissions section
-          [''] // Empty row for spacing
-        ], { origin: -1 }); // Append to the bottom
-        
-        // Convert submissions to AOA format
-        const submissionHeaders = ['Evaluator', 'Evaluation Period', 'Status', 'Submission Date'];
-        const submissionRows = submissions.data.map(sub => [
-          sub.evaluatorName,
-          sub.evaluationPeriod,
-          sub.status,
-          new Date(sub.submittedAt).toLocaleString()
-        ]);
-        
-        // Add the headers and data
-        XLSX.utils.sheet_add_aoa(metadataSheet, [submissionHeaders], { origin: -1 });
-        XLSX.utils.sheet_add_aoa(metadataSheet, submissionRows, { origin: -1 });
-      }
-      
-      // Set column widths for better readability
-      const metadataCols = [
-        { wch: 20 }, // Field name width
-        { wch: 40 }, // Value width
-      ];
-      metadataSheet['!cols'] = metadataCols;
-      
-      XLSX.utils.book_append_sheet(workbook, metadataSheet, 'Evaluation Info');
-
-      // Format and add responses data with grouping
-      if (processedResponses && processedResponses.length > 0) {
-        // Group responses by evaluator and evaluatee
-        const groupedResponses = {};
-        
-        processedResponses.forEach(resp => {
-          const key = `${resp.evaluatorName} → ${resp.evaluateeName}`;
-          if (!groupedResponses[key]) {
-            groupedResponses[key] = [];
-          }
-          groupedResponses[key].push(resp);
-        });
-        
-        // Create a flattened array with summary statistics
-        const responseData = [];
-        Object.entries(groupedResponses).forEach(([key, respList]) => {
-          // Add a header row for each evaluator-evaluatee pair
-          responseData.push({
-            "Question": `=== ${key} ===`,
-            "Score": "",
-            "Comments": ""
-          });
-          
-          // First add all INPUT type questions
-          respList.filter(resp => resp.questionType === "INPUT").forEach(resp => {
-            responseData.push({
-              "Question": resp.questionName,
-              "Score": resp.score,
-              "Comments": ""
-            });
-          });
-          
-          // Calculate average score for this evaluator-evaluatee pair (only for INPUT types)
-          const inputResponses = respList.filter(resp => resp.questionType === "INPUT");
-          if (inputResponses.length > 0) {
-            const avgScore = inputResponses.reduce((sum, item) => sum + (item.score || 0), 0) / inputResponses.length;
-            responseData.push({
-              "Question": "Average Score",
-              "Score": avgScore.toFixed(2),
-              "Comments": ""
-            });
-          }
-          
-          // Add a separator
-          responseData.push({
-            "Question": "--------------------------------------------",
-            "Score": "",
-            "Comments": ""
-          });
-          
-          // Then add all TEXT type questions at the bottom
-          respList.filter(resp => resp.questionType === "TEXT").forEach(resp => {
-            responseData.push({
-              "Question": resp.questionName,
-              "Score": "",
-              "Comments": resp.textResponse || ""
-            });
-          });
-          
-          // Add an empty row for separation between evaluator groups
-          responseData.push({
-            "Question": "",
-            "Score": "",
-            "Comments": ""
-          });
-        });
-        
-        const responseSheet = XLSX.utils.json_to_sheet(responseData);
-        
-        // Set column widths for better readability
-        const responseCols = [
-          { wch: 40 }, // Question width
-          { wch: 10 }, // Score width
-          { wch: 60 }, // Comments width (wider for text responses)
-        ];
-        responseSheet['!cols'] = responseCols;
-        
-        XLSX.utils.book_append_sheet(workbook, responseSheet, 'Responses');
-      }
-      
-      // Add summary statistics sheet
-      if (processedResponses && processedResponses.length > 0) {
-        // Filter to only include INPUT type questions for statistics
-        const inputResponses = processedResponses.filter(resp => 
-          resp.questionType === "INPUT"
-        );
-        
-        // Group by question
-        const questionStats = {};
-        inputResponses.forEach(resp => {
-          if (!questionStats[resp.questionName]) {
-            questionStats[resp.questionName] = {
-              scores: [],
-              questionDetails: resp.questionDetails || ""
-            };
-          }
-          if (resp.score !== null && resp.score !== undefined) {
-            questionStats[resp.questionName].scores.push(resp.score);
-          }
-        });
-        
-        // Calculate statistics
-        const statsData = Object.entries(questionStats).map(([question, data]) => {
-          const scores = data.scores;
-          const avg = scores.length > 0 ? 
-            scores.reduce((sum, score) => sum + score, 0) / scores.length : 0;
-          const min = scores.length > 0 ? Math.min(...scores) : 0;
-          const max = scores.length > 0 ? Math.max(...scores) : 0;
-          
-          return {
-            "Question": question,
-            "Question Details": data.questionDetails,
-            "Average Score": avg.toFixed(2),
-            "Min Score": min,
-            "Max Score": max,
-            "# of Responses": scores.length
-          };
-        });
-        
-        // Calculate total statistics
-        const allScores = inputResponses.map(resp => resp.score).filter(score => 
-          score !== null && score !== undefined
-        );
-        
-        const totalAverage = allScores.length > 0 ? 
-          allScores.reduce((sum, score) => sum + score, 0) / allScores.length : 0;
-          
-        // Add a total row
-        statsData.push({
-          "Question": "--- TOTAL AVERAGE ---",
-          "Question Details": "",
-          "Average Score": totalAverage.toFixed(2),
-          "Min Score": "",
-          "Max Score": "",
-          "# of Responses": allScores.length
-        });
-        
-        const statsSheet = XLSX.utils.json_to_sheet(statsData);
-        
-        // Set column widths for better readability
-        const statsCols = [
-          { wch: 40 }, // Question width
-          { wch: 40 }, // Question Details width
-          { wch: 15 }, // Average Score width
-          { wch: 15 }, // Min Score width
-          { wch: 15 }, // Max Score width
-          { wch: 15 }, // # of Responses width
-        ];
-        statsSheet['!cols'] = statsCols;
-        
-        XLSX.utils.book_append_sheet(workbook, statsSheet, 'Statistics');
-      }
-
-      // Generate filename with course code and date
-      const courseCode = evaluationInfo.courseCode || '';
-      const period = evaluationInfo.period || '';
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-      const filename = `${courseCode}_${period}_Evaluation_${today}.xlsx`;
-
-      // Write the file and trigger download
-      XLSX.writeFile(workbook, filename);
-      alert("Excel file downloaded successfully!");
-    } catch (error) {
-      console.error("Error downloading Excel:", error);
-      alert("Failed to download evaluation data. Error: " + error.message);
-    } finally {
-      setExportInProgress(false);
+      metaAoA.push(headers, ...rows);
     }
-  };
+    
+    const metaSheet = XLSX.utils.aoa_to_sheet(metaAoA);
+    metaSheet['!cols'] = [{wch:20},{wch:40}];
+    XLSX.utils.book_append_sheet(workbook, metaSheet, 'Evaluation Info');
+
+    // Create a separate sheet for each adviser (evaluatee)
+    const adviserResponses = {};
+    
+    // Group by adviser first
+    processedResponses.forEach(r => {
+      const adviserName = r.evaluateeName || "Unknown Adviser";
+      adviserResponses[adviserName] = adviserResponses[adviserName] || [];
+      adviserResponses[adviserName].push(r);
+    });
+    
+    // For each adviser, create a separate sheet
+    Object.entries(adviserResponses).forEach(([adviserName, responses]) => {
+      // Get all unique students
+      const students = [...new Set(responses.map(r => r.evaluatorName))];
+      
+      // Create question map to get details
+      const questionMap = {};
+      responses.forEach(r => {
+        if (!questionMap[r.questionName]) {
+          questionMap[r.questionName] = {
+            type: r.questionType,
+            details: r.questionDetails
+          };
+        }
+      });
+      
+      // Get all unique questions
+      const questions = Object.keys(questionMap);
+
+      
+      // Create a table format: Questions as rows, Students as columns
+      //this formula includes the question average
+      const tableData = [];
+      
+      // Header row with student names
+      const headerRow = ['Question Type', 'Question', 'Question Details'];
+      students.forEach(student => {
+        headerRow.push(student);
+      });
+      headerRow.push('Question Average'); // Add question average column
+      tableData.push(headerRow);
+      
+      // Group questions by type
+      const questionsByType = {
+        'INPUT': [],
+        'TEXT': []
+      };
+      
+      questions.forEach(q => {
+        const questionType = questionMap[q].type || 'INPUT';
+        questionsByType[questionType].push(q);
+      });
+      
+      // First add INPUT questions (numeric scores)
+      if (questionsByType['INPUT'].length > 0) {
+        tableData.push(['', '-- NUMERIC SCORES --', '']);
+        
+        // For calculating overall average
+        let overallScoreSum = 0;
+        let overallScoreCount = 0;
+        
+        questionsByType['INPUT'].forEach(question => {
+          const row = ['INPUT', question, questionMap[question].details || ''];
+          
+          let questionSum = 0;
+          let questionCount = 0;
+          
+          students.forEach(student => {
+            // Find the response for this student and question
+            const response = responses.find(r => 
+              r.evaluatorName === student && 
+              r.questionName === question &&
+              r.questionType === 'INPUT'
+            );
+            
+            if (response) {
+              row.push(response.score);
+              questionSum += response.score;
+              questionCount++;
+              overallScoreSum += response.score;
+              overallScoreCount++;
+            } else {
+              row.push('');
+            }
+          });
+          
+          // Add question average
+          const questionAvg = questionCount > 0 ? (questionSum / questionCount).toFixed(2) : '';
+          row.push(questionAvg);
+          
+          tableData.push(row);
+        });
+        
+        // Add student average row
+        const avgRow = ['', 'STUDENT AVERAGE', ''];
+        students.forEach(student => {
+          const studentResponses = responses.filter(r => 
+            r.evaluatorName === student && 
+            r.questionType === 'INPUT'
+          );
+          
+          if (studentResponses.length > 0) {
+            const avg = studentResponses.reduce((sum, r) => sum + r.score, 0) / studentResponses.length;
+            avgRow.push(avg.toFixed(2));
+          } else {
+            avgRow.push('');
+          }
+        });
+        
+        // Add overall average to student average row
+        const overallAvg = overallScoreCount > 0 ? (overallScoreSum / overallScoreCount).toFixed(2) : '';
+        avgRow.push(overallAvg);
+        tableData.push(avgRow);
+        
+        // Add overall average row
+        tableData.push(['', 'OVERALL AVERAGE', '', overallAvg, '']);
+      }
+
+      // this function removes the question average
+      // Create a table format: Questions as rows, Students as columns
+      // const tableData = [];
+
+      // // Header row with student names (without Question Average)
+      // const headerRow = ['Question Type', 'Question', 'Question Details'];
+      // students.forEach(student => {
+      //   headerRow.push(student);
+      // });
+      // // Removed Question Average column
+      // tableData.push(headerRow);
+
+      // // Group questions by type
+      // const questionsByType = {
+      //   'INPUT': [],
+      //   'TEXT': []
+      // };
+
+      // questions.forEach(q => {
+      //   const questionType = questionMap[q].type || 'INPUT';
+      //   questionsByType[questionType].push(q);
+      // });
+
+      // // First add INPUT questions (numeric scores)
+      // if (questionsByType['INPUT'].length > 0) {
+      //   tableData.push(['', '-- NUMERIC SCORES --', '']);
+        
+      //   // For calculating overall average
+      //   let overallScoreSum = 0;
+      //   let overallScoreCount = 0;
+        
+      //   questionsByType['INPUT'].forEach(question => {
+      //     const row = ['INPUT', question, questionMap[question].details || ''];
+          
+      //     students.forEach(student => {
+      //       // Find the response for this student and question
+      //       const response = responses.find(r => 
+      //         r.evaluatorName === student && 
+      //         r.questionName === question &&
+      //         r.questionType === 'INPUT'
+      //       );
+            
+      //       if (response) {
+      //         row.push(response.score);
+      //         overallScoreSum += response.score;
+      //         overallScoreCount++;
+      //       } else {
+      //         row.push('');
+      //       }
+      //     });
+          
+      //     // Removed question average calculation and column
+      //     tableData.push(row);
+      //   });
+        
+      //   // Add student average row
+      //   const avgRow = ['', 'STUDENT AVERAGE', ''];
+      //   students.forEach(student => {
+      //     const studentResponses = responses.filter(r => 
+      //       r.evaluatorName === student && 
+      //       r.questionType === 'INPUT'
+      //     );
+          
+      //     if (studentResponses.length > 0) {
+      //       const avg = studentResponses.reduce((sum, r) => sum + r.score, 0) / studentResponses.length;
+      //       avgRow.push(avg.toFixed(2));
+      //     } else {
+      //       avgRow.push('');
+      //     }
+      //   });
+        
+      //   tableData.push(avgRow);
+        
+      //   // Add overall average row
+      //   const overallAvg = overallScoreCount > 0 ? (overallScoreSum / overallScoreCount).toFixed(2) : '';
+      //   tableData.push(['', 'OVERALL AVERAGE', '', overallAvg]);
+      // }
+      
+      // Then add TEXT questions (comments)
+      if (questionsByType['TEXT'].length > 0) {
+        tableData.push(['', '', '']);
+        tableData.push(['', '-- COMMENTS --', '']);
+        
+        questionsByType['TEXT'].forEach(question => {
+          const row = ['TEXT', question, questionMap[question].details || ''];
+          
+          students.forEach(student => {
+            // Find the response for this student and question
+            const response = responses.find(r => 
+              r.evaluatorName === student && 
+              r.questionName === question &&
+              r.questionType === 'TEXT'
+            );
+            row.push(response ? response.textResponse : '');
+          });
+          
+          // Empty cell for question average column
+          row.push('');
+          
+          tableData.push(row);
+        });
+      }
+      
+      // Convert table to sheet
+      const sheet = XLSX.utils.aoa_to_sheet(tableData);
+      
+      // Set column widths
+      const colWidth = [{wch:10}, {wch:30}, {wch:40}];
+      students.forEach(() => colWidth.push({wch:20}));
+      colWidth.push({wch:15}); // Question average column
+      sheet['!cols'] = colWidth;
+      
+      // Add the sheet to workbook
+      const safeSheetName = adviserName.replace(/[*?:\/\[\]]/g, '_').substring(0, 30); // Safe sheet name
+      XLSX.utils.book_append_sheet(workbook, sheet, safeSheetName);
+    });
+
+    // Generate and download
+    const filename = `${evaluationInfo.courseCode}_${evaluationInfo.period}_STA_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, filename);
+    alert('Excel file downloaded successfully!');
+  } catch (err) {
+    console.error('Error downloading Excel:', err);
+    alert('Failed to download evaluation data.');
+  } finally {
+    setExportInProgress(false);
+  }
+};
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[256px_1fr] min-h-screen">
@@ -297,53 +350,56 @@ const AdminEvaluations = () => {
           <div className="text-center text-gray-500">Loading evaluations...</div>
         ) : (
           <div className="overflow-x-auto rounded-lg shadow-md">
-            <table className="min-w-full bg-white border border-gray-300">
-              <thead className="bg-[#323c47] text-white">
-                <tr>
-                  <th className="px-4 py-3 text-center font-semibold border">Course Code</th>
-                  <th className="px-4 py-3 text-center font-semibold border">Section</th>
-                  <th className="px-4 py-3 text-center font-semibold border">Period</th>
-                  <th className="px-4 py-3 text-center font-semibold border">Date Open</th>
-                  <th className="px-4 py-3 text-center font-semibold border">Date Close</th>
-                  <th className="px-4 py-3 text-center font-semibold border">Availability</th>
-                  <th className="px-4 py-3 text-center font-semibold border">Adviser Name</th>
-                  <th className="px-4 py-3 text-center font-semibold border">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {evaluations.length > 0 ? (
-                  evaluations.map((evaluation, index) => (
-                    <tr key={`${evaluation.eid}-${index}`} className="border-b">
-                      <td className="px-4 py-3 border">{evaluation.courseCode}</td>
-                      <td className="px-4 py-3 border">{evaluation.section}</td>
-                      <td className="px-4 py-3 border">{evaluation.period}</td>
-                      <td className="px-4 py-3 border">{evaluation.dateOpen}</td>
-                      <td className="px-4 py-3 border">{evaluation.dateClose}</td>
-                      <td className="px-4 py-3 border">{evaluation.availability}</td>
-                      <td className="px-4 py-3 border">{evaluation.adviserName}</td>
-                      <td className="px-4 py-3 border">
-                        <button
-                          className={`text-white px-3 py-2 rounded-md transition w-full flex items-center justify-center ${
-                            exportInProgress || evaluation.availability === "Open"
-                              ? "bg-gray-400 cursor-not-allowed"
-                              : "bg-green-500 hover:bg-green-700"
-                          }`}
-                          onClick={() => handleDownload(evaluation.eid, evaluation)}
-                          disabled={exportInProgress || evaluation.availability === "Open"}
-                        >
-                          {exportInProgress ? (
-                            <>
-                              <span className="animate-spin mr-2">⟳</span> Exporting...
-                            </>
-                          ) : (
-                            <>
-                              <i className="fa fa-download mr-2"></i> Download
-                            </>
-                          )}
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+          <table className="min-w-full bg-white border border-gray-300">
+            <thead className="bg-[#323c47] text-white">
+              <tr>
+                <th className="px-4 py-3 text-center font-semibold border">Course</th>
+                <th className="px-4 py-3 text-center font-semibold border">Section</th>
+                <th className="px-4 py-3 text-center font-semibold border">Period</th>
+                <th className="px-4 py-3 text-center font-semibold border">Date Open</th>
+                <th className="px-4 py-3 text-center font-semibold border">Date Close</th>
+                <th className="px-4 py-3 text-center font-semibold border">Availability</th>
+                <th className="px-4 py-3 text-center font-semibold border">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {evaluations.length > 0 ? (
+                evaluations.map((evaluation, index) => (
+                  <tr key={`${evaluation.eid}-${index}`} className="border-b">
+                    <td className="px-4 py-3 border">
+                      <div className="font-semibold">{evaluation.courseCode}</div>
+                      {evaluation.courseDescription && (
+                        <div className="text-sm text-gray-600 mt-1">{evaluation.courseDescription}</div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 border">{evaluation.section}</td>
+                    <td className="px-4 py-3 border">{evaluation.period}</td>
+                    <td className="px-4 py-3 border">{evaluation.dateOpen}</td>
+                    <td className="px-4 py-3 border">{evaluation.dateClose}</td>
+                    <td className="px-4 py-3 border">{evaluation.availability}</td>
+                    <td className="px-4 py-3 border">
+                      <button
+                        className={`text-white px-3 py-2 rounded-md transition w-full flex items-center justify-center ${
+                          exportInProgress || evaluation.availability === "Open"
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-green-500 hover:bg-green-700"
+                        }`}
+                        onClick={() => handleDownload(evaluation.eid, evaluation)}
+                        disabled={exportInProgress || evaluation.availability === "Open"}
+                      >
+                        {exportInProgress ? (
+                          <>
+                            <span className="animate-spin mr-2">⟳</span> Exporting...
+                          </>
+                        ) : (
+                          <>
+                            <i className="fa fa-download mr-2"></i> Download
+                          </>
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                ))
                 ) : (
                   <tr>
                     <td colSpan="8" className="border p-3 text-center text-gray-500">

@@ -107,27 +107,8 @@ const OfficialProjectModal = ({ isOpen, onClose, teamId }) => {
             <br />
             <p className="text-sm font-medium">Status: <span className="font-bold">{project.status}</span></p>
             <p className="text-sm font-medium">Adviser: <span className="font-bold">{project.adviserName}</span></p>
-            <p className="text-sm font-medium">Rating: <span className="font-bold">{project.rating || "No Rating"}</span></p>
 
-            {/* Rating Input Section */}
-            <div className="mt-4">
-              <label className="block text-sm font-medium">Rate the Project:</label>
-              <input
-                type="text"
-                className="w-full p-2 border rounded mt-1"
-                placeholder="Enter rating (e.g., 4.5)"
-                value={rating}
-                onChange={(e) => setRating(e.target.value)}
-                disabled={isSubmitting}
-              />
-              <button
-                className="mt-2 bg-[#323c47] text-white px-4 py-2 rounded-lg hover:bg-opacity-80"
-                onClick={handleRatingSubmit}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Submitting..." : "Submit Rating"}
-              </button>
-            </div>
+           
 
             {/* Success/Error Message */}
             {message && (

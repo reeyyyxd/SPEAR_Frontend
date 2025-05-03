@@ -264,7 +264,7 @@ const TeacherEvaluations = () => {
         cleaned[key] = evaluation[key];
       }
     });
-    return cleaned;ç
+    return cleaned;
   };
 
   const handleDeleteEvaluation = async (eid) => {
@@ -348,9 +348,7 @@ const TeacherEvaluations = () => {
       const fetchTeamsWithMembers = async () => {
         try {
           const classId = getDecryptedId("cid");
-          const res = await axios.get(
-            `http://${address}:8080/class/${classId}/members`
-          );
+          const res = await axios.get(`http://${address}:8080/class/${classId}/members`);
           return res.data;
         } catch (err) {
           console.error("Error fetching teams & members:", err);
@@ -362,9 +360,7 @@ const TeacherEvaluations = () => {
       const fetchAdvisersList = async () => {
         try {
           const classId = getDecryptedId("cid");
-          const res = await axios.get(
-            `http://${address}:8080/class/${classId}/qualified-teachers`
-          );
+          const res = await axios.get(`http://${address}:8080/class/${classId}/qualified-teachers`);
           return res.data;
         } catch (err) {
           console.error("Error fetching advisers:", err);
@@ -372,123 +368,649 @@ const TeacherEvaluations = () => {
           return [];
         }
       };
-      
-        const handleDownload = async (eid) => {
-        if (!eid) {
-          toast.error("Invalid evaluation ID");
-          return;
+
+      async function exportStudentToStudent(evaluationInfo, submissions, responses) {
+        // Fetch team data
+        const teams = await fetchTeamsWithMembers();
+        
+        const metadataRows = [
+          ["Team Submissions"],
+          ["Course Code",        evaluationInfo.courseCode       || ""],
+          ["Section",            evaluationInfo.section          || ""],
+          ["Period",             evaluationInfo.period           || ""],
+          ["Evaluation Type",    evaluationInfo.evaluationType   || ""],
+          ["Date Open",          evaluationInfo.dateOpen         || ""],
+          ["Date Close",         evaluationInfo.dateClose        || ""],
+          ["Availability",       evaluationInfo.availability     || ""],
+          ["Course Description", evaluationInfo.courseDescription|| ""],
+          ["Export Date",        new Date().toLocaleString()],
+          [],
+          ["teamName","memberName","submittedAt","status"]
+        ];
+        
+        const dataRows = teams.flatMap(team =>
+          team.members.map(m => {
+            const sub = submissions.find(s => s.evaluatorId === m.memberId);
+            return [team.teamName, m.memberName, sub?.submittedAt || "", sub?.status || "Not Submitted"];
+          })
+        );
+        
+        const dataSheet = XLSX.utils.aoa_to_sheet([...metadataRows, ...dataRows]);
+        
+        // Apply styling to metadata sheet
+        applyMetadataStyles(dataSheet, metadataRows.length);
+        
+        // ----------------------------------------
+        // 2) BUILD RESPONSES SHEET
+        // ----------------------------------------
+        const inputResponses = responses.filter(r => r.questionType === "INPUT");
+        const textResponses = responses.filter(r => r.questionType === "TEXT");
+        const respAoA = [];
+        
+        // To track positions for styling
+        const styleInfo = {
+          headerRows: [],
+          calculationCols: {}, // Will store column indices for MAX, MIN, SUM, AVG
+          overallRows: []      // Will store rows with overall averages
+        };
+        
+        // Process each team
+        for (const team of teams) {
+          const names = team.members.map(m => m.memberName);
+          
+          // Group INPUT responses by evaluator for this team
+          const evaluatorResponses = {};
+          inputResponses
+            .filter(r => names.includes(r.evaluateeName))
+            .forEach(r => {
+              if (!evaluatorResponses[r.evaluatorName]) {
+                evaluatorResponses[r.evaluatorName] = [];
+              }
+              evaluatorResponses[r.evaluatorName].push(r);
+            });
+          
+          // Get TEXT responses for this team
+          const teamTxts = textResponses.filter(r => 
+            names.includes(r.evaluateeName) || names.includes(r.evaluatorName)
+          );
+          
+          // Skip if no data for this team
+          if (Object.keys(evaluatorResponses).length === 0 && !teamTxts.length) continue;
+          
+          // Add team header
+          respAoA.push([`Team: ${team.teamName}`]);
+          const teamRowIndex = respAoA.length - 1;
+          
+          // ----------------------------------------
+          // Process INPUT questions by evaluator
+          // ----------------------------------------
+          for (const [evaluator, eResponses] of Object.entries(evaluatorResponses)) {
+            respAoA.push([`Evaluator: ${evaluator}`]);
+            respAoA.push(["Question Type: INPUT"]);
+            respAoA.push([]);
+            
+            // Get unique questions from this evaluator
+            const questions = Array.from(new Set(eResponses.map(r => r.questionName)));
+            
+            // Create header row
+            const headerRow = ["Question", "Question Details", ...names, "MAX", "MIN", "SUM", "AVERAGE"];
+            respAoA.push(headerRow);
+            styleInfo.headerRows.push(respAoA.length - 1);
+            
+            // Store calculation column indices for styling
+            const maxCol = 2 + names.length;
+            const minCol = maxCol + 1;
+            const sumCol = minCol + 1;
+            const avgCol = sumCol + 1;
+            
+            styleInfo.calculationCols[respAoA.length - 1] = { 
+              maxCol, minCol, sumCol, avgCol 
+            };
+            
+            // Process each question
+            for (const question of questions) {
+              const qResponses = eResponses.filter(r => r.questionName === question);
+              const details = qResponses[0]?.questionDetails || "";
+              
+              const row = [question, details];
+              
+              // Collect scores for calculation
+              const scores = [];
+              
+              // Add scores for each team member
+              names.forEach(name => {
+                const response = qResponses.find(r => r.evaluateeName === name);
+                const score = response ? response.score : "";
+                row.push(score);
+                if (response && typeof response.score === 'number') {
+                  scores.push(response.score);
+                }
+              });
+              
+              // Calculate statistics
+              if (scores.length > 0) {
+                // MAX, MIN, SUM
+                const max = Math.max(...scores);
+                const min = Math.min(...scores);
+                const sum = scores.reduce((a, b) => a + b, 0);
+                
+                row.push(max);  // MAX
+                row.push(min);  // MIN
+                row.push(sum);  // SUM
+                
+                // Calculate AVERAGE with special handling
+                let average;
+                if (scores.length < 3) {
+                  // Simple average for small teams
+                  average = sum / scores.length;
+                } else {
+                  // Remove outliers for larger teams
+                  average = (sum - max - min) / (scores.length - 2);
+                }
+                
+                row.push(average.toFixed(2));  // AVERAGE
+              } else {
+                // No scores available
+                row.push("", "", "", "");  // Empty statistics
+              }
+              
+              respAoA.push(row);
+            }
+            
+            // Calculate OVERALL AVERAGE
+            if (questions.length > 0) {
+              // Extract averages from question rows
+              const averages = [];
+              const questionsRows = respAoA.slice(-questions.length);
+              
+              questionsRows.forEach(row => {
+                const avgValue = row[row.length - 1];
+                if (avgValue !== "") {
+                  averages.push(parseFloat(avgValue));
+                }
+              });
+              
+              // Add overall average row
+              if (averages.length > 0) {
+                const overallAvg = averages.reduce((a, b) => a + b, 0) / averages.length;
+                
+                const overallRow = Array(headerRow.length).fill("");
+                overallRow[0] = "OVERALL AVERAGE";
+                overallRow[overallRow.length - 1] = overallAvg.toFixed(2);
+                
+                respAoA.push(overallRow);
+                styleInfo.overallRows.push(respAoA.length - 1);
+              }
+            }
+            
+            respAoA.push([]); // Add blank line after each evaluator
+          }
+          
+          // ----------------------------------------
+          // Process TEXT questions
+          // ----------------------------------------
+          if (teamTxts.length) {
+            respAoA.push(["Question Type: TEXT"]);
+            respAoA.push([]);
+            const textHeaderRow = ["Question", "Question Details", "textResponse"];
+            respAoA.push(textHeaderRow);
+            styleInfo.headerRows.push(respAoA.length - 1);
+            
+            teamTxts.forEach(r => {
+              respAoA.push([
+                r.questionName, 
+                r.questionDetails || "", 
+                r.textResponse || "", 
+              ]);
+            });
+          }
+          
+          respAoA.push([]);
         }
+        
+        const respSheet = XLSX.utils.aoa_to_sheet(respAoA);
+        
+        // Apply styles to response sheet
+        applyResponseStyles(respSheet, styleInfo);
+        
+        // ----------------------------------------
+        // 3) EXPORT WORKBOOK
+        // ----------------------------------------
+        const wb = XLSX.utils.book_new();
+        
+        // Set column widths
+        const wscols = [
+          {wch: 20}, // Question
+          {wch: 30}, // Question Details
+          {wch: 15}, // Student 1
+          {wch: 15}, // Student 2
+          {wch: 15}, // Student 3
+          {wch: 15}, // Student 4
+          {wch: 10}, // MAX
+          {wch: 10}, // MIN
+          {wch: 10}, // SUM
+          {wch: 10}  // AVERAGE
+        ];
+        
+        // Apply column widths
+        respSheet['!cols'] = wscols;
+        
+        XLSX.utils.book_append_sheet(wb, dataSheet, "Team Submissions");
+        XLSX.utils.book_append_sheet(wb, respSheet, "Responses");
+
+        // 3) PEER & SELF ASSESSMENT RESULTS sheet
+          // ----------------------------------------
+          // a) Gather all student names
+          const allNames = teams.flatMap(team => team.members.map(m => m.memberName));
+
+          // b) Dedupe & sort alphabetically
+          const uniqueNames = Array.from(new Set(allNames)).sort((a, b) =>
+            a.localeCompare(b)
+          );
+
+          // c) Compute each student’s overall average (INPUT responses only)
+          const peerRows = uniqueNames.map(name => {
+            const scores = inputResponses
+              .filter(r => r.evaluateeName === name)
+              .map(r => r.score)
+              .filter(s => typeof s === "number");
+            const avg = scores.length
+              ? (scores.reduce((sum, x) => sum + x, 0) / scores.length).toFixed(2)
+              : "";
+            return [name, avg];
+          });
+
+          // d) Build and append the sheet
+          const peerAoA   = [["Name", "Peer & Self Assesment"], ...peerRows];
+          const peerSheet = XLSX.utils.aoa_to_sheet(peerAoA);
+          XLSX.utils.book_append_sheet(wb, peerSheet, "Peer & Self Assessment Results");
+        
+        // Generate filename with date
+        const date = new Date().toISOString().slice(0,10);
+        const filename = `${evaluationInfo.courseCode}_${evaluationInfo.period}_STS_${date}.xlsx`;
+        
+        // Write file
+        XLSX.writeFile(wb, filename);
+      }
       
-        const evaluationInfo = evaluations.find(e => e.eid === eid);
-        if (!evaluationInfo) {
-          toast.error("Could not find evaluation details");
-          return;
+      // Helper function for styling the metadata sheet
+      function applyMetadataStyles(sheet, headerRowCount) {
+        if (!sheet['!rows']) sheet['!rows'] = [];
+        
+        // Style for headers
+        for (let i = 0; i < headerRowCount; i++) {
+          // Make header rows bold
+          sheet['!rows'][i] = { hpt: 20 }; // taller rows for headers
+          
+          // Set cell styles for each column in the header
+          const range = XLSX.utils.decode_range(sheet['!ref']);
+          for (let C = range.s.c; C <= range.e.c; C++) {
+            const cell_address = XLSX.utils.encode_cell({r: i, c: C});
+            if (!sheet[cell_address]) continue;
+            
+            // Apply bold formatting to header cells
+            sheet[cell_address].s = {
+              font: { bold: true },
+              fill: { fgColor: { rgb: "E6E6E6" } }, // Light gray background
+              alignment: { horizontal: "center", vertical: "center" }
+            };
+          }
         }
+      }
       
+      // Helper function for styling the response sheet
+      function applyResponseStyles(sheet, styleInfo) {
+        if (!sheet['!rows']) sheet['!rows'] = [];
+        
+        // Parse sheet range
+        const range = XLSX.utils.decode_range(sheet['!ref']);
+        
+        // Style team and evaluator headers (make them bold and add background)
+        for (let R = range.s.r; R <= range.e.r; R++) {
+          const firstCellAddress = XLSX.utils.encode_cell({r: R, c: 0});
+          if (!sheet[firstCellAddress]) continue;
+          
+          const value = sheet[firstCellAddress].v;
+          if (typeof value === 'string') {
+            if (value.startsWith('Team:')) {
+              // Team header - blue
+              sheet[firstCellAddress].s = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "4472C4" } }, // Blue
+                alignment: { horizontal: "left" }
+              };
+            } else if (value.startsWith('Evaluator:')) {
+              // Evaluator header - lighter blue
+              sheet[firstCellAddress].s = {
+                font: { bold: true },
+                fill: { fgColor: { rgb: "D9E1F2" } }, // Light blue
+                alignment: { horizontal: "left" }
+              };
+            } else if (value === 'Question Type: INPUT' || value === 'Question Type: TEXT') {
+              // Section header - gray
+              sheet[firstCellAddress].s = {
+                font: { bold: true },
+                fill: { fgColor: { rgb: "D9D9D9" } }, // Light gray
+                alignment: { horizontal: "left" }
+              };
+            } else if (value === 'OVERALL AVERAGE') {
+              // Overall Average - green background, white text
+              sheet[firstCellAddress].s = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "548235" } }, // Green
+                alignment: { horizontal: "center" }
+              };
+            }
+          }
+        }
+        
+        // Style table headers
+        styleInfo.headerRows.forEach(rowIndex => {
+          // Make header rows bold with table formatting
+          sheet['!rows'][rowIndex] = { hpt: 20 }; // taller rows for headers
+          
+          for (let C = range.s.c; C <= range.e.c; C++) {
+            const cell_address = XLSX.utils.encode_cell({r: rowIndex, c: C});
+            if (!sheet[cell_address]) continue;
+            
+            // Apply header styling
+            sheet[cell_address].s = {
+              font: { bold: true, color: { rgb: "FFFFFF" } },
+              fill: { fgColor: { rgb: "2F75B5" } }, // Dark blue
+              alignment: { horizontal: "center", vertical: "center" },
+              border: {
+                top: { style: "thin" },
+                bottom: { style: "thin" },
+                left: { style: "thin" },
+                right: { style: "thin" }
+              }
+            };
+          }
+        });
+        
+        // Style calculation columns (MAX, MIN, SUM, AVERAGE)
+        Object.entries(styleInfo.calculationCols).forEach(([headerRowIndex, cols]) => {
+          // Convert to number
+          const headerRow = parseInt(headerRowIndex);
+          
+          // Get the range of data rows for this section
+          let endRow = headerRow;
+          for (let i = headerRow + 1; i <= range.e.r; i++) {
+            const firstCellAddress = XLSX.utils.encode_cell({r: i, c: 0});
+            if (!sheet[firstCellAddress] || sheet[firstCellAddress].v === "") break;
+            if (typeof sheet[firstCellAddress].v === 'string' && 
+                (sheet[firstCellAddress].v.startsWith('Team:') || 
+                 sheet[firstCellAddress].v.startsWith('Evaluator:') ||
+                 sheet[firstCellAddress].v === 'Question Type: INPUT' ||
+                 sheet[firstCellAddress].v === 'Question Type: TEXT')) {
+              break;
+            }
+            endRow = i;
+          }
+          
+          // Style MAX column - light red
+          for (let R = headerRow + 1; R <= endRow; R++) {
+            const cell_address = XLSX.utils.encode_cell({r: R, c: cols.maxCol});
+            if (!sheet[cell_address]) continue;
+            
+            sheet[cell_address].s = {
+              fill: { fgColor: { rgb: "F4CCCC" } }, // Light red
+              alignment: { horizontal: "center" }
+            };
+          }
+          
+          // Style MIN column - light yellow
+          for (let R = headerRow + 1; R <= endRow; R++) {
+            const cell_address = XLSX.utils.encode_cell({r: R, c: cols.minCol});
+            if (!sheet[cell_address]) continue;
+            
+            sheet[cell_address].s = {
+              fill: { fgColor: { rgb: "FFF2CC" } }, // Light yellow
+              alignment: { horizontal: "center" }
+            };
+          }
+          
+          // Style SUM column - light blue
+          for (let R = headerRow + 1; R <= endRow; R++) {
+            const cell_address = XLSX.utils.encode_cell({r: R, c: cols.sumCol});
+            if (!sheet[cell_address]) continue;
+            
+            sheet[cell_address].s = {
+              fill: { fgColor: { rgb: "CFE2F3" } }, // Light blue
+              alignment: { horizontal: "center" }
+            };
+          }
+          
+          // Style AVERAGE column - light green
+          for (let R = headerRow + 1; R <= endRow; R++) {
+            const cell_address = XLSX.utils.encode_cell({r: R, c: cols.avgCol});
+            if (!sheet[cell_address]) continue;
+            
+            sheet[cell_address].s = {
+              fill: { fgColor: { rgb: "D9EAD3" } }, // Light green
+              alignment: { horizontal: "center" },
+              font: { bold: true }
+            };
+          }
+        });
+        
+        // Style overall average rows
+        styleInfo.overallRows.forEach(rowIndex => {
+          for (let C = range.s.c; C <= range.e.c; C++) {
+            const cell_address = XLSX.utils.encode_cell({r: rowIndex, c: C});
+            if (!sheet[cell_address]) continue;
+            
+            // Apply overall average styling - dark green background
+            if (C === 0) {
+              sheet[cell_address].s = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "548235" } }, // Dark green
+                alignment: { horizontal: "left" }
+              };
+            } else if (C === range.e.c) { // Last column (AVERAGE)
+              sheet[cell_address].s = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "548235" } }, // Dark green
+                alignment: { horizontal: "center" }
+              };
+            } else {
+              sheet[cell_address].s = {
+                font: { bold: true },
+                fill: { fgColor: { rgb: "E2EFDA" } }, // Light green
+                alignment: { horizontal: "center" }
+              };
+            }
+          }
+        });
+      }
+
+
+
+
+
+      async function exportAdviserToStudent(evaluationInfo, submissions, responses) {
+        // Fetch advisers and teams
+        const [advisers, teams] = await Promise.all([
+          fetchAdvisersList(),
+          fetchTeamsWithMembers()
+        ]);
+      
+        // Helper: apply styles to entire sheet
+        const styleSheet = (ws, fillColor) => {
+          const range = XLSX.utils.decode_range(ws['!ref']);
+          for (let R = range.s.r; R <= range.e.r; ++R) {
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+              const addr = XLSX.utils.encode_cell({ r: R, c: C });
+              if (!ws[addr]) continue;
+              ws[addr].s = ws[addr].s || {};
+              // Center alignment
+              ws[addr].s.alignment = { horizontal: 'center', vertical: 'center' };
+              // Fill color on header rows
+              if (fillColor && R === range.s.r) {
+                ws[addr].s.fill = { patternType: 'solid', fgColor: { rgb: fillColor } };
+              }
+            }
+          }
+          // Freeze header row
+          ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+        };
+      
+        // 1) Metadata sheet
+        const metadataRows = [
+          ['Adviser Submissions'],
+          ['Course Code', evaluationInfo.courseCode || ''],
+          ['Section', evaluationInfo.section || ''],
+          ['Period', evaluationInfo.period || ''],
+          ['Evaluation Type', evaluationInfo.evaluationType || ''],
+          ['Date Open', evaluationInfo.dateOpen || ''],
+          ['Date Close', evaluationInfo.dateClose || ''],
+          ['Availability', evaluationInfo.availability || ''],
+          ['Course Description', evaluationInfo.courseDescription || ''],
+          ['Export Date', new Date().toLocaleString()],
+          [],
+          ['adviserName', 'submittedAt', 'status']
+        ];
+        const dataRows = advisers.map(a => {
+          const sub = submissions.find(s => s.evaluatorId === a.uid);
+          return [`${a.firstname} ${a.lastname}`, sub?.submittedAt || '', sub?.status || 'Not Submitted'];
+        });
+        const dataSheet = XLSX.utils.aoa_to_sheet([...metadataRows, ...dataRows]);
+        styleSheet(dataSheet, 'FFDDEEFF');
+      
+        // 2) Responses sheet (detailed)
+        const respAoA = [];
+        const studentToTeam = {};
+        teams.forEach(team => team.members.forEach(m => {
+          studentToTeam[m.memberName] = team.teamName;
+        }));
+        const inputResponses = responses.filter(r => r.questionType === 'INPUT');
+        const textResponses = responses.filter(r => r.questionType === 'TEXT');
+        const summary = {};
+        const teamsWith = new Set(inputResponses.map(r => studentToTeam[r.evaluateeName]).filter(Boolean));
+      
+        for (const teamName of teamsWith) {
+          const teamStudents = teams.find(t => t.teamName === teamName)?.members.map(m => m.memberName) || [];
+          if (!teamStudents.length) continue;
+          // individual & team averages
+          const individualAvgs = {};
+          teamStudents.forEach(student => {
+            const scores = inputResponses.filter(r => r.evaluateeName === student).map(r => r.score).filter(v => typeof v === 'number');
+            individualAvgs[student] = scores.length ? scores.reduce((a,b) => a+b,0)/scores.length : '';
+          });
+          const vals = Object.values(individualAvgs).filter(v => typeof v === 'number');
+          const teamAvg = vals.length ? vals.reduce((a,b) => a+b,0)/vals.length : '';
+          summary[teamName] = { individualAvgs, teamAvg };
+          // build section
+          respAoA.push([`Team: ${teamName}`]);
+          respAoA.push(['Question Type: INPUT']);
+          const evIds = Array.from(new Set(inputResponses.filter(r => teamStudents.includes(r.evaluateeName)).map(r => r.evaluatorId)));
+          const evNames = evIds.map(id => { const adv = advisers.find(a => a.uid === id); return adv ? `${adv.firstname} ${adv.lastname}` : ''; });
+          respAoA.push(['Evaluator', ...evNames]); respAoA.push([]);
+          respAoA.push(['Question','Question Details', ...teamStudents]);
+          const qMap = {};
+          inputResponses.forEach(r => {
+            if (teamStudents.includes(r.evaluateeName)) {
+              qMap[r.questionName] = qMap[r.questionName] || { details: r.questionDetails || '', scores: {} };
+              qMap[r.questionName].scores[r.evaluateeName] = r.score;
+            }
+          });
+          Object.entries(qMap).forEach(([qn,data]) => {
+            const row = [qn, data.details]; teamStudents.forEach(s=>row.push(data.scores[s]||'')); respAoA.push(row);
+          });
+          respAoA.push([]);
+        }
+        // TEXT section unchanged...
+          if (textResponses.length) {
+            respAoA.push(["All Text Questions"]);
+            respAoA.push(["Question Type: TEXT"], []);
+            respAoA.push(["Question", "Question Details", "textResponse", "Evaluator"]);
+
+            const adviserGroups = {};
+            textResponses.forEach(r => {
+              adviserGroups[r.evaluatorId] = adviserGroups[r.evaluatorId] ?? [];
+              adviserGroups[r.evaluatorId].push(r);
+            });
+            for (const [aid, texts] of Object.entries(adviserGroups)) {
+              const adv = advisers.find(a => a.uid === Number(aid));
+              const advName = `${adv.firstname} ${adv.lastname}`;
+              texts.forEach(r => respAoA.push([r.questionName, r.questionDetails||"", r.textResponse||"", advName]));
+              respAoA.push([]);
+            }
+          }
+        const respSheet = XLSX.utils.aoa_to_sheet(respAoA);
+        styleSheet(respSheet, 'FFEFEACC');
+      
+        // 3) Summary sheet
+        const sumAoA = [['Team','Evaluatee','Individual Average','Team Average']];
+        Object.keys(summary).sort().forEach(teamName => {
+          const { individualAvgs, teamAvg } = summary[teamName];
+          Object.keys(individualAvgs).sort().forEach(student => {
+            sumAoA.push([teamName, student, individualAvgs[student], teamAvg]);
+          });
+        });
+        const sumSheet = XLSX.utils.aoa_to_sheet(sumAoA);
+        styleSheet(sumSheet, 'FFE2F0FF');
+      
+        // Export workbook
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, dataSheet, 'Adviser Submissions');
+        XLSX.utils.book_append_sheet(wb, respSheet, 'Responses');
+        XLSX.utils.book_append_sheet(wb, sumSheet, 'Summary');
+        const date = new Date().toISOString().slice(0,10);
+        XLSX.writeFile(wb, `${evaluationInfo.courseCode}_${evaluationInfo.period}_ATS_${date}.xlsx`);
+      }
+      
+      
+        
+      
+
+
+      const handleDownload = async (eid) => {
         try {
+          // Instead of fetching evaluation details from a separate endpoint,
+          // use the evaluation data we already have in the component
+          const evaluationInfo = evaluations.find(evalItem => evalItem.eid === eid);
+          
+          // Get additional class info for the export (course code, etc.)
+          const classId = getDecryptedId("cid");
+          const classInfoResponse = await axios.get(`http://${address}:8080/class/${classId}`);
+          
+          // Combine evaluation info with class info
+          const exportInfo = {
+            ...evaluationInfo,
+            courseCode: classInfoResponse.data.courseCode || '',
+            section: classInfoResponse.data.section || '',
+            courseDescription: classInfoResponse.data.courseDescription || ''
+          };
+      
+          // Fetch submissions and responses in parallel
           const [subRes, respRes] = await Promise.all([
             axios.get(`http://${address}:8080/submissions/by-evaluation/${eid}`),
             axios.get(`http://${address}:8080/responses/get-evaluation/${eid}`)
           ]);
-          const submissions = subRes.data;
-          const responses   = respRes.data;
+          const submissions = subRes.data;  // Array<ResponseDTO>
+          const responses = respRes.data;   // Array<ResponseDTO>
       
-          // Metadata & submission sheet
-          let metadataRows, dataRows, dataSheetName;
-          if (evaluationInfo.evaluationType === "STUDENT_TO_STUDENT") {
-            const teams = await fetchTeamsWithMembers();
-            metadataRows = [
-              ["Team Submissions"],
-              ["Course Code",        evaluationInfo.courseCode       || ""],
-              ["Section",            evaluationInfo.section          || ""],
-              ["Period",             evaluationInfo.period           || ""],
-              ["Evaluation Type",    evaluationInfo.evaluationType   || ""],
-              ["Date Open",          evaluationInfo.dateOpen         || ""],
-              ["Date Close",         evaluationInfo.dateClose        || ""],
-              ["Availability",       evaluationInfo.availability     || ""],
-              ["Course Description", evaluationInfo.courseDescription|| ""],
-              ["Export Date",        new Date().toLocaleString()],
-              [],
-              ["teamName","memberName","submittedAt","status"]
-            ];
-            dataRows = teams.flatMap(team =>
-              (team.members.length ? team.members : [{ memberName: "" }])
-              .map(m => {
-                const sub = submissions.find(s => s.evaluatorId === m.memberId);
-                return [team.teamName, m.memberName, sub?.submittedAt || "", sub?.status || "Not Submitted"];
-              })
-            );
-            dataSheetName = "Team Submissions";
+          // Choose export function based on evaluation type
+          if (exportInfo.evaluationType === "STUDENT_TO_STUDENT") {
+            await exportStudentToStudent(exportInfo, submissions, responses);
           } else {
-            const advisers = await fetchAdvisersList();
-            metadataRows = [
-              ["Adviser Submissions"],
-              ["Course Code",        evaluationInfo.courseCode       || ""],
-              ["Section",            evaluationInfo.section          || ""],
-              ["Period",             evaluationInfo.period           || ""],
-              ["Evaluation Type",    evaluationInfo.evaluationType   || ""],
-              ["Date Open",          evaluationInfo.dateOpen         || ""],
-              ["Date Close",         evaluationInfo.dateClose        || ""],
-              ["Availability",       evaluationInfo.availability     || ""],
-              ["Course Description", evaluationInfo.courseDescription|| ""],
-              ["Export Date",        new Date().toLocaleString()],
-              [],
-              ["adviserName","evaluateeName","submittedAt","status"]
-            ];
-            dataRows = advisers.map(a => {
-              const sub = submissions.find(s => s.evaluatorId === a.uid);
-              return [`${a.firstname} ${a.lastname}`, sub?.evaluateeName || "", sub?.submittedAt || "", sub?.status || "Not Submitted"];
-            });
-            dataSheetName = "Adviser Submissions";
+            await exportAdviserToStudent(exportInfo, submissions, responses);
           }
-          const dataSheet = XLSX.utils.aoa_to_sheet([...metadataRows, ...dataRows]);
       
-          // Responses sheet: separate by questionType
-          const inputResponses = responses.filter(r => r.questionType === 'INPUT');
-          const textResponses  = responses.filter(r => r.questionType === 'TEXT');
-      
-          // INPUT section pivot
-          const questionsIn = Array.from(new Set(inputResponses.map(r => r.questionName)));
-          const evaluateesIn = Array.from(new Set(inputResponses.map(r => r.evaluateeName)));
-          const pivotIn = [["Question","Question Details", ...evaluateesIn, "Evaluator"]];
-          questionsIn.forEach(q => {
-            const details = inputResponses.find(r => r.questionName === q)?.questionDetails || '';
-            const row = [q, details];
-            evaluateesIn.forEach(ev => {
-              const resp = inputResponses.find(r => r.questionName === q && r.evaluateeName === ev);
-              row.push(resp?.score ?? "");
-            });
-            // assuming same evaluator for each set, take first
-            row.push(inputResponses.find(r => r.questionName === q)?.evaluatorName || "");
-            pivotIn.push(row);
-          });
-      
-          // TEXT section
-          const pivotText = [["Question","Question Details","textResponse","Evaluator"]];
-          textResponses.forEach(r => {
-            pivotText.push([r.questionName, r.questionDetails, r.textResponse || '', r.evaluatorName]);
-          });
-      
-          // Combine sections with blank row
-          const respAoA = [["Question Type: INPUT"],[]].concat(pivotIn).concat([[],["Question Type: TEXT"],[]]).concat(pivotText);
-          const respSheet = XLSX.utils.aoa_to_sheet(respAoA);
-      
-          // Assemble and export
-          const wb = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(wb, dataSheet, dataSheetName);
-          XLSX.utils.book_append_sheet(wb, respSheet, "Responses");
-      
-          const dateExport = new Date().toISOString().slice(0,10);
-          const filename = `${evaluationInfo.courseCode}_${evaluationInfo.period}_eval_${evaluationInfo.evaluationType}_${dateExport}.xlsx`;
-          XLSX.writeFile(wb, filename);
-          toast.success(`Excel exported as ${filename}`);
-      
-        } catch (err) {
-          console.error("Error downloading Excel:", err);
-          toast.error("An error occurred while exporting data to Excel.");
+          toast.success("Export completed successfully!");
+        } catch (error) {
+          console.error("Error exporting data:", error);
+          toast.error("Failed to export data. Please try again.");
         }
       };
-      
+
+
+
+
+
+
+
   
   return (
         <>

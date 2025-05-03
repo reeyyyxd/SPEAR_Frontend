@@ -101,12 +101,16 @@ const ProjectProposalPage = () => {
             </label>
             <input
               type="text"
+              maxLength={50}
               className="block w-full border border-gray-300 rounded-md p-3 mt-1.5"
               placeholder="Enter your project title"
               value={projectTitle}
               onChange={(e) => setProjectTitle(e.target.value)}
               required
             />
+            <div className="text-sm text-gray-500 mt-1 text-right">
+              {projectTitle.length}/50 characters
+            </div>
           </div>
           <div>
             <label className="block text-base font-semibold font-medium text-teal">
@@ -114,12 +118,16 @@ const ProjectProposalPage = () => {
             </label>
             <textarea
               rows="4"
+              maxLength={150}
               className="block w-full border border-gray-300 rounded-md p-3 mt-1.5"
               placeholder="Provide an overview of your project"
               value={projectOverview}
               onChange={(e) => setProjectOverview(e.target.value)}
               required
             ></textarea>
+            <div className="text-sm text-gray-500 mt-1 text-right">
+              {projectOverview.length}/150 characters
+            </div>
           </div>
           <div>
             <div className="flex items-center justify-between">
@@ -134,37 +142,51 @@ const ProjectProposalPage = () => {
             </div>
             <div className="grid gap-4">
               {features.map((feature, index) => (
-                <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:space-x-4t">
-                  <input
-                    type="text"
-                    placeholder="Enter an Objective"
-                    className="flex-1 sm:flex-1 border border-gray-300 rounded-md p-3"
-                    value={feature.title}
-                    onChange={(e) => {
-                      const updatedFeatures = [...features];
-                      updatedFeatures[index].title = e.target.value;
-                      setFeatures(updatedFeatures);
-                    }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Describe this objective"
-                    className="flex-1 sm:flex-1 border border-gray-300 rounded-md p-3"
-                    value={feature.description}
-                    onChange={(e) => {
-                      const updatedFeatures = [...features];
-                      updatedFeatures[index].description = e.target.value;
-                      setFeatures(updatedFeatures);
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveFeature(index)}
-                    className="text-red-500 border border-red-500 px-4 py-3 rounded-md hover:bg-red-500 hover:text-white transition flex items-center space-x-2"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span>Remove</span>
-                  </button>
+                <div key={index} className="flex flex-col gap-2">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    <div className="flex-1 sm:flex-1">
+                      <input
+                        type="text"
+                        maxLength={50}
+                        placeholder="Enter an Objective"
+                        className="w-full border border-gray-300 rounded-md p-3"
+                        value={feature.title}
+                        onChange={(e) => {
+                          const updatedFeatures = [...features];
+                          updatedFeatures[index].title = e.target.value;
+                          setFeatures(updatedFeatures);
+                        }}
+                      />
+                      <div className="text-sm text-gray-500 mt-1 text-right">
+                        {feature.title.length}/50 characters
+                      </div>
+                    </div>
+                    <div className="flex-1 sm:flex-1">
+                      <input
+                        type="text"
+                        maxLength={150}
+                        placeholder="Describe this objective"
+                        className="w-full border border-gray-300 rounded-md p-3"
+                        value={feature.description}
+                        onChange={(e) => {
+                          const updatedFeatures = [...features];
+                          updatedFeatures[index].description = e.target.value;
+                          setFeatures(updatedFeatures);
+                        }}
+                      />
+                      <div className="text-sm text-gray-500 mt-1 text-right">
+                        {feature.description.length}/150 characters
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFeature(index)}
+                      className="text-red-500 border border-red-500 px-4 py-3 rounded-md hover:bg-red-500 hover:text-white transition flex items-center space-x-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>Remove</span>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

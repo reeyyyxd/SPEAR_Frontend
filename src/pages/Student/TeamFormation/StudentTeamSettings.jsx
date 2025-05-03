@@ -153,30 +153,38 @@ const StudentTeamSettings = () => {
     return `${formattedHour}:${minute} ${ampm}`;
   };
 
-  const dropAdviser = async () => {
-    if (!dropReason.trim()) {
-      toast.error("Please provide a reason before submitting.");
-      return;
-    }
+  // Fixed dropAdviser function
+const dropAdviser = async () => {
+  if (!dropReason.trim()) {
+    toast.error("Please provide a reason before submitting.");
+    return;
+  }
 
-    try {
-      const res = await axios.post(
-        `http://${address}:8080/team/${teamDetails.tid}/leave-adviser`,
-        {
-          requesterId: userId,
-          reason: dropReason,
-        }
-      );
+  try {
+    const res = await axios.post(
+      `http://${address}:8080/team/${teamDetails.tid}/leave-adviser`,
+      {
+        requesterId: userId,
+        reason: dropReason,
+      }
+    );
 
-      alert(res.data.message);
-      setShowDropModal(false);
-      setDropReason("");
-      window.location.reload(); // optional
-    } catch (err) {
-      console.error("Error submitting leave adviser request:", err);
-      toast.error(err.response?.data?.error || "Failed to submit leave request.");
-    }
-  };
+    // Use toast instead of alert for consistent UX
+    toast.success(res.data.message || "Successfully submitted request to leave adviser");
+    
+    // Close the modal
+    setShowDropModal(false);
+    setDropReason("");
+    
+    // Delay page refresh to ensure toast is visible
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+  } catch (err) {
+    console.error("Error submitting leave adviser request:", err);
+    toast.error(err.response?.data?.error || "Failed to submit leave request.");
+  }
+};
 
   const toggleRecruitment = async () => {
     if (!teamDetails?.tid) return;
@@ -218,25 +226,49 @@ const StudentTeamSettings = () => {
 
   const kickMember = async (memberId) => {
     if (!teamDetails?.tid) return;
-
+  
     try {
+      // Store the member name for the toast message
+      const memberIndex = teamDetails.memberIds.indexOf(memberId);
+      const memberName = teamDetails.memberNames[memberIndex];
+      
+      // Call the API to kick the member
       await axios.delete(
         `http://${address}:8080/student/${teamDetails.tid}/kick-member/${memberId}`,
         {
           data: { requesterId: userId },
         }
       );
-
-      setTeamDetails((prev) => ({
-        ...prev,
-        memberIds: prev.memberIds.filter((id) => id !== memberId),
-        memberNames: prev.memberNames.filter(
-          (_, index) => prev.memberIds[index] !== memberId
-        ),
-      }));
-
-      toast.success("Member removed successfully!");
-      window.location.reload();
+  
+      // First show the toast
+      toast.success(`${memberName} removed successfully!`);
+      
+      // Then update local state
+      setTeamDetails((prev) => {
+        // Find the index of the member to remove
+        const idx = prev.memberIds.indexOf(memberId);
+        
+        // Create new arrays without the kicked member
+        const newMemberIds = [...prev.memberIds];
+        const newMemberNames = [...prev.memberNames];
+        
+        // Only remove if the member is found
+        if (idx !== -1) {
+          newMemberIds.splice(idx, 1);
+          newMemberNames.splice(idx, 1);
+        }
+        
+        return {
+          ...prev,
+          memberIds: newMemberIds,
+          memberNames: newMemberNames
+        };
+      });
+      
+      // Refresh the page after a delay to ensure toast is seen
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (error) {
       toast.error("Failed to remove member.");
       console.error("Error removing member:", error);
@@ -245,7 +277,7 @@ const StudentTeamSettings = () => {
 
   const leaveTeam = async () => {
     if (!teamDetails?.tid) return;
-
+  
     try {
       const response = await axios.delete(
         `http://${address}:8080/team/${teamDetails.tid}/leave`,
@@ -253,11 +285,14 @@ const StudentTeamSettings = () => {
           params: { userId },
         }
       );
-
+  
+      // First show success message
       toast.success(response.data.message || "Successfully left the team!");
-
-      // Refresh UI after leaving the team
-      window.location.reload();
+      
+      // Delay page refresh to ensure toast is visible
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (error) {
       console.error(
         "Error leaving team:",
@@ -290,39 +325,53 @@ const StudentTeamSettings = () => {
     }
   };
 
-   const transferLeadership = async (newLeaderId) => {
-       if (!teamDetails?.tid) return;
-       setIsTransferring(true);
-    
-       // figure out the new leader’s name from our arrays
-       const idx = teamDetails.memberIds.indexOf(newLeaderId);
-       const newLeaderName = teamDetails.memberNames[idx] || "";
-    
-       // optimistically update UI
-       setTeamDetails(td => ({ ...td, leaderName: newLeaderName }));
-    
-       try {
-         await axios.put(
-           `http://${address}:8080/team/${teamDetails.tid}/transfer-leadership`,
-           {
-             requesterId: userId,
-             newLeaderId: newLeaderId,
-           }
-         );
-         toast.success("Leadership transferred successfully!");
-         window.location.reload(); 
-       } catch (error) {
-         // rollback if it fails
-         setTeamDetails(td => ({ ...td, leaderName: td.leaderName }));
-         toast.error(
-           error.response?.data?.message || "Failed to transfer leadership."
-         );
-         console.error("Error transferring leadership:", error);
-       } finally {
-         setIsTransferring(false);
-         
+  const transferLeadership = async (newLeaderId) => {
+    if (!teamDetails?.tid) return;
+    setIsTransferring(true);
+  
+    // Check if the current user is the team leader before proceeding
+    const isLeader = userId === teamDetails.leaderId;
+    if (!isLeader) {
+      toast.error("Only the current leader can transfer leadership.");
+      setIsTransferring(false);
+      return;
+    }
+  
+    // figure out the new leader's name from our arrays
+    const idx = teamDetails.memberIds.indexOf(newLeaderId);
+    const newLeaderName = teamDetails.memberNames[idx] || "";
+  
+    try {
+      const response = await axios.put(
+        `http://${address}:8080/team/${teamDetails.tid}/transfer-leadership`,
+        {
+          requesterId: userId,
+          newLeaderId: newLeaderId,
+        }
+      );
+      
+      // Only update UI and show toast if the API call was successful
+      if (response.status === 200) {
+        setTeamDetails(td => ({ 
+          ...td, 
+          leaderName: newLeaderName,
+          leaderId: newLeaderId
+        }));
+        
+        toast.success("Leadership transferred successfully!");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500); 
       }
-     };
+    } catch (error) {
+      console.error("Error transferring leadership:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to transfer leadership."
+      );
+    } finally {
+      setIsTransferring(false);
+    }
+  };
 
   const fetchStudentData = async () => {
     try {
