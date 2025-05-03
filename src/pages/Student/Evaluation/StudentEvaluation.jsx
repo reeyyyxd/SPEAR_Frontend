@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthContext from "../../../services/AuthContext";
+import { useLocation } from "react-router-dom";
+import {Modal} from "../../../components/Modals/QuestionDescription";
 
 const StudentEvaluation = () => {
   const { getDecryptedId } = useContext(AuthContext);
@@ -15,6 +17,8 @@ const StudentEvaluation = () => {
   const studentId = getDecryptedId("uid");
   const evaluationId = getDecryptedId("eid");
   const classId = getDecryptedId("cid");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: "", details: "" }); 
 
   const STORAGE_KEY = `eval-${evaluationId}-class-${classId}`;
 
@@ -40,6 +44,11 @@ const StudentEvaluation = () => {
     fetchQuestions();
     fetchTeamMembers();
   }, []);
+
+  const openModal = (title, details) => {
+    setModalContent({ title, details });
+    setModalOpen(true);
+  };
 
   const fetchQuestions = async () => {
     try {
@@ -186,8 +195,8 @@ const handleSubmit = async (e) => {
 };  
 
 return (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-8">
-    <div className="w-full max-w-6xl mb-6">
+  <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-40">
+    <div className="w-full mb-6">
       <button
         onClick={() => navigate(-1)}
         className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
@@ -199,7 +208,7 @@ return (
     <h1 className="text-3xl font-bold text-gray-800 mb-2">Student Evaluation</h1>
     <p className="text-md text-gray-500 mb-6">Evaluate your team members carefully.</p>
 
-    <form className="w-full max-w-6xl bg-white p-6 md:p-8 rounded-lg shadow space-y-8">
+    <form className="w-full bg-white md:p-8 rounded-lg shadow space-y-8 xl:p-10 ">
 
       {teamMembers.length > 0 && (
             <>
@@ -221,8 +230,8 @@ return (
             </ul>
           </div>
 
-            <div className="overflow-x-auto space-y-4">
-          <table className="min-w-full border-collapse">
+          <div className="overflow-x-auto space-y-4">
+          <table className="min-w-full border-collapse">    
             <thead>
               <tr className="bg-gray-100 text-gray-600 text-sm">
                 <th className="sticky left-0 bg-gray-100 p-3 text-left z-10 w-52 border-r border-gray-300">
@@ -233,22 +242,17 @@ return (
                   .map((question, index) => (
                     <th
                       key={question.qid}
-                      className={`text-center p-3 min-w-[180px] border-r border-gray-200 ${
+                      className={`text-center p-3 min-w-[80px] border-r border-gray-200 ${
                         index > 3 ? "hidden lg:table-cell" : ""
                       }`}
                     >
-                      <div className="font-bold text-xs">
-                          {question.questionTitle}
-                        </div>
+                      <div 
+                        className="font-bold text-xs text-blue-600 hover:underline cursor-pointer"
+                        onClick={() => openModal(question.questionTitle, question.questionDetails)}
+                      >
+                        {question.questionTitle}
+                      </div>
 
-                        {question.questionDetails && question.questionDetails !== question.questionTitle && (
-                          <div
-                            className="mt-1 text-[10px] text-gray-500 line-clamp-2"
-                            title={question.questionDetails}
-                          >
-                            {question.questionDetails}
-                          </div>
-                        )}
                     </th>
                   ))}
                 <th className="sticky right-0 bg-gray-100 p-3 text-center z-10 min-w-[100px] border-l border-gray-300">
@@ -345,6 +349,14 @@ return (
         Submit Evaluation
       </button>
     </div>  
+
+    <Modal 
+      isOpen={modalOpen}
+      onClose={() => setModalOpen(false)}
+      title={modalContent.title}
+      content={modalContent.details}
+    />
+
 
 
     </form>
