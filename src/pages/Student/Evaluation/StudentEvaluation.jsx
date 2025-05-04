@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthContext from "../../../services/AuthContext";
 import { useLocation } from "react-router-dom";
-import {Modal} from "../../../components/Modals/QuestionDescription";
+import ConfirmSubmitModal from "../../../components/Modals/ConfirmSubmitModal";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const StudentEvaluation = () => {
   const { getDecryptedId } = useContext(AuthContext);
@@ -17,8 +19,9 @@ const StudentEvaluation = () => {
   const studentId = getDecryptedId("uid");
   const evaluationId = getDecryptedId("eid");
   const classId = getDecryptedId("cid");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalContent, setModalContent] = useState({ title: "", details: "" }); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
 
   const STORAGE_KEY = `eval-${evaluationId}-class-${classId}`;
 
@@ -101,12 +104,6 @@ const StudentEvaluation = () => {
 const handleSubmit = async (e) => {
   e.preventDefault();
 
-  // 1) Confirm submission
-  const confirmed = window.confirm(
-    "Are you sure you want to submit your evaluation? You won't be able to make changes after this."
-  );
-  if (!confirmed) return;
-
   // 2) Validate every question is answered & in-range
   for (const question of questions) {
     if (question.questionType === "INPUT") {
@@ -116,14 +113,14 @@ const handleSubmit = async (e) => {
 
         // Check for blank values or zero values
         if (value === "" || value === undefined || isNaN(value) || value <= 0 || value > 10) {
-          alert(`Please enter a valid score greater than 0 and less than or equal to 10 for "${question.questionTitle}"`);
+          toast.error(`Please enter a valid score greater than 0 and less than or equal to 10 for "${question.questionTitle}"`);
           return;
         }
       }
     } else if (question.questionType === "TEXT") {
       const textValue = responses[`text-${question.qid}`];
       if (!textValue || textValue.trim() === "") {
-        alert(`Please answer the text question: "${question.questionTitle}"`);
+        toast.error(`Please answer the text question: "${question.questionTitle}"`);
         return;
       }
     }
@@ -141,7 +138,7 @@ const handleSubmit = async (e) => {
       // Check if any score is repeated (no duplicates allowed)
       const uniqueScores = new Set(filteredScores);
       if (uniqueScores.size < filteredScores.length) {
-        alert(`You cannot assign the same score to more than one member for "${question.questionTitle}"`);
+        toast.error(`You cannot assign the same score to more than one member for "${question.questionTitle}"`);
         return;
       }
     }
@@ -185,53 +182,48 @@ const handleSubmit = async (e) => {
         responseList  
       );
     
-      alert("Evaluation successfully submitted!");
+      toast.success("Evaluation successfully submitted!");
       localStorage.removeItem(STORAGE_KEY);
       navigate(-1);
     } catch (error) {
       console.error("Error submitting evaluation:", error);
-      alert("Failed to submit evaluation.");
+      toast.error("Failed to submit evaluation.");
     }
 };  
 
 return (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-40">
-    <div className="w-full mb-6">
-      <button
-        onClick={() => navigate(-1)}
-        className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
-      >
-        ← Back
-      </button>
-    </div>
+    <>
+    <ToastContainer position="top-right" autoClose={3000} />
+<div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4 sm:px-40">
+  <div className="w-full mb-6">
+    <button
+      onClick={() => navigate(-1)}
+      className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition w-full sm:w-auto"
+    >
+      ← Back
+    </button>
+  </div>
 
-    <h1 className="text-3xl font-bold text-gray-800 mb-2">Student Evaluation</h1>
-    <p className="text-md text-gray-500 mb-6">Evaluate your team members carefully.</p>
+  <h1 className="text-3xl font-bold text-gray-800 mb-2">Student Evaluation</h1>
+  <p className="text-md text-gray-500 mb-6">Evaluate your team members carefully.</p>
 
-    <form className="w-full bg-white md:p-8 rounded-lg shadow space-y-8 xl:p-10 ">
+  <form className="w-full bg-white md:p-8 rounded-lg shadow space-y-8 xl:p-10">
+    {teamMembers.length > 0 && (
+      <>
+        <div className="mb-4 text-sm text-gray-500">
+          <p className="mb-2">
+            Rate each team member on a scale of <code>0.0</code> – <code>10</code> for each question.{" "}
+          </p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>No member can have exactly the same score for every item as any other member. (Except for Attendance, if available)</li>
+            <li>Every input and text must be filled out.</li>
+            <li>All team members should be able to complete the evaluation table.</li>
+            <li>Hover the question title to see the details.</li>
+          </ul>
+        </div>
 
-      {teamMembers.length > 0 && (
-            <>
-            <div className="mb-4 text-sm text-gray-500">
-            <p className="mb-2">
-              Rate each team member on a scale of <code>0.0</code> – <code>10</code> for each question.{' '}
-              <span className="italic text-gray-500">(Except for Attendance, if available)</span>
-            </p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>
-                No member can have exactly the same score for every item as any other member.
-              </li>
-              <li>
-                Every inputs and text must be filled out.
-              </li>
-              <li>
-                All team members should be able to complete the evaluation table.
-              </li>
-            </ul>
-          </div>
-
-          <div className="overflow-x-auto space-y-4">
-          <table className="min-w-full border-collapse">    
+        <div className="overflow-x-auto space-y-4">
+          <table className="min-w-full border-collapse table-auto">
             <thead>
               <tr className="bg-gray-100 text-gray-600 text-sm">
                 <th className="sticky left-0 bg-gray-100 p-3 text-left z-10 w-52 border-r border-gray-300">
@@ -246,13 +238,14 @@ return (
                         index > 3 ? "hidden lg:table-cell" : ""
                       }`}
                     >
-                      <div 
-                        className="font-bold text-xs text-blue-600 hover:underline cursor-pointer"
-                        onClick={() => openModal(question.questionTitle, question.questionDetails)}
-                      >
-                        {question.questionTitle}
+                      <div className="relative group">
+                        <div className="font-bold text-xs text-blue-600 hover:underline cursor-default">
+                          {question.questionTitle}
+                        </div>
+                        <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white border border-gray-300 shadow-lg text-gray-700 text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition duration-200 pointer-events-none">
+                          {question.questionDetails}
+                        </div>
                       </div>
-
                     </th>
                   ))}
                 <th className="sticky right-0 bg-gray-100 p-3 text-center z-10 min-w-[100px] border-l border-gray-300">
@@ -263,7 +256,7 @@ return (
 
             <tbody>
               {teamMembers.map((member) => {
-                const memberInputs = questions.filter(q => q.questionType === "INPUT");
+                const memberInputs = questions.filter((q) => q.questionType === "INPUT");
                 const total = memberInputs.reduce((acc, q) => {
                   const val = parseFloat(responses[`${member.memberId}-${q.qid}`]) || 0;
                   return acc + val;
@@ -282,28 +275,26 @@ return (
                           index > 3 ? "hidden lg:table-cell" : ""
                         }`}
                       >
-                       <input
-                            type="number"
-                            min="0"
-                            max="10"
-                            step="0.1"
-                            placeholder="0.0"
-                            className="w-20 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                            value={responses[`${member.memberId}-${question.qid}`] || ""} // controlled input
-                            onChange={(e) => {
-                              const raw = e.target.value;
-                              // allow blank
-                              if (raw === "") {
-                                handleResponseChange(member.memberId, question.qid, "");
-                                return;
-                              }
-                              let num = parseFloat(raw);
-                              if (isNaN(num)) return;
-                              // clamp between 0 and 10
-                              num = Math.min(Math.max(num, 0), 10);
-                              handleResponseChange(member.memberId, question.qid, num);
-                            }}
-                          />
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.1"
+                          placeholder="0.0"
+                          className="w-20 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                          value={responses[`${member.memberId}-${question.qid}`] || ""} // controlled input
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            if (raw === "") {
+                              handleResponseChange(member.memberId, question.qid, "");
+                              return;
+                            }
+                            let num = parseFloat(raw);
+                            if (isNaN(num)) return;
+                            num = Math.min(Math.max(num, 0), 10);
+                            handleResponseChange(member.memberId, question.qid, num);
+                          }}
+                        />
                       </td>
                     ))}
 
@@ -316,51 +307,49 @@ return (
             </tbody>
           </table>
         </div>
-        </>
-        
-      )}
-      {questions.filter(q => q.questionType === "TEXT").length > 0 && (
-    <div className="space-y-6">
-    
+      </>
+    )}
 
-      {questions.filter(q => q.questionType === "TEXT").map((question) => (
-        <div key={question.qid} className="space-y-2">
-          <div>
-            <div className="font-semibold text-gray-800">{question.questionTitle}</div>
-            <div className="text-sm text-gray-500">{question.questionDetails}</div>
-          </div>
-          <textarea
-            rows="4"
-            className="w-full border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-gray-400"
-            placeholder="Write your response here..."
-            value={responses[`text-${question.qid}`] || ""}
-            onChange={(e) => handleResponseChange("text", question.qid, e.target.value)}
-          />
-        </div>
-      ))}
-    </div>
-  )}
-<div className="flex justify-end mt-10">
+    {questions.filter((q) => q.questionType === "TEXT").length > 0 && (
+      <div className="space-y-6">
+        {questions
+          .filter((q) => q.questionType === "TEXT")
+          .map((question) => (
+            <div key={question.qid} className="space-y-2">
+              <div>
+                <div className="font-semibold text-gray-800">{question.questionTitle}</div>
+                <div className="text-sm text-gray-500">{question.questionDetails}</div>
+              </div>
+              <textarea
+                rows="4"
+                className="w-full border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-gray-400"
+                placeholder="Write your response here..."
+                value={responses[`text-${question.qid}`] || ""}
+                onChange={(e) => handleResponseChange("text", question.qid, e.target.value)}
+              />
+            </div>
+          ))}
+      </div>
+    )}
+
+    <div className="flex justify-end mt-10">
       <button
-        type="submit"
-        onClick={handleSubmit}
-        className="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-900 transition"
+      type="button"
+        onClick={handleOpenModal}
+        className="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-900 transition w-full sm:w-auto"
       >
         Submit Evaluation
       </button>
-    </div>  
+    </div> 
+  </form>
 
-    <Modal 
-      isOpen={modalOpen}
-      onClose={() => setModalOpen(false)}
-      title={modalContent.title}
-      content={modalContent.details}
-    />
-
-
-
-    </form>
-  </div>
+  <ConfirmSubmitModal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleSubmit}
+      />
+</div>
+</>
 );
 };
 

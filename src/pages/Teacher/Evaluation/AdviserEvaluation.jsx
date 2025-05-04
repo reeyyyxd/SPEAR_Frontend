@@ -2,12 +2,18 @@ import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthContext from "../../../services/AuthContext";
+import ConfirmSubmitModal from "../../../components/Modals/ConfirmSubmitModal";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const TeacherAdviserEvaluation = () => {
   const { getDecryptedId } = useContext(AuthContext);
   const navigate = useNavigate();
   const address = window.location.hostname;
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+  
   // State for teams and pagination
   const [teams, setTeams] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -211,10 +217,6 @@ const TeacherAdviserEvaluation = () => {
       return;
     }
   
-    if (!window.confirm(
-      "Are you sure you want to submit your evaluation? You won't be able to make changes after this."
-    )) return;
-  
     // Prepare adviser-to-student responseList
     const responseList = [];
   
@@ -264,224 +266,206 @@ const TeacherAdviserEvaluation = () => {
         `http://${address}:8080/responses/submit-adviser?evaluationId=${evaluationId}&evaluatorId=${teacherId}&classId=${classId}`,
         responseList
       );
-      alert("Evaluation successfully submitted!");
+      toast.success("Evaluation successfully submitted!");
   
       localStorage.removeItem(STORAGE_KEY);
       navigate(-1);
     } catch (error) {
       console.error("Error submitting adviser evaluation:", error);
-      alert("Failed to submit evaluation.");
+      toast.error("Failed to submit evaluation.");
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-8">
-      <div className="w-full max-w-6xl mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
-        >
-          ← Back
-        </button>
-      </div>
-
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">Adviser to Student Evaluation</h1>
-      <p className="text-md text-gray-500 mb-6">Evaluate your students based on the criteria below.</p>
-
-      {/* Team Project Details */}
-      {currentTeam && (
-        <div className="w-full max-w-6xl bg-white p-6 md:p-8 rounded-lg shadow mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-800">
-              {currentTeam.groupName} - {currentTeam.projectName}
-            </h2>
-            <div className="text-sm text-gray-500">
-              Advised Team {currentIndex + 1} of {teams.length}
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <h3 className="font-semibold text-gray-700">Project Description</h3>
-              <p className="text-gray-600">{currentTeam.projectDescription}</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-700">Schedule</h3>
-              <p className="text-gray-600">{currentTeam.scheduleDay}, {currentTeam.scheduleTime}</p>
-            </div>
-          </div>
-
-          {currentTeam.features && currentTeam.features.length > 0 && (
-            <div className="mt-4">
-              <h3 className="font-semibold text-gray-700 mb-2">Features</h3>
-              <div className="space-y-2">
-                {currentTeam.features.map((feature, idx) => (
-                  <div key={idx} className="border border-gray-200 p-3 rounded">
-                    <p className="font-medium text-gray-700">{feature.featureTitle}</p>
-                    <p className="text-sm text-gray-600">{feature.featureDescription}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Validation Errors */}
-      {validationErrors && validationErrors.length > 0 && (
-        <div className="w-full max-w-6xl bg-red-50 border-l-4 border-red-500 p-4 mb-6">
-          <h3 className="text-red-700 font-medium mb-2">Encounters:</h3>
-          <ul className="list-disc ml-5 text-sm text-red-600">
-            {validationErrors.map((error, index) => (
-              <li key={index}>{error}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <form onSubmit={(e) => e.preventDefault()} className="w-full max-w-6xl bg-white p-6 md:p-8 rounded-lg shadow space-y-8">
-        {combinedMemberNames.length > 0 && (
-          <>
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
-              <p className="text-sm text-blue-700 font-medium">Requirements:</p>
-              <ul className="list-disc ml-5 text-sm text-blue-600">
-                <li>Rate each student on a scale of 0.1 - 10.0 for each question (scores of 0 are not allowed).</li>
-                <li>All fields must be filled with valid scores between 0.1 and 10.0.</li>
-                <li>Each student must have a unique score for each question (except for Attendance).</li>
-                <li>Written feedback must be provided for all text questions.</li>
-                <li>All teams must be fully evaluated before submission.</li>
-              </ul>
-            </div>
-
-            <div className="overflow-x-auto space-y-4">
-              <table className="min-w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-100 text-gray-600 text-sm">
-                    <th className="sticky left-0 bg-gray-100 p-3 text-left z-10 w-52 border-r border-gray-300">
-                      Student
-                    </th>
-                    {questions.filter(q => q.questionType === "INPUT").map((q, index) => (
-                      <th
-                        key={q.qid}
-                        className={`text-center p-3 min-w-[180px] border-r border-gray-200 ${index > 3 ? "hidden lg:table-cell" : ""}`}
-                      >
-                        <div className="font-semibold text-xs">{q.questionTitle}</div>
-                        <div className="text-[10px] text-gray-500">{q.questionDetails}</div>
-                      </th>
-                    ))}
-                    <th className="sticky right-0 bg-gray-100 p-3 text-center z-10 min-w-[100px] border-l border-gray-300">
-                      Total
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {combinedMemberNames.map((member, idx) => {
-                    const memberId = combinedMemberIds[idx];
-                    const inputQs = questions.filter(q => q.questionType === "INPUT");
-                    const total = inputQs.reduce(
-                      (sum, q) => sum + (parseFloat(responses[`${memberId}-${q.qid}`]) || 0),
-                      0
-                    );
-
-                    return (
-                      <tr key={member + idx} className="border-b border-gray-200 hover:bg-gray-50">
-                        <td className="sticky left-0 bg-white z-0 p-3 font-medium text-gray-700 w-52 border-r border-gray-200">
-                          {member}
-                        </td>
-                        {inputQs.map((q, i) => (
-                          <td
-                            key={q.qid}
-                            className={`p-3 text-center border-r border-gray-100 ${i > 3 ? "hidden lg:table-cell" : ""}`}
-                          >
-                            <input
-                              type="number"
-                              min="0.1"
-                              max="10"
-                              step="0.1"
-                              placeholder="0.0"
-                              className="w-20 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                              value={responses[`${memberId}-${q.qid}`] || ""}
-                              onChange={e => {
-                                const value = parseFloat(e.target.value);
-                                // If value is greater than 10, cap it at 10
-                                const cappedValue = !isNaN(value) ? Math.min(value, 10) : value;
-                                handleResponseChange(memberId, q.qid, cappedValue);
-                              }}
-                            />
-                          </td>
-                        ))}
-                        <td className="sticky right-0 bg-white z-0 text-center font-semibold border-l border-gray-200">
-                          {total.toFixed(1)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
-
-        {questions.filter(q => q.questionType === "TEXT").length > 0 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold text-gray-700 mt-10">Written Feedback</h2>
-            {questions.filter(q => q.questionType === "TEXT").map(q => (
-              <div key={q.qid} className="space-y-2">
-                <div className="font-semibold text-gray-800">{q.questionTitle}</div>
-                <div className="text-sm text-gray-500">{q.questionDetails}</div>
-                <textarea
-                  rows="4"
-                  className="w-full border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-gray-400"
-                  placeholder="Write your response here..."
-                  value={responses[`text-${q.qid}-team-${currentTeam.tid}`] || ""}
-                  onChange={e => handleResponseChange(`text-${q.qid}-team`, currentTeam.tid, e.target.value)}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Progress indicator */}
-        <div className="w-full bg-gray-200 h-2 rounded-full mt-6">
-          <div 
-            className="bg-blue-500 h-2 rounded-full" 
-            style={{ width: `${((currentIndex + 1) / teams.length) * 100}%` }}
-          ></div>
-        </div>
-
-        {/* Pagination and Submit Controls - with consistent button styling */}
-        <div className="flex justify-between mt-10">
+    <>
+      <ToastContainer position="top-right" autoClose={3000} />
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4 sm:px-40">
+        <div className="w-full mb-6">
           <button
-            type="button"
-            onClick={prevTeam}
-            disabled={currentIndex === 0}
-            className="px-4 py-2 bg-[#323c47] text-white rounded hover:bg-[#323c47] transition disabled:opacity-50"
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition w-full sm:w-auto"
           >
-            Previous
+            ← Back
           </button>
-
-          {currentIndex < teams.length - 1 ? (
-            <button
-              type="button" 
-              onClick={nextTeam}
-              className="px-4 py-2 bg-[#323c47] text-white rounded hover:bg-[#323c47] transition disabled:opacity-50"
-            >
-              Next
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSubmit}
-              className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-            >
-              Submit Evaluation
-            </button>
-          )}
         </div>
-      </form>
-    </div>
+  
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Adviser to Student Evaluation</h1>
+        <p className="text-md text-gray-500 mb-6">Evaluate your students based on the criteria below.</p>
+  
+        {/* Team Project Details */}
+        {currentTeam && (
+          <div className="w-full max-w-6xl bg-white p-6 md:p-8 rounded-lg shadow mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">
+                {currentTeam.groupName} - {currentTeam.projectName}
+              </h2>
+              <div className="text-sm text-gray-500">
+                Advised Team {currentIndex + 1} of {teams.length}
+              </div>
+            </div>
+  
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <h3 className="font-semibold text-gray-700">Project Description</h3>
+                <p className="text-gray-600">{currentTeam.projectDescription}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-700">Schedule</h3>
+                <p className="text-gray-600">{currentTeam.scheduleDay}, {currentTeam.scheduleTime}</p>
+              </div>
+            </div>
+  
+            {currentTeam.features && currentTeam.features.length > 0 && (
+              <div className="mt-4">
+                <h3 className="font-semibold text-gray-700 mb-2">Features</h3>
+                <div className="space-y-2">
+                  {currentTeam.features.map((feature, idx) => (
+                    <div key={idx} className="border border-gray-200 p-3 rounded">
+                      <p className="font-medium text-gray-700">{feature.featureTitle}</p>
+                      <p className="text-sm text-gray-600">{feature.featureDescription}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+  
+        {/* Validation Errors */}
+        {validationErrors && validationErrors.length > 0 && (
+          <div className="w-full max-w-6xl bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+            <h3 className="text-red-700 font-medium mb-2">Encounters:</h3>
+            <ul className="list-disc ml-5 text-sm text-red-600">
+              {validationErrors.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+  
+        <form 
+        onSubmit={(e) => e.preventDefault()}
+         className="w-full bg-white md:p-8 rounded-lg shadow space-y-8 xl:p-10">
+          {combinedMemberNames.length > 0 && (
+            <>
+              <div className="mb-4 text-sm text-gray-500">
+                <p className="mb-2">
+                  Rate each student on a scale of <code>0.1</code> – <code>10</code> for each question.
+                </p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>No question can be left unanswered.</li>
+                  <li>Ensure you provide valid input for each question (greater than 0, up to 10).</li>
+                  <li>Hover the question title to see the details.</li>
+                </ul>
+              </div>
+  
+              <div className="overflow-x-auto space-y-4">
+                <table className="min-w-full border-collapse table-auto">
+                  <thead>
+                    <tr className="bg-gray-100 text-gray-600 text-sm">
+                      <th className="sticky left-0 bg-gray-100 p-3 text-left z-10 w-52 border-r border-gray-300">
+                        Student
+                      </th>
+                      {questions.filter(q => q.questionType === "INPUT").map((q, index) => (
+                        <th key={q.qid} className="text-center p-3 min-w-[80px] border-r border-gray-200">
+                          <div className="relative group">
+                            <div className="font-bold text-xs text-blue-600 hover:underline cursor-default">
+                              {q.questionTitle}
+                            </div>
+                            <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white border border-gray-300 text-gray-700 text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition duration-200 pointer-events-none">
+                              {q.questionDetails}
+                            </div>
+                          </div>
+                        </th>
+                      ))}
+                      <th className="sticky right-0 bg-gray-100 p-3 text-center z-10 min-w-[100px] border-l border-gray-300">
+                        Total
+                      </th>
+                    </tr>
+                  </thead>
+  
+                  <tbody>
+                    {combinedMemberNames.map((member, idx) => {
+                      const memberId = combinedMemberIds[idx];
+                      const inputQs = questions.filter(q => q.questionType === "INPUT");
+                      const total = inputQs.reduce(
+                        (sum, q) => sum + (parseFloat(responses[`${memberId}-${q.qid}`]) || 0),
+                        0
+                      );
+  
+                      return (
+                        <tr key={member + idx} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="sticky left-0 bg-white z-0 p-3 font-medium text-gray-700 w-52 border-r border-gray-200">
+                            {member}
+                          </td>
+                          {inputQs.map((q, i) => (
+                            <td key={q.qid} className="p-3 text-center border-r border-gray-100">
+                              <input
+                                type="number"
+                                min="0.1"
+                                max="10"
+                                step="0.1"
+                                placeholder="0.0"
+                                className="w-20 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                                value={responses[`${memberId}-${q.qid}`] || ""}
+                                onChange={e => {
+                                  const value = parseFloat(e.target.value);
+                                  const cappedValue = !isNaN(value) ? Math.min(value, 10) : value;
+                                  handleResponseChange(memberId, q.qid, cappedValue);
+                                }}
+                              />
+                            </td>
+                          ))}
+                          <td className="sticky right-0 bg-white z-0 text-center font-semibold border-l border-gray-200">
+                            {total.toFixed(1)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+  
+          {questions.filter(q => q.questionType === "TEXT").length > 0 && (
+            <div className="space-y-6">
+              <h2 className="text-lg font-semibold text-gray-700 mt-10">Written Feedback</h2>
+              {questions.filter(q => q.questionType === "TEXT").map(q => (
+                <div key={q.qid} className="space-y-2">
+                  <div className="font-semibold text-gray-800">{q.questionTitle}</div>
+                  <div className="text-sm text-gray-500">{q.questionDetails}</div>
+                  <textarea
+                    rows="4"
+                    className="w-full border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-gray-400"
+                    placeholder="Write your response here..."
+                    value={responses[`text-${q.qid}-team-${currentTeam.tid}`] || ""}
+                    onChange={e => handleResponseChange(`text-${q.qid}-team`, currentTeam.tid, e.target.value)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+            <div className="flex justify-end mt-10">
+              <button
+                onClick={handleOpenModal}
+                className="px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition w-full sm:w-auto"
+              >
+                Submit Evaluation
+              </button>
+  
+          </div>
+        </form>
+        <ConfirmSubmitModal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleSubmit}
+      />
+      </div>
+    </>
   );
+  
 };
 
 export default TeacherAdviserEvaluation;

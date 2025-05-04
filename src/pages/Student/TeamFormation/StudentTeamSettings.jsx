@@ -453,28 +453,28 @@ const dropAdviser = async () => {
 
   return (
     <>
-      <ToastContainer position="top-right" autoClose={3000} />
-      <div className="flex flex-col bg-gray-50 text-gray-900 min-h-screen">
-        {/* Navbar */}
-        <Navbar userRole={authState.role} />
-        
-        {/* Main content container with responsive adjustments */}
-        <div className="w-full flex-1">
-          <div className="w-full max-w-4xl mx-auto px-4 py-6 md:py-8">
-            <button
-              onClick={() => navigate(-1)}
-              className="bg-gray-700 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-500 transition"
-            >
-              <FiArrowLeft />
-            </button>
+    <ToastContainer position="top-right" autoClose={3000} />
+    <div className="flex flex-col bg-gray-50 text-gray-900 min-h-screen">
+      {/* Navbar */}
+      <Navbar userRole={authState.role} />
 
-            <h2 className="text-2xl md:text-3xl font-bold text-teal-700 mb-8 text-center">
-              Team Settings
-            </h2>
+      <div className="w-full flex-1">
+        <div className="w-full max-w-4xl mx-auto px-4 py-6 md:py-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="bg-gray-700 text-white px-4 py-2 rounded-lg mb-4 hover:bg-gray-500 transition"
+          >
+            <FiArrowLeft />
+          </button>
 
-            {teamDetails ? (
-              <div className="flex flex-col gap-6 w-full">
-                {/* Group Name */}
+          <h2 className="text-2xl md:text-3xl font-bold text-teal-700 mb-8 text-center">
+            Team Settings
+          </h2>
+
+          {teamDetails ? (
+            <div className="flex flex-col gap-6 w-full md:flex-row">
+              <div className="w-full md:w-1/2 flex flex-col gap-6">
+
                 <div className="border-b pb-6">
                   <h3 className="text-xl font-semibold mb-3">Change Group Name</h3>
                   <div className="flex items-center gap-2 mt-3">
@@ -493,7 +493,7 @@ const dropAdviser = async () => {
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Team Leader */}
                 <div className="my-4">
                   <p className="text-lg">
@@ -510,20 +510,13 @@ const dropAdviser = async () => {
                       <table className="w-full border-collapse min-w-full">
                         <thead className="bg-gray-700 text-white">
                           <tr>
-                            <th className="border border-gray-300 px-5 py-3 text-left text-lg">
-                              Member Name
-                            </th>
-                            <th className="border border-gray-300 px-5 py-3 text-center text-lg">
-                              Actions
-                            </th>
+                            <th className="border border-gray-300 px-5 py-3 text-left text-lg">Member Name</th>
+                            <th className="border border-gray-300 px-5 py-3 text-center text-lg">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                           {teamDetails.memberNames.map((member, index) => (
-                            <tr
-                              key={teamDetails.memberIds[index]}
-                              className="hover:bg-gray-100"
-                            >
+                            <tr key={teamDetails.memberIds[index]} className="hover:bg-gray-100">
                               <td className="border border-gray-300 px-5 py-4 text-gray-800 text-lg">
                                 {member}
                               </td>
@@ -532,13 +525,8 @@ const dropAdviser = async () => {
                                   <button
                                     className="group border border-red-300 text-gray-800 px-4 py-3 rounded-md hover:bg-red-600 hover:text-white transition flex items-center gap-2"
                                     onClick={() => {
-                                      setModalMessage(
-                                        "Are you sure you want to remove this member from the team?"
-                                      );
-                                      setConfirmAction(
-                                        () => () =>
-                                          kickMember(teamDetails.memberIds[index])
-                                      );
+                                      setModalMessage("Are you sure you want to remove this member from the team?");
+                                      setConfirmAction(() => () => kickMember(teamDetails.memberIds[index]));
                                       setIsModalOpen(true);
                                     }}
                                   >
@@ -576,15 +564,10 @@ const dropAdviser = async () => {
                   teamDetails.scheduleDay !== "No Day Set" &&
                   teamDetails.scheduleTime !== "No Time Set" ? (
                     <div className="p-4 border rounded-md bg-gray-50">
-                      <h3 className="text-lg font-semibold mb-2">
-                        Team Adviser & Schedule
-                      </h3>
+                      <h3 className="text-lg font-semibold mb-2">Team Adviser & Schedule</h3>
+                      <p className="text-gray-700"><strong>Adviser:</strong> {teamDetails.adviserName}</p>
                       <p className="text-gray-700">
-                        <strong>Adviser:</strong> {teamDetails.adviserName}
-                      </p>
-                      <p className="text-gray-700">
-                        <strong>Schedule:</strong>{" "}
-                        {`${teamDetails.scheduleDay}, ${teamDetails.scheduleTime}`}
+                        <strong>Schedule:</strong> {`${teamDetails.scheduleDay}, ${teamDetails.scheduleTime}`}
                       </p>
                       <button
                         onClick={() => setShowDropModal(true)}
@@ -594,30 +577,26 @@ const dropAdviser = async () => {
                       </button>
                     </div>
                   ) : (
-                    classDetails?.needsAdvisory ? (
+                    classDetails?.needsAdvisory && (
                       <button
                         onClick={() => setShowRequestModal(true)}
                         className="px-4 py-2 w-full bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
                       >
                         Request Adviser & Schedule
                       </button>
-                    ) : null
+                    )
                   )}
                 </div>
+              </div>
 
-                {/* Recruitment Status */}
-                <div className="p-6 border rounded-md bg-gray-50 w-full shadow-md my-6">
-                  <h2 className="text-xl font-semibold text-black mb-3">
-                    Recruitment Status
-                  </h2>
+              <div className="w-full md:w-1/2 flex flex-col gap-6">
+                {/* Recruitment */}
+                <div className="p-6 border rounded-md bg-gray-50 w-full shadow-md">
+                  <h2 className="text-xl font-semibold text-black mb-3">Recruitment Status</h2>
                   <div className="mt-4 flex items-center justify-between">
                     <div>
-                      <p className="text-lg font-medium text-black">
-                        Open Recruitment
-                      </p>
-                      <p className="text-md text-gray-600">
-                        Allow new members to join your team
-                      </p>
+                      <p className="text-lg font-medium text-black">Open Recruitment</p>
+                      <p className="text-md text-gray-600">Allow new members to join your team</p>
                     </div>
                     <button
                       onClick={toggleRecruitment}
@@ -625,9 +604,7 @@ const dropAdviser = async () => {
                       className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300 ${
                         recruitmentOpen ? "bg-green-500" : "bg-gray-300"
                       } ${
-                        isUpdating
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:opacity-90"
+                        isUpdating ? "opacity-50 cursor-not-allowed" : "hover:opacity-90"
                       }`}
                     >
                       <span
@@ -639,95 +616,94 @@ const dropAdviser = async () => {
                   </div>
                 </div>
 
-                {/* Leave / Delete Buttons */}
-                <div className="mt-8 flex flex-col sm:flex-row gap-4 w-full">
-                  <button
-                    className="flex-1 px-5 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-lg font-medium"
-                    onClick={() => {
-                      setModalMessage("Are you sure you want to leave the team?");
-                      setConfirmAction(() => () => leaveTeam());
-                      setIsModalOpen(true);
-                    }}
-                  >
-                    Leave Team
-                  </button>
+                {/* Leave & Delete */}
+                <div className="flex flex-row gap-4 w-full">
+                 <button
+                   className="w-1/2 px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-lg font-medium"
+                   onClick={() => {
+                     setModalMessage("Are you sure you want to leave the team?");
+                     setConfirmAction(() => () => leaveTeam());
+                     setIsModalOpen(true);
+                   }}
+                 >
+                   Leave Team
+                 </button>
 
-                  {`${userData.firstname} ${userData.lastname}` ===
-                    teamDetails?.leaderName && (
-                    <button
-                      className="flex-1 px-5 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-lg font-medium"
-                      onClick={() => {
-                        setModalMessage(
-                          "Are you sure you want to delete this team? This action cannot be undone."
-                        );
-                        setConfirmAction(() => () => deleteTeam());
-                        setIsModalOpen(true);
-                      }}
-                    >
-                      Delete Team
-                    </button>
-                  )}
-                </div>
+                 {`${userData.firstname} ${userData.lastname}` === teamDetails?.leaderName && (
+                  <button
+                    className="w-1/2 px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-lg font-medium"
+                     onClick={() => {
+                       setModalMessage("Are you sure you want to delete this team? This action cannot be undone.");
+                       setConfirmAction(() => () => deleteTeam());
+                       setIsModalOpen(true);
+                     }}
+                   >
+                     Delete Team
+                   </button>
+                 )}
+               </div>
+
               </div>
-            ) : (
-              <p className="text-center text-gray-600">You are not in a team.</p>
-            )}
-          </div>
+            </div>
+          ) : (
+            <p className="text-center text-gray-600">You are not in a team.</p>
+          )}
         </div>
       </div>
+    </div>
 
-      {/* Modals */}
-      {showRequestModal && (
-        <StudentAdvisoryRequestModal
-          teamId={teamDetails.tid}
-          requesterId={authState.userId}
-          closeModal={() => setShowRequestModal(false)}
-        />
-      )}
+    {/* Modals */}
+    {showRequestModal && (
+      <StudentAdvisoryRequestModal
+        teamId={teamDetails?.tid}
+        requesterId={authState.userId}
+        closeModal={() => setShowRequestModal(false)}
+      />
+    )}
 
-      {showDropModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-md shadow-lg w-full max-w-md mx-4 relative">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-semibold">Drop Adviser</h2>
-              <button
-                onClick={() => setShowDropModal(false)}
-                className="text-gray-500 hover:text-gray-700 text-xl"
-              >
-                ✖
-              </button>
-            </div>
-            <p className="text-gray-700 mb-3 text-lg">Please provide a reason:</p>
-            <textarea
-              rows="4"
-              value={dropReason}
-              onChange={(e) => setDropReason(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md text-lg"
-              placeholder="Explain why you want to drop your adviser..."
-            />
-            <button 
-              onClick={dropAdviser}
-              disabled={!dropReason.trim()}
-              className="mt-5 w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-lg font-medium"
+    {showDropModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div className="bg-white p-6 rounded-md shadow-lg w-full max-w-md mx-4 relative">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xl font-semibold">Drop Adviser</h2>
+            <button
+              onClick={() => setShowDropModal(false)}
+              className="text-gray-500 hover:text-gray-700 text-xl"
             >
-              Confirm
+              ✖
             </button>
           </div>
+          <p className="text-gray-700 mb-3 text-lg">Please provide a reason:</p>
+          <textarea
+            rows="4"
+            value={dropReason}
+            onChange={(e) => setDropReason(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-md text-lg"
+            placeholder="Explain why you want to drop your adviser..."
+          />
+          <button
+            onClick={dropAdviser}
+            disabled={!dropReason.trim()}
+            className="mt-5 w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-lg font-medium"
+          >
+            Confirm
+          </button>
         </div>
-      )}
+      </div>
+    )}
 
-      {isModalOpen && (
-        <ConfirmationModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onConfirm={() => {
-            if (confirmAction) confirmAction();
-            setIsModalOpen(false);
-          }}
-          message={modalMessage}
-        />
-      )}
-    </>
+    {isModalOpen && (
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={() => {
+          if (confirmAction) confirmAction();
+          setIsModalOpen(false);
+        }}
+        message={modalMessage}
+      />
+    )}
+  </>
   );
 };
 
