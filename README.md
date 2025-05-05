@@ -92,10 +92,16 @@ The tables will be automatically created by JPA/Hibernate on the first run of th
 
 📅 Software Project Management Plan (SPMP)
 
+
+
 ✅ Future Enhancements
+
 Dashboard analytics for instructors/admins
+
 Notification system for deadlines and approvals
+
 Advanced role-based access control
+
 Mobile optimization
 
 
