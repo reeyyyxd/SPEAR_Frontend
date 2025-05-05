@@ -51,6 +51,7 @@ Backend (Spring Boot - Java)
 ↓ JPA / Hibernate
 Database (MySQL)
 
+---
 
 🛢️ Database Setup (MySQL)
 1. Create the Database:
@@ -70,6 +71,7 @@ spring.jpa.show-sql=true
 3. Table Auto-Generation:
 The tables will be automatically created by JPA/Hibernate on the first run of the application.
 
+---
 
 👨‍💻 Team Members – 2425-sem2-it441-g01-02
 
@@ -81,9 +83,10 @@ The tables will be automatically created by JPA/Hibernate on the first run of th
 | Gabisay, Alexa Mae    | Frontend Developer & Technical Writer                   |
 | Arisgar, Aldrich Alex | Frontend Developer, Document Manager & Technical Writer |
 
-
+---
 
 📄 Documentation
+
 📘 Software Requirements Specification (SRS)
 
 🧩 Software Design Description (SDD)
@@ -92,7 +95,7 @@ The tables will be automatically created by JPA/Hibernate on the first run of th
 
 📅 Software Project Management Plan (SPMP)
 
-
+---
 
 ✅ Future Enhancements
 
@@ -104,5 +107,6 @@ Advanced role-based access control
 
 Mobile optimization
 
+---
 
 # Feel free to contribute or report any issues using GitHub's pull request or issue management features.
